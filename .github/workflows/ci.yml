@@ -1,0 +1,64 @@
+name: SOEN345_Project
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['*']
+  pull_request:
+    branches: ['*']
+
+jobs:
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        working-directory: soen345-frontend
+        run: npm install
+
+      - name: Lint
+        working-directory: soen345-frontend
+        run: npm run lint
+
+      - name: Build
+        working-directory: soen345-frontend
+        run: npm run build
+
+  backend:
+    name: Backend (Spring Boot)
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: 21
+          distribution: temurin
+
+      - name: Make mvnw executable
+        working-directory: soen345-backend
+        run: chmod +x mvnw
+
+      - name: Run Tests
+        working-directory: soen345-backend
+        env:
+          MONGODB_URI: mongodb://localhost:27017
+        run: ./mvnw test
