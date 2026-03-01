@@ -8,8 +8,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import ticketReservation.soen345.dto.request.LoginRequest;
 import ticketReservation.soen345.dto.request.RegisterRequest;
+import ticketReservation.soen345.dto.response.LoginResponse;
 import ticketReservation.soen345.dto.response.RegisterResponse;
+import ticketReservation.soen345.service.AuthService;
 import ticketReservation.soen345.service.UserService;
 
 import java.net.URI;
@@ -20,16 +23,8 @@ import java.net.URI;
 public class AuthController {
 
     private final UserService userService;
+    private final AuthService authService;
 
-    /**
-     * Registers a new user account.
-     * <p>
-     * At least one contact method (email or phone) must be provided.
-     * Returns 201 Created with Location header pointing to the user resource.
-     *
-     * @param request the registration request
-     * @return the created user's public information
-     */
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         RegisterResponse response = userService.registerUser(request);
@@ -41,5 +36,11 @@ public class AuthController {
                 .toUri();
 
         return ResponseEntity.created(location).body(response);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 }
