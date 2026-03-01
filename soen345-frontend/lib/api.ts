@@ -4,13 +4,14 @@ export async function api<T>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const { headers, ...rest } = options;
   const res = await fetch(`${BASE_URL}${path}`, {
     credentials: "include",
+    ...rest,
     headers: {
       "Content-Type": "application/json",
-      ...options.headers,
+      ...headers,
     },
-    ...options,
   });
 
   if (!res.ok) {
