@@ -8,7 +8,9 @@ import ticketReservation.soen345.domain.UserRole;
 import ticketReservation.soen345.domain.UserStatus;
 import ticketReservation.soen345.dto.request.RegisterRequest;
 import ticketReservation.soen345.dto.response.RegisterResponse;
+import ticketReservation.soen345.dto.response.UserResponse;
 import ticketReservation.soen345.exception.DuplicateResourceException;
+import ticketReservation.soen345.exception.ResourceNotFoundException;
 import ticketReservation.soen345.repository.UserRepository;
 import ticketReservation.soen345.service.UserService;
 
@@ -30,6 +32,13 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         return mapToResponse(savedUser);
+    }
+
+    @Override
+    public UserResponse getUserById(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
+        return mapToUserResponse(user);
     }
 
     private String normalizeEmail(String email) {
@@ -77,6 +86,20 @@ public class UserServiceImpl implements UserService {
                 .role(user.getRole())
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
+                .build();
+    }
+
+    private UserResponse mapToUserResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .status(user.getStatus())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
                 .build();
     }
 }
