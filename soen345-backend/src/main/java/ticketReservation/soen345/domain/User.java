@@ -42,4 +42,8 @@ public class User {
 
     @LastModifiedDate
     private Instant updatedAt;
+
+    public boolean hasPermission(Permission permission) {
+        return role != null && role.hasPermission(permission);
+    }
 }

@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 
-function LoginForm() {
+function OrganizerLoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") ?? "/dashboard";
+  const redirect = searchParams.get("redirect") ?? "/organization/register";
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -23,7 +23,7 @@ function LoginForm() {
     try {
       await api("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify({ identifier, password, portal: "user" }),
+        body: JSON.stringify({ identifier, password, portal: "organizer" }),
       });
       router.push(redirect);
     } catch (err: unknown) {
@@ -36,9 +36,9 @@ function LoginForm() {
 
   return (
     <div className="auth-card">
-      <h1 className="auth-title">Sign In</h1>
+      <h1 className="auth-title">Organizer Sign In</h1>
       <p className="auth-subtitle">
-        Welcome back! Enter your credentials to continue.
+        Sign in with an organizer-enabled account to create organizer users.
       </p>
 
       {error && <div className="auth-error">{error}</div>}
@@ -61,7 +61,7 @@ function LoginForm() {
           <input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -69,30 +69,26 @@ function LoginForm() {
         </div>
 
         <button type="submit" className="auth-btn" disabled={loading}>
-          {loading ? "Signing in…" : "Sign In"}
+          {loading ? "Signing in..." : "Login as organizer"}
         </button>
       </form>
 
       <p className="auth-footer">
-        Don&apos;t have an account?{" "}
-        <Link href="/register">Create one</Link>
+        Need organizer account creation?{" "}
+        <Link href="/organization/register">Go to organization registration</Link>
       </p>
       <p className="auth-footer">
-        Organizer access? <Link href="/organizer/login">Login as organizer</Link>
-      </p>
-      <p className="auth-footer">
-        Need to create organizer accounts?{" "}
-        <Link href="/organization/register">Create organizer account</Link>
+        Back to regular login? <Link href="/login">Sign in</Link>
       </p>
     </div>
   );
 }
 
-export default function LoginPage() {
+export default function OrganizerLoginPage() {
   return (
     <main className="auth-container">
       <Suspense>
-        <LoginForm />
+        <OrganizerLoginForm />
       </Suspense>
     </main>
   );

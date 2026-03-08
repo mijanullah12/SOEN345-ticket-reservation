@@ -38,6 +38,19 @@ public class AuthController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @PostMapping("/register-organizer")
+    public ResponseEntity<RegisterResponse> registerOrganizer(@Valid @RequestBody RegisterRequest request) {
+        RegisterResponse response = userService.registerOrganizer(request);
+
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/api/v1/users/{id}")
+                .buildAndExpand(response.getId())
+                .toUri();
+
+        return ResponseEntity.created(location).body(response);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);

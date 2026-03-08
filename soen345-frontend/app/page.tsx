@@ -16,6 +16,16 @@ export default function HomePage() {
             Create Account
           </Link>
         </div>
+        <div className="home-organizer-cta">
+          <Link href="/organizer/login" className="home-link-btn">
+            Are you an organizer?
+          </Link>
+        </div>
+        <div className="home-organizer-cta">
+          <Link href="/organization/register" className="home-link-btn">
+            Create organizer account
+          </Link>
+        </div>
       </div>
     </main>
   );
