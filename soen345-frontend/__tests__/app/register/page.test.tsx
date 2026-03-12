@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import RegisterPage from "@/app/register/page";
 
 const pushMock = vi.fn();
@@ -14,6 +14,7 @@ vi.mock("@/lib/api", () => ({
 }));
 
 import { api } from "@/lib/api";
+
 const apiMock = vi.mocked(api);
 
 beforeEach(() => {
@@ -50,9 +51,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/last name/i), "Doe");
     await user.type(screen.getByLabelText("Password"), "Pass1234");
     await user.type(screen.getByLabelText(/confirm password/i), "Pass1234");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(
       await screen.findByText(/either email or phone number is required/i),
@@ -69,9 +68,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/email/i), "john@test.com");
     await user.type(screen.getByLabelText("Password"), "Ab1");
     await user.type(screen.getByLabelText(/confirm password/i), "Ab1");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(
       await screen.findByText(/password must be at least 8 characters/i),
@@ -88,9 +85,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/email/i), "john@test.com");
     await user.type(screen.getByLabelText("Password"), "Abcdefgh");
     await user.type(screen.getByLabelText(/confirm password/i), "Abcdefgh");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(
       await screen.findByText(
@@ -109,9 +104,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/email/i), "john@test.com");
     await user.type(screen.getByLabelText("Password"), "Pass1234");
     await user.type(screen.getByLabelText(/confirm password/i), "Pass5678");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(
       await screen.findByText(/passwords do not match/i),
@@ -129,9 +122,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/email/i), "jane@test.com");
     await user.type(screen.getByLabelText("Password"), "Pass1234");
     await user.type(screen.getByLabelText(/confirm password/i), "Pass1234");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(apiMock).toHaveBeenCalledWith("/api/auth/register", {
       method: "POST",
@@ -155,9 +146,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/phone/i), "+14155552671");
     await user.type(screen.getByLabelText("Password"), "Pass1234");
     await user.type(screen.getByLabelText(/confirm password/i), "Pass1234");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(apiMock).toHaveBeenCalledWith("/api/auth/register", {
       method: "POST",
@@ -180,9 +169,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/email/i), "jane@test.com");
     await user.type(screen.getByLabelText("Password"), "Pass1234");
     await user.type(screen.getByLabelText(/confirm password/i), "Pass1234");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(
       await screen.findByText(/email already registered/i),
@@ -193,7 +180,9 @@ describe("RegisterPage", () => {
   it("displays field-level errors from the API", async () => {
     apiMock.mockRejectedValueOnce({
       message: "Validation failed",
-      fieldErrors: [{ field: "phone", message: "Phone must be in E.164 format" }],
+      fieldErrors: [
+        { field: "phone", message: "Phone must be in E.164 format" },
+      ],
     });
     const user = userEvent.setup();
     render(<RegisterPage />);
@@ -203,9 +192,7 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText(/email/i), "jane@test.com");
     await user.type(screen.getByLabelText("Password"), "Pass1234");
     await user.type(screen.getByLabelText(/confirm password/i), "Pass1234");
-    await user.click(
-      screen.getByRole("button", { name: /create account/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /create account/i }));
 
     expect(
       await screen.findByText(/phone must be in e\.164 format/i),

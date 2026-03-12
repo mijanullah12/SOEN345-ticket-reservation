@@ -15,6 +15,7 @@ export function LogoutButton() {
 
   return (
     <button
+      type="button"
       onClick={handleLogout}
       disabled={loading}
       className="logout-btn"

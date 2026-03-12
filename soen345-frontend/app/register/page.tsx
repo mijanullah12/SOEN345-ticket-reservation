@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { api } from "@/lib/api";
 
 interface FormState {
@@ -99,9 +99,7 @@ export default function RegisterPage() {
     <main className="auth-container">
       <div className="auth-card">
         <h1 className="auth-title">Create Account</h1>
-        <p className="auth-subtitle">
-          Fill in your details to get started.
-        </p>
+        <p className="auth-subtitle">Fill in your details to get started.</p>
 
         {error && <div className="auth-error">{error}</div>}
 

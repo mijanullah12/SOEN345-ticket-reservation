@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { api } from "@/lib/api";
 
 function LoginForm() {
@@ -74,8 +74,7 @@ function LoginForm() {
       </form>
 
       <p className="auth-footer">
-        Don&apos;t have an account?{" "}
-        <Link href="/register">Create one</Link>
+        Don&apos;t have an account? <Link href="/register">Create one</Link>
       </p>
     </div>
   );
