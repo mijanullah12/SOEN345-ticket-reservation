@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { api } from "@/lib/api";
 
 interface FormState {
@@ -88,7 +88,9 @@ export default function OrganizationRegisterPage() {
         message?: string;
         fieldErrors?: FieldError[];
       };
-      setError(apiErr.message ?? "Organization registration failed. Please try again.");
+      setError(
+        apiErr.message ?? "Organization registration failed. Please try again.",
+      );
       if (apiErr.fieldErrors?.length) setFieldErrors(apiErr.fieldErrors);
     } finally {
       setLoading(false);
@@ -193,7 +195,8 @@ export default function OrganizationRegisterPage() {
         </form>
 
         <p className="auth-footer">
-          Already have an organizer account? <Link href="/organizer/login">Login as organizer</Link>
+          Already have an organizer account?{" "}
+          <Link href="/organizer/login">Login as organizer</Link>
         </p>
       </div>
     </main>

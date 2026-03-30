@@ -6,11 +6,14 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const backendRes = await fetch(`${BACKEND_URL}/api/v1/auth/register-organizer`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const backendRes = await fetch(
+      `${BACKEND_URL}/api/v1/auth/register-organizer`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      },
+    );
 
     const raw = await backendRes.text();
     let data: unknown = {};

@@ -58,7 +58,6 @@ describe("middleware", () => {
       expect(NextResponse.next).toHaveBeenCalledTimes(1);
       expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
-
   });
 
   describe("auth pages redirect when authenticated", () => {

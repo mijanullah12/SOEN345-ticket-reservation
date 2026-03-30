@@ -1,9 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { POST } from "@/app/api/auth/register-organizer/route";
 
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
-
-import { POST } from "@/app/api/auth/register-organizer/route";
 
 function buildRequest(body: object): Request {
   return new Request("http://localhost:3000/api/auth/register-organizer", {

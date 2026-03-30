@@ -77,7 +77,8 @@ function LoginForm() {
         Don&apos;t have an account? <Link href="/register">Create one</Link>
       </p>
       <p className="auth-footer">
-        Organizer access? <Link href="/organizer/login">Login as organizer</Link>
+        Organizer access?{" "}
+        <Link href="/organizer/login">Login as organizer</Link>
       </p>
       <p className="auth-footer">
         Need to create organizer accounts?{" "}

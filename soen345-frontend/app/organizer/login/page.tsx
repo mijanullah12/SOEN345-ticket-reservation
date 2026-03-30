@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { api } from "@/lib/api";
 
 function OrganizerLoginForm() {
@@ -75,7 +75,9 @@ function OrganizerLoginForm() {
 
       <p className="auth-footer">
         Need organizer account creation?{" "}
-        <Link href="/organization/register">Go to organization registration</Link>
+        <Link href="/organization/register">
+          Go to organization registration
+        </Link>
       </p>
       <p className="auth-footer">
         Back to regular login? <Link href="/login">Sign in</Link>
