@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import LoginPage from "@/app/login/page";
 
 const pushMock = vi.fn();
@@ -15,6 +15,7 @@ vi.mock("@/lib/api", () => ({
 }));
 
 import { api } from "@/lib/api";
+
 const apiMock = vi.mocked(api);
 
 beforeEach(() => {
@@ -73,9 +74,7 @@ describe("LoginPage", () => {
     await user.type(screen.getByLabelText(/password/i), "wrong");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
-    expect(
-      await screen.findByText(/invalid credentials/i),
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/invalid credentials/i)).toBeInTheDocument();
     expect(pushMock).not.toHaveBeenCalled();
   });
 

@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/server", async (importOriginal) => {
   const actual = await importOriginal<typeof import("next/server")>();
@@ -12,8 +12,8 @@ vi.mock("next/server", async (importOriginal) => {
   };
 });
 
-import { middleware } from "@/middleware";
 import { NextResponse } from "next/server";
+import { middleware } from "@/middleware";
 
 function buildRequest(pathname: string, hasToken = false): NextRequest {
   const url = new URL(pathname, "http://localhost:3000");
