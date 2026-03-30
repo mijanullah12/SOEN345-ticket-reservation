@@ -25,6 +25,11 @@ beforeEach(() => {
 
 describe("POST /api/auth/login", () => {
   const loginPayload = { identifier: "test@example.com", password: "Pass1234" };
+  const userPortalPayload = {
+    identifier: "test@example.com",
+    password: "Pass1234",
+    portal: "user",
+  };
 
   const backendSuccess = {
     tokenType: "Bearer",
@@ -36,7 +41,7 @@ describe("POST /api/auth/login", () => {
       lastName: "Doe",
       email: "test@example.com",
       phone: null,
-      role: "USER",
+      role: "CUSTOMER",
     },
   };
 
@@ -96,6 +101,44 @@ describe("POST /api/auth/login", () => {
 
     expect(res.status).toBe(500);
     expect(body.message).toBe("Internal server error");
+    expect(mockCookieSet).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when user portal login role does not match", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          ...backendSuccess,
+          user: { ...backendSuccess.user, role: "ADMIN" },
+        }),
+    });
+
+    const res = await POST(buildRequest(userPortalPayload));
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.message).toMatch(/customer role/i);
+    expect(mockCookieSet).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 when organizer portal login role does not match", async () => {
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(backendSuccess),
+    });
+
+    const res = await POST(
+      buildRequest({
+        identifier: "test@example.com",
+        password: "Pass1234",
+        portal: "organizer",
+      }),
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(403);
+    expect(body.message).toMatch(/organizer access/i);
     expect(mockCookieSet).not.toHaveBeenCalled();
   });
 });

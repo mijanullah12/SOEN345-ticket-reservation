@@ -87,6 +87,15 @@ describe("middleware", () => {
         .mock.calls[0][0] as URL;
       expect(redirectUrl.pathname).toBe("/dashboard");
     });
+
+    it("redirects authenticated users from /organizer/login to /dashboard", () => {
+      middleware(buildRequest("/organizer/login", true));
+
+      expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
+      const redirectUrl = (NextResponse.redirect as ReturnType<typeof vi.fn>)
+        .mock.calls[0][0] as URL;
+      expect(redirectUrl.pathname).toBe("/dashboard");
+    });
   });
 
   describe("public access", () => {
@@ -106,6 +115,27 @@ describe("middleware", () => {
 
     it("allows unauthenticated users to access /", () => {
       middleware(buildRequest("/"));
+
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it("allows unauthenticated users to access /organizer/login", () => {
+      middleware(buildRequest("/organizer/login"));
+
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it("allows unauthenticated users to access /organizer/register", () => {
+      middleware(buildRequest("/organizer/register"));
+
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
+    });
+
+    it("allows unauthenticated users to access /organization/register", () => {
+      middleware(buildRequest("/organization/register"));
 
       expect(NextResponse.next).toHaveBeenCalledTimes(1);
       expect(NextResponse.redirect).not.toHaveBeenCalled();

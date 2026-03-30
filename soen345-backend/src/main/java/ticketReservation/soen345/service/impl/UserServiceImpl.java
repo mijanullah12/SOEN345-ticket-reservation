@@ -28,7 +28,33 @@ public class UserServiceImpl implements UserService {
 
         checkForDuplicates(normalizedEmail, normalizedPhone);
 
-        User user = buildUserFromRequest(request, normalizedEmail, normalizedPhone);
+        User user = buildUserFromRequest(request, normalizedEmail, normalizedPhone, UserRole.CUSTOMER);
+        User savedUser = userRepository.save(user);
+
+        return mapToResponse(savedUser);
+    }
+
+    @Override
+    public RegisterResponse registerOrganizer(RegisterRequest request) {
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        String normalizedPhone = normalizePhone(request.getPhone());
+
+        checkForDuplicates(normalizedEmail, normalizedPhone);
+
+        User user = buildUserFromRequest(request, normalizedEmail, normalizedPhone, UserRole.ORGANIZER);
+        User savedUser = userRepository.save(user);
+
+        return mapToResponse(savedUser);
+    }
+
+    @Override
+    public RegisterResponse registerAdmin(RegisterRequest request) {
+        String normalizedEmail = normalizeEmail(request.getEmail());
+        String normalizedPhone = normalizePhone(request.getPhone());
+
+        checkForDuplicates(normalizedEmail, normalizedPhone);
+
+        User user = buildUserFromRequest(request, normalizedEmail, normalizedPhone, UserRole.ADMIN);
         User savedUser = userRepository.save(user);
 
         return mapToResponse(savedUser);
@@ -64,14 +90,14 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User buildUserFromRequest(RegisterRequest request, String email, String phone) {
+    private User buildUserFromRequest(RegisterRequest request, String email, String phone, UserRole role) {
         return User.builder()
                 .email(email)
                 .phone(phone)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .firstName(request.getFirstName().trim())
                 .lastName(request.getLastName().trim())
-                .role(UserRole.CUSTOMER)
+                .role(role)
                 .status(UserStatus.ACTIVE)
                 .build();
     }

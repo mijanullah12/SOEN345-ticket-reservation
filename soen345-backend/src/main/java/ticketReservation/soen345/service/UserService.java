@@ -8,5 +8,9 @@ public interface UserService {
 
     RegisterResponse registerUser(RegisterRequest request);
 
+    RegisterResponse registerOrganizer(RegisterRequest request);
+
+    RegisterResponse registerAdmin(RegisterRequest request);
+
     UserResponse getUserById(String id);
 }

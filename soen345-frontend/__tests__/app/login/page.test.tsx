@@ -58,6 +58,7 @@ describe("LoginPage", () => {
       body: JSON.stringify({
         identifier: "test@test.com",
         password: "Pass1234",
+        portal: "user",
       }),
     });
     expect(pushMock).toHaveBeenCalledWith("/dashboard");
