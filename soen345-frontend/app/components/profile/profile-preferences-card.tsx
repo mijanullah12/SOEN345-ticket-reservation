@@ -70,13 +70,15 @@ export function ProfilePreferencesCard() {
     return <div className="dash-empty">Could not load profile.</div>;
   }
 
+  const currentUser = user;
+
   function resetFormFromUser() {
-    setFirstName(user.firstName ?? "");
-    setLastName(user.lastName ?? "");
-    setEmail(user.email ?? "");
-    setPhone(user.phone ?? "");
+    setFirstName(currentUser.firstName ?? "");
+    setLastName(currentUser.lastName ?? "");
+    setEmail(currentUser.email ?? "");
+    setPhone(currentUser.phone ?? "");
     setPreferredNotificationChannel(
-      user.preferredNotificationChannel ?? "EMAIL",
+      currentUser.preferredNotificationChannel ?? "EMAIL",
     );
   }
 
@@ -154,7 +156,11 @@ export function ProfilePreferencesCard() {
           </div>
           <div className="form-group profile-field">
             <label htmlFor="profile-role">Role</label>
-            <input id="profile-role" value={user.role ?? "CUSTOMER"} disabled />
+            <input
+              id="profile-role"
+              value={currentUser.role ?? "CUSTOMER"}
+              disabled
+            />
           </div>
           <div className="form-group profile-field">
             <label htmlFor="profile-notification">
@@ -195,7 +201,9 @@ export function ProfilePreferencesCard() {
           </div>
           <div className="profile-display-item">
             <p className="profile-display-label">Role</p>
-            <p className="profile-display-value">{user.role ?? "CUSTOMER"}</p>
+            <p className="profile-display-value">
+              {currentUser.role ?? "CUSTOMER"}
+            </p>
           </div>
           <div className="profile-display-item">
             <p className="profile-display-label">Notification preference</p>
