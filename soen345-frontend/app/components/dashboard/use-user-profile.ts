@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type UserProfile = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email?: string | null;
-  phone?: string | null;
-  role?: string;
-  status?: string;
-};
+import type { UserProfile } from "@/lib/types";
 
 type ProfileState = {
   user: UserProfile | null;

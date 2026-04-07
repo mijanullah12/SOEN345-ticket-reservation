@@ -3,10 +3,12 @@ package ticketReservation.soen345.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import ticketReservation.soen345.domain.NotificationChannel;
 import ticketReservation.soen345.domain.User;
 import ticketReservation.soen345.domain.UserRole;
 import ticketReservation.soen345.domain.UserStatus;
 import ticketReservation.soen345.dto.request.RegisterRequest;
+import ticketReservation.soen345.dto.request.UpdateUserProfileRequest;
 import ticketReservation.soen345.dto.response.RegisterResponse;
 import ticketReservation.soen345.dto.response.UserResponse;
 import ticketReservation.soen345.exception.DuplicateResourceException;
@@ -67,6 +69,49 @@ public class UserServiceImpl implements UserService {
         return mapToUserResponse(user);
     }
 
+    @Override
+    public UserResponse updateNotificationPreference(String userId, NotificationChannel preferredNotificationChannel) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        user.setPreferredNotificationChannel(preferredNotificationChannel);
+        User saved = userRepository.save(user);
+        return mapToUserResponse(saved);
+    }
+
+    @Override
+    public UserResponse updateUserProfile(String userId, UpdateUserProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
+
+        String normalizedEmail = request.getEmail() == null ? user.getEmail() : normalizeEmail(request.getEmail());
+        String normalizedPhone = request.getPhone() == null ? user.getPhone() : normalizePhone(request.getPhone());
+
+        if (normalizedEmail != null && !normalizedEmail.equals(user.getEmail()) && userRepository.existsByEmail(normalizedEmail)) {
+            throw new DuplicateResourceException("User", "email", normalizedEmail);
+        }
+        if (normalizedPhone != null && !normalizedPhone.equals(user.getPhone()) && userRepository.existsByPhone(normalizedPhone)) {
+            throw new DuplicateResourceException("User", "phone", normalizedPhone);
+        }
+
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName().trim());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName().trim());
+        }
+
+        user.setEmail(normalizedEmail);
+        user.setPhone(normalizedPhone);
+
+        if (request.getPreferredNotificationChannel() != null) {
+            user.setPreferredNotificationChannel(request.getPreferredNotificationChannel());
+        }
+
+        User saved = userRepository.save(user);
+        return mapToUserResponse(saved);
+    }
+
     private String normalizeEmail(String email) {
         if (email == null || email.isBlank()) {
             return null;
@@ -122,6 +167,7 @@ public class UserServiceImpl implements UserService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
+                .preferredNotificationChannel(user.getPreferredNotificationChannel())
                 .role(user.getRole())
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())

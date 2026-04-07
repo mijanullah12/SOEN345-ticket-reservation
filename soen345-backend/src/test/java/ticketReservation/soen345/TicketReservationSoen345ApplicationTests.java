@@ -5,6 +5,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ticketReservation.soen345.repository.EventRepository;
+import ticketReservation.soen345.repository.ReservationRepository;
 import ticketReservation.soen345.repository.UserRepository;
 
 @SpringBootTest(properties = {
@@ -29,6 +30,10 @@ class TicketReservationSoen345ApplicationTests {
 	@MockitoBean
 	@SuppressWarnings("unused")
 	private EventRepository eventRepository;
+
+	@MockitoBean
+	@SuppressWarnings("unused")
+	private ReservationRepository reservationRepository;
 
 	@Test
 	void contextLoads() {
