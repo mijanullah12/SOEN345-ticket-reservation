@@ -46,9 +46,9 @@ function formatMoney(value: number | string): string {
 }
 
 const SIDEBAR_ITEMS: { id: SidebarView; label: string }[] = [
-  { id: "live", label: "Live" },
-  { id: "upcoming", label: "Upcoming" },
-  { id: "archive", label: "Archive" },
+  { id: "live", label: "Available Events" },
+  { id: "upcoming", label: "Upcoming Events" },
+  { id: "archive", label: "Reservation History" },
   { id: "tickets", label: "Tickets" },
 ];
 
@@ -63,7 +63,11 @@ export function DashboardClient({
 }) {
   const router = useRouter();
   const [sidebarView, setSidebarView] = useState<SidebarView>("live");
-  const [categoryId, setCategoryId] = useState<EventCategoryId>("movies");
+  const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
+  const [showSearch, setShowSearch] = useState(true);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [keywordQuery, setKeywordQuery] = useState("");
+  const [dateQuery, setDateQuery] = useState("");
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
@@ -87,9 +91,28 @@ export function DashboardClient({
     [sidebarFiltered, category],
   );
 
+  const searchedEvents = useMemo(() => {
+    return categoryEvents.filter((event) => {
+      const locationText = event.location.toLowerCase();
+      const eventText =
+        `${event.name} ${event.description ?? ""}`.toLowerCase();
+      const locationOk = locationQuery
+        ? locationText.includes(locationQuery.toLowerCase())
+        : true;
+      const keywordOk = keywordQuery
+        ? eventText.includes(keywordQuery.toLowerCase())
+        : true;
+      const dateOk = dateQuery
+        ? new Date(event.date).toDateString() ===
+          new Date(`${dateQuery}T00:00:00`).toDateString()
+        : true;
+      return locationOk && keywordOk && dateOk;
+    });
+  }, [categoryEvents, dateQuery, keywordQuery, locationQuery]);
+
   const tickerTrack = useMemo(
-    () => buildTickerItems(events, category),
-    [events, category],
+    () => buildTickerItems(searchedEvents, category),
+    [searchedEvents, category],
   );
 
   const activeReservationByEventId = useMemo(() => {
@@ -102,8 +125,8 @@ export function DashboardClient({
     return map;
   }, [reservations]);
 
-  const featured = categoryEvents[0];
-  const rest = categoryEvents.slice(1, 5);
+  const featured = searchedEvents[0];
+  const rest = searchedEvents.slice(1, 5);
 
   const loadReservations = useCallback(async () => {
     if (!isAuthenticated) {
@@ -177,11 +200,6 @@ export function DashboardClient({
       <aside className="dash-sidebar" aria-label="Main navigation">
         <div className="dash-sidebar-header">
           <p className="dash-brand">{DASHBOARD_BRAND}</p>
-          <p className="dash-sidebar-tagline">
-            <span className="dash-sidebar-tagline-strong">DASHBOARD</span>
-            <span aria-hidden> · </span>
-            <span>EVENT CONTROL</span>
-          </p>
         </div>
         <nav className="dash-sidebar-nav" aria-label="Event views">
           <ul className="dash-nav-list">
@@ -207,23 +225,62 @@ export function DashboardClient({
 
       <div className="dash-main">
         <header className="dash-topbar">
-          <nav className="dash-category-tabs" aria-label="Event categories">
-            {EVENT_CATEGORIES.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className="dash-category-tab"
-                data-active={categoryId === c.id}
-                onClick={() => setCategoryId(c.id)}
-              >
-                {c.label}
-              </button>
-            ))}
-          </nav>
-          <ProfileMenu
-            isAuthenticated={isAuthenticated}
-            onOpenAuthModal={setAuthModal}
-          />
+          <div className="dash-topbar-main">
+            <nav className="dash-category-tabs" aria-label="Event categories">
+              {EVENT_CATEGORIES.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  className="dash-category-tab"
+                  data-active={categoryId === c.id}
+                  onClick={() => setCategoryId(c.id)}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </nav>
+            <ProfileMenu
+              isAuthenticated={isAuthenticated}
+              onOpenAuthModal={setAuthModal}
+            />
+          </div>
+          <div className="dash-search-controls">
+            <button
+              type="button"
+              className="dash-search-toggle"
+              onClick={() => setShowSearch((prev) => !prev)}
+            >
+              {showSearch ? "Hide search filters" : "Show search filters"}
+            </button>
+          </div>
+          {showSearch ? (
+            <section className="dash-searchbar" aria-label="Event search filters">
+              <label className="dash-search-segment">
+                <span>Location</span>
+                <input
+                  value={locationQuery}
+                  onChange={(e) => setLocationQuery(e.target.value)}
+                  placeholder="City or Postal Code"
+                />
+              </label>
+              <label className="dash-search-segment">
+                <span>Dates</span>
+                <input
+                  type="date"
+                  value={dateQuery}
+                  onChange={(e) => setDateQuery(e.target.value)}
+                />
+              </label>
+              <label className="dash-search-segment">
+                <span>Search</span>
+                <input
+                  value={keywordQuery}
+                  onChange={(e) => setKeywordQuery(e.target.value)}
+                  placeholder="Artist, Event or Venue"
+                />
+              </label>
+            </section>
+          ) : null}
         </header>
 
         <div className="dash-ticker" aria-live="polite">
@@ -263,13 +320,13 @@ export function DashboardClient({
             <>
               <CategoryPanels
                 categoryId={categoryId}
-                categoryEvents={categoryEvents}
+                categoryEvents={searchedEvents}
                 featured={featured}
                 rest={rest}
               />
               <ReservePanel
                 isAuthenticated={isAuthenticated}
-                events={categoryEvents}
+                events={searchedEvents}
                 activeReservationByEventId={activeReservationByEventId}
                 loading={reservationsLoading}
                 actionKey={reservationActionKey}
@@ -483,20 +540,121 @@ function CategoryPanels({
     );
   }
 
+  const featureSlides = categoryEvents.slice(0, 5);
+
   switch (categoryId) {
+    case "all":
+      return (
+        <>
+          <FeaturedCarousel
+            title="All Events"
+            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+            events={featureSlides}
+          />
+          <MoviesPanel featured={featured} rest={rest} hints={cat.imageHints} />
+        </>
+      );
     case "movies":
       return (
-        <MoviesPanel featured={featured} rest={rest} hints={cat.imageHints} />
+        <>
+          <FeaturedCarousel
+            title="Movies"
+            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+            events={featureSlides}
+          />
+          <MoviesPanel featured={featured} rest={rest} hints={cat.imageHints} />
+        </>
       );
     case "sports":
-      return <SportsPanel events={categoryEvents} hints={cat.imageHints} />;
+      return (
+        <>
+          <FeaturedCarousel
+            title="Sports"
+            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+            events={featureSlides}
+          />
+          <SportsPanel events={categoryEvents} hints={cat.imageHints} />
+        </>
+      );
     case "concerts":
-      return <ConcertsPanel events={categoryEvents} hints={cat.imageHints} />;
+      return (
+        <>
+          <FeaturedCarousel
+            title="Concerts"
+            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+            events={featureSlides}
+          />
+          <ConcertsPanel events={categoryEvents} hints={cat.imageHints} />
+        </>
+      );
     case "travel":
-      return <TravelPanel featured={featured} hints={cat.imageHints} />;
+      return (
+        <>
+          <FeaturedCarousel
+            title="Travel"
+            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+            events={featureSlides}
+          />
+          <TravelPanel featured={featured} hints={cat.imageHints} />
+        </>
+      );
     default:
       return null;
   }
+}
+
+function FeaturedCarousel({
+  title,
+  images,
+  events,
+}: {
+  title: string;
+  images: string[];
+  events: Event[];
+}) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const slides = events.length > 0 ? events : [];
+
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const id = window.setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % slides.length);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, [slides.length]);
+
+  const activeEvent = slides[activeIndex];
+  const imagePool = images.length > 0 ? images : [""];
+  const imageSrc = imagePool[activeIndex % imagePool.length];
+
+  return (
+    <section
+      className="dash-featured-carousel"
+      aria-label={`${title} features`}
+    >
+      <div className="dash-featured-carousel-image-wrap">
+        <Image
+          src={imageSrc}
+          alt=""
+          fill
+          className="dash-photo"
+          sizes="100vw"
+          priority
+        />
+      </div>
+      <div className="dash-featured-overlay">
+        <h2 className="dash-featured-title">{title}</h2>
+        {activeEvent ? (
+          <p className="dash-featured-meta">
+            {activeEvent.name} · {formatEventStamp(activeEvent.date)} ·{" "}
+            {activeEvent.location}
+          </p>
+        ) : (
+          <p className="dash-featured-meta">Browse featured events</p>
+        )}
+      </div>
+    </section>
+  );
 }
 
 function MoviesPanel({

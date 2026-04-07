@@ -87,16 +87,18 @@ describe("DashboardClient", () => {
       <DashboardClient events={[]} loadError={null} isAuthenticated={true} />,
     );
 
-    expect(screen.getByText("THE KINETIC")).toBeInTheDocument();
+    expect(screen.getByText("Tiqthat")).toBeInTheDocument();
     expect(
       screen.getByRole("navigation", { name: /event views/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /^Live$/i })).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^Upcoming$/i }),
+      screen.getByRole("button", { name: /^Available Events$/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^Archive$/i }),
+      screen.getByRole("button", { name: /^Upcoming Events$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /^Reservation History$/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /^Tickets$/i }),
@@ -105,6 +107,9 @@ describe("DashboardClient", () => {
     const categories = screen.getByRole("navigation", {
       name: /event categories/i,
     });
+    expect(
+      within(categories).getByRole("button", { name: /^All$/i }),
+    ).toBeInTheDocument();
     expect(
       within(categories).getByRole("button", { name: /^Movies$/i }),
     ).toBeInTheDocument();
@@ -116,6 +121,13 @@ describe("DashboardClient", () => {
     ).toBeInTheDocument();
     expect(
       within(categories).getByRole("button", { name: /^Travel$/i }),
+    ).toBeInTheDocument();
+
+    expect(
+      screen.getByPlaceholderText(/city or postal code/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText(/artist, event or venue/i),
     ).toBeInTheDocument();
 
     expect(
@@ -150,7 +162,7 @@ describe("DashboardClient", () => {
       screen.getByRole("heading", { name: /^tickets$/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/reserved tickets and confirmations/i),
+      screen.getByText(/please log in to view and manage your reservations/i),
     ).toBeInTheDocument();
   });
 
@@ -172,7 +184,7 @@ describe("DashboardClient", () => {
     );
 
     expect(
-      screen.getByRole("heading", { name: /^movies$/i }),
+      screen.getByRole("heading", { name: /^all events$/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /indie film festival/i }),
@@ -231,7 +243,9 @@ describe("DashboardClient", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: /^Upcoming$/i }));
+    await user.click(
+      screen.getByRole("button", { name: /^Upcoming Events$/i }),
+    );
 
     expect(
       screen.getByRole("heading", { name: /summer film premiere/i }),
@@ -264,5 +278,96 @@ describe("DashboardClient", () => {
 
     const tickerHits = screen.getAllByText(/CONCERTS:.*Jazz Night/i);
     expect(tickerHits.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("filters events using location and keyword search fields", async () => {
+    const user = userEvent.setup();
+    const events: Event[] = [
+      makeEvent({
+        id: "l1",
+        name: "Downtown Concert",
+        description: "live concert",
+        location: "Montreal",
+      }),
+      makeEvent({
+        id: "l2",
+        name: "Cinema Evening",
+        description: "movie special",
+        location: "Toronto",
+      }),
+    ];
+
+    render(
+      <DashboardClient
+        events={events}
+        loadError={null}
+        isAuthenticated={true}
+      />,
+    );
+
+    await user.type(
+      screen.getByPlaceholderText(/city or postal code/i),
+      "mont",
+    );
+    await user.type(
+      screen.getByPlaceholderText(/artist, event or venue/i),
+      "concert",
+    );
+
+    expect(screen.getAllByText(/downtown concert/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/cinema evening/i)).not.toBeInTheDocument();
+  });
+
+  it("applies filtering by date only", async () => {
+    const user = userEvent.setup();
+    const today = new Date();
+    today.setHours(18, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const dateValue = `${today.getFullYear()}-${String(
+      today.getMonth() + 1,
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+
+    const events: Event[] = [
+      makeEvent({
+        id: "d1",
+        name: "Today Show",
+        date: today.toISOString(),
+        location: "Montreal",
+      }),
+      makeEvent({
+        id: "d2",
+        name: "Tomorrow Show",
+        date: tomorrow.toISOString(),
+        location: "Montreal",
+      }),
+    ];
+
+    render(
+      <DashboardClient
+        events={events}
+        loadError={null}
+        isAuthenticated={true}
+      />,
+    );
+
+    await user.type(screen.getByLabelText(/dates/i), dateValue);
+    expect(screen.getAllByText(/today show/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/tomorrow show/i)).not.toBeInTheDocument();
+  });
+
+  it("allows hiding and unhiding the search bar", async () => {
+    const user = userEvent.setup();
+    render(
+      <DashboardClient events={[]} loadError={null} isAuthenticated={true} />,
+    );
+
+    expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /hide search filters/i }));
+    expect(
+      screen.queryByLabelText(/event search filters/i),
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /show search filters/i }));
+    expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
   });
 });

@@ -110,6 +110,7 @@ describe("filterBySidebar", () => {
 
 describe("eventsForCategory", () => {
   const movies = categoryById("movies");
+  const all = categoryById("all");
 
   it("matches keywords in name or description (case insensitive)", () => {
     const events: Event[] = [
@@ -124,6 +125,16 @@ describe("eventsForCategory", () => {
 
     const out = eventsForCategory(events, movies);
     expect(out.map((e) => e.id).sort()).toEqual(["1", "3"]);
+  });
+
+  it("returns all events for the all category", () => {
+    const events: Event[] = [
+      makeEvent({ id: "1", name: "Blockbuster Movie Night" }),
+      makeEvent({ id: "2", name: "Championship Match" }),
+    ];
+
+    const out = eventsForCategory(events, all);
+    expect(out).toHaveLength(2);
   });
 });
 
