@@ -254,7 +254,10 @@ export function DashboardClient({
             </button>
           </div>
           {showSearch ? (
-            <section className="dash-searchbar" aria-label="Event search filters">
+            <section
+              className="dash-searchbar"
+              aria-label="Event search filters"
+            >
               <label className="dash-search-segment">
                 <span>Location</span>
                 <input

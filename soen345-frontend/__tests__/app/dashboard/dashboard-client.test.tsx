@@ -363,11 +363,15 @@ describe("DashboardClient", () => {
     );
 
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /hide search filters/i }));
+    await user.click(
+      screen.getByRole("button", { name: /hide search filters/i }),
+    );
     expect(
       screen.queryByLabelText(/event search filters/i),
     ).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /show search filters/i }));
+    await user.click(
+      screen.getByRole("button", { name: /show search filters/i }),
+    );
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
   });
 });
