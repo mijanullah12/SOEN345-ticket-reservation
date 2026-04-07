@@ -5,8 +5,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import ticketReservation.soen345.repository.EventRepository;
+import ticketReservation.soen345.repository.PaymentRepository;
 import ticketReservation.soen345.repository.ReservationRepository;
 import ticketReservation.soen345.repository.UserRepository;
+import ticketReservation.soen345.service.EmailSender;
+import ticketReservation.soen345.service.PaymentGateway;
+import ticketReservation.soen345.service.SmsSender;
 
 @SpringBootTest(properties = {
 		"spring.autoconfigure.exclude=" +
@@ -34,6 +38,22 @@ class TicketReservationSoen345ApplicationTests {
 	@MockitoBean
 	@SuppressWarnings("unused")
 	private ReservationRepository reservationRepository;
+
+	@MockitoBean
+	@SuppressWarnings("unused")
+	private PaymentRepository paymentRepository;
+
+	@MockitoBean
+	@SuppressWarnings("unused")
+	private PaymentGateway paymentGateway;
+
+	@MockitoBean
+	@SuppressWarnings("unused")
+	private EmailSender emailSender;
+
+	@MockitoBean
+	@SuppressWarnings("unused")
+	private SmsSender smsSender;
 
 	@Test
 	void contextLoads() {
