@@ -19,6 +19,8 @@ export function ProfileMenu({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const { user } = useUserProfile(isAuthenticated);
+  const canAccessOrganizerDashboard =
+    user?.role === "ORGANIZER" || user?.role === "ADMIN";
 
   const firstName = user?.firstName?.trim() ?? "";
   const lastName = user?.lastName?.trim() ?? "";
@@ -61,9 +63,11 @@ export function ProfileMenu({
         <div className="dash-profile-menu" role="menu">
           {isAuthenticated ? (
             <>
-              <Link href="/organizer/dashboard" className="dash-profile-item">
-                Organizer dashboard
-              </Link>
+              {canAccessOrganizerDashboard ? (
+                <Link href="/organizer/dashboard" className="dash-profile-item">
+                  Organizer dashboard
+                </Link>
+              ) : null}
               <Link href="/profile" className="dash-profile-item">
                 Profile
               </Link>

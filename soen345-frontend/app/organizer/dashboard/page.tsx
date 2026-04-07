@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { OrganizerDashboardClient } from "@/app/components/organizer/organizer-dashboard-client";
+import { BACKEND_URL } from "@/lib/backend";
 import { fetchEventsWithAuth } from "@/lib/fetch-events";
 
 export default async function OrganizerDashboardPage() {
@@ -9,6 +10,26 @@ export default async function OrganizerDashboardPage() {
 
   if (!token) {
     redirect("/organizer/login?redirect=/organizer/dashboard");
+  }
+
+  const profileRes = await fetch(`${BACKEND_URL}/api/v1/users/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!profileRes.ok) {
+    redirect("/dashboard");
+  }
+
+  const profile = (await profileRes.json()) as { role?: string };
+  const canAccessOrganizerDashboard =
+    profile.role === "ORGANIZER" || profile.role === "ADMIN";
+
+  if (!canAccessOrganizerDashboard) {
+    redirect("/dashboard");
   }
 
   const result = await fetchEventsWithAuth(token);

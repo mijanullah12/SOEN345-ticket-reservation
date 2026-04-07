@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ticketReservation.soen345.domain.NotificationChannel;
 import ticketReservation.soen345.domain.UserRole;
 import ticketReservation.soen345.domain.UserStatus;
 
@@ -20,6 +21,7 @@ public class UserResponse {
     private String lastName;
     private String email;
     private String phone;
+    private NotificationChannel preferredNotificationChannel;
     private UserRole role;
     private UserStatus status;
     private Instant createdAt;

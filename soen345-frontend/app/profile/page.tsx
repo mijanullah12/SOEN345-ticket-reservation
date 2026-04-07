@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { ProfilePreferencesCard } from "@/app/components/profile/profile-preferences-card";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
@@ -11,10 +12,7 @@ export default async function ProfilePage() {
         <div className="dash-content">
           <h1 className="dash-section-title">Profile</h1>
           {token ? (
-            <div className="dash-empty">
-              Profile details will appear here once user data is exposed by the
-              API.
-            </div>
+            <ProfilePreferencesCard />
           ) : (
             <div className="dash-empty">
               Please log in to view your profile.{" "}

@@ -15,40 +15,24 @@ import java.time.Instant;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")
-public class User {
+@Document(collection = "reservations")
+public class Reservation {
 
     @Id
     private String id;
 
-    private String email;
+    private String userId;
 
-    private String phone;
-
-    private String passwordHash;
-
-    private String firstName;
-
-    private String lastName;
-
-    private PaymentInfo paymentInfo;
+    private String eventId;
 
     @Builder.Default
-    private UserRole role = UserRole.CUSTOMER;
+    private ReservationStatus status = ReservationStatus.ACTIVE;
 
-    @Builder.Default
-    private UserStatus status = UserStatus.ACTIVE;
-
-    @Builder.Default
-    private NotificationChannel preferredNotificationChannel = NotificationChannel.EMAIL;
+    private Instant cancelledAt;
 
     @CreatedDate
     private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    public boolean hasPermission(Permission permission) {
-        return role != null && role.hasPermission(permission);
-    }
 }
