@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api } from "@/lib/api";
 import {
   DASHBOARD_BRAND,
   EVENT_CATEGORIES,
@@ -15,7 +16,7 @@ import {
   filterBySidebar,
   type SidebarView,
 } from "@/lib/dashboard-filters";
-import type { Event } from "@/lib/types";
+import type { Event, Reservation } from "@/lib/types";
 import { LogoutButton } from "../../dashboard/logout-button";
 import { AuthModal, type AuthModalMode } from "./auth-modal";
 import { ProfileMenu } from "./profile-menu";
@@ -64,6 +65,15 @@ export function DashboardClient({
   const [sidebarView, setSidebarView] = useState<SidebarView>("live");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("movies");
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [reservationsLoading, setReservationsLoading] = useState(false);
+  const [reservationError, setReservationError] = useState<string | null>(null);
+  const [reservationMessage, setReservationMessage] = useState<string | null>(
+    null,
+  );
+  const [reservationActionKey, setReservationActionKey] = useState<
+    string | null
+  >(null);
 
   const category = useMemo(() => categoryById(categoryId), [categoryId]);
 
@@ -82,8 +92,85 @@ export function DashboardClient({
     [events, category],
   );
 
+  const activeReservationByEventId = useMemo(() => {
+    const map = new Map<string, Reservation>();
+    for (const reservation of reservations) {
+      if (reservation.status === "ACTIVE") {
+        map.set(reservation.eventId, reservation);
+      }
+    }
+    return map;
+  }, [reservations]);
+
   const featured = categoryEvents[0];
   const rest = categoryEvents.slice(1, 5);
+
+  const loadReservations = useCallback(async () => {
+    if (!isAuthenticated) {
+      setReservations([]);
+      return;
+    }
+    setReservationsLoading(true);
+    try {
+      const data = await api<Reservation[]>("/api/reservations", {
+        method: "GET",
+      });
+      setReservations(data);
+      setReservationError(null);
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setReservationError(e.message ?? "Could not load reservations.");
+    } finally {
+      setReservationsLoading(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    void loadReservations();
+  }, [loadReservations]);
+
+  async function reserveEvent(eventId: string) {
+    if (!isAuthenticated) {
+      setAuthModal("login");
+      return;
+    }
+    setReservationMessage(null);
+    setReservationError(null);
+    setReservationActionKey(`reserve-${eventId}`);
+    try {
+      await api<Reservation>("/api/reservations", {
+        method: "POST",
+        body: JSON.stringify({ eventId }),
+      });
+      setReservationMessage("Reservation confirmed.");
+      await loadReservations();
+      router.refresh();
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setReservationError(e.message ?? "Could not reserve ticket.");
+    } finally {
+      setReservationActionKey(null);
+    }
+  }
+
+  async function cancelReservation(reservationId: string) {
+    setReservationMessage(null);
+    setReservationError(null);
+    setReservationActionKey(`cancel-${reservationId}`);
+    try {
+      await api<Reservation>(`/api/reservations/${reservationId}/cancel`, {
+        method: "PATCH",
+      });
+      setReservationMessage("Reservation cancelled.");
+      await loadReservations();
+      router.refresh();
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setReservationError(e.message ?? "Could not cancel reservation.");
+    } finally {
+      setReservationActionKey(null);
+    }
+  }
 
   return (
     <div className="dash-layout">
@@ -155,32 +242,42 @@ export function DashboardClient({
             Could not load events from the server. ({loadError})
           </p>
         ) : null}
+        {reservationError ? (
+          <p className="dash-error-banner">{reservationError}</p>
+        ) : null}
+        {reservationMessage ? (
+          <p className="dash-success-banner">{reservationMessage}</p>
+        ) : null}
 
         <div className="dash-content">
           {sidebarView === "tickets" ? (
-            <div className="dash-tickets-placeholder">
-              <h2 className="dash-section-title">Tickets</h2>
-              <p>
-                Your reserved tickets and confirmations will appear here once
-                booking is wired to the API.
-              </p>
-              {!isAuthenticated ? (
-                <button
-                  type="button"
-                  className="dash-btn-solid"
-                  onClick={() => setAuthModal("login")}
-                >
-                  Log in to view tickets
-                </button>
-              ) : null}
-            </div>
-          ) : (
-            <CategoryPanels
-              categoryId={categoryId}
-              categoryEvents={categoryEvents}
-              featured={featured}
-              rest={rest}
+            <TicketsPanel
+              isAuthenticated={isAuthenticated}
+              reservations={reservations}
+              loading={reservationsLoading}
+              actionKey={reservationActionKey}
+              onCancelReservation={cancelReservation}
+              onPromptLogin={() => setAuthModal("login")}
             />
+          ) : (
+            <>
+              <CategoryPanels
+                categoryId={categoryId}
+                categoryEvents={categoryEvents}
+                featured={featured}
+                rest={rest}
+              />
+              <ReservePanel
+                isAuthenticated={isAuthenticated}
+                events={categoryEvents}
+                activeReservationByEventId={activeReservationByEventId}
+                loading={reservationsLoading}
+                actionKey={reservationActionKey}
+                onReserve={reserveEvent}
+                onCancelReservation={cancelReservation}
+                onPromptLogin={() => setAuthModal("login")}
+              />
+            </>
           )}
         </div>
       </div>
@@ -195,6 +292,168 @@ export function DashboardClient({
         }}
       />
     </div>
+  );
+}
+
+function ReservePanel({
+  isAuthenticated,
+  events,
+  activeReservationByEventId,
+  loading,
+  actionKey,
+  onReserve,
+  onCancelReservation,
+  onPromptLogin,
+}: {
+  isAuthenticated: boolean;
+  events: Event[];
+  activeReservationByEventId: Map<string, Reservation>;
+  loading: boolean;
+  actionKey: string | null;
+  onReserve: (eventId: string) => void;
+  onCancelReservation: (reservationId: string) => void;
+  onPromptLogin: () => void;
+}) {
+  const featured = events.slice(0, 4);
+  if (featured.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="dash-reserve-panel">
+      <div className="dash-reserve-head">
+        <h3 className="dash-reserve-title">Reserve Tickets</h3>
+        {!isAuthenticated ? (
+          <button
+            type="button"
+            className="dash-btn-solid"
+            onClick={onPromptLogin}
+          >
+            Log in to reserve
+          </button>
+        ) : null}
+      </div>
+      <ul className="dash-reserve-list">
+        {featured.map((event) => {
+          const activeReservation = activeReservationByEventId.get(event.id);
+          const isReserving = actionKey === `reserve-${event.id}`;
+          const isCancelling =
+            activeReservation && actionKey === `cancel-${activeReservation.id}`;
+          return (
+            <li key={event.id} className="dash-reserve-item">
+              <div>
+                <p className="dash-reserve-item-name">{event.name}</p>
+                <p className="dash-reserve-item-meta">
+                  {new Date(event.date).toLocaleString("en-US", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}{" "}
+                  · {event.location}
+                </p>
+              </div>
+              {activeReservation ? (
+                <button
+                  type="button"
+                  className="dash-btn-solid dash-reserve-cancel"
+                  onClick={() => onCancelReservation(activeReservation.id)}
+                  disabled={Boolean(isCancelling)}
+                >
+                  {isCancelling ? "Cancelling..." : "Cancel reservation"}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="dash-btn-solid"
+                  onClick={() => onReserve(event.id)}
+                  disabled={Boolean(isReserving || loading)}
+                >
+                  {isReserving ? "Reserving..." : "Reserve"}
+                </button>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+function TicketsPanel({
+  isAuthenticated,
+  reservations,
+  loading,
+  actionKey,
+  onCancelReservation,
+  onPromptLogin,
+}: {
+  isAuthenticated: boolean;
+  reservations: Reservation[];
+  loading: boolean;
+  actionKey: string | null;
+  onCancelReservation: (reservationId: string) => void;
+  onPromptLogin: () => void;
+}) {
+  if (!isAuthenticated) {
+    return (
+      <div className="dash-tickets-placeholder">
+        <h2 className="dash-section-title">Tickets</h2>
+        <p>Please log in to view and manage your reservations.</p>
+        <button
+          type="button"
+          className="dash-btn-solid"
+          onClick={onPromptLogin}
+        >
+          Log in
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="dash-tickets-panel">
+      <h2 className="dash-section-title">Tickets</h2>
+      {loading ? <p className="dash-empty">Loading reservations...</p> : null}
+      {!loading && reservations.length === 0 ? (
+        <p className="dash-empty">No reservations yet.</p>
+      ) : null}
+      {reservations.length > 0 ? (
+        <ul className="dash-tickets-list">
+          {reservations.map((reservation) => {
+            const isCancelling = actionKey === `cancel-${reservation.id}`;
+            return (
+              <li key={reservation.id} className="dash-tickets-item">
+                <div>
+                  <p className="dash-tickets-item-name">
+                    {reservation.eventName}
+                  </p>
+                  <p className="dash-tickets-item-meta">
+                    {new Date(reservation.eventDate).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}{" "}
+                    · {reservation.eventLocation}
+                  </p>
+                </div>
+                {reservation.status === "ACTIVE" ? (
+                  <button
+                    type="button"
+                    className="dash-btn-solid dash-reserve-cancel"
+                    onClick={() => onCancelReservation(reservation.id)}
+                    disabled={Boolean(isCancelling)}
+                  >
+                    {isCancelling ? "Cancelling..." : "Cancel"}
+                  </button>
+                ) : (
+                  <span className="dash-ticket-status-cancelled">
+                    Cancelled
+                  </span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
   );
 }
 

@@ -1015,6 +1015,15 @@ body {
   border: 1px solid #fecaca;
 }
 
+.dash-success-banner {
+  background: #ecfdf5;
+  color: #065f46;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  margin: 0 1.25rem;
+  border: 1px solid #6ee7b7;
+}
+
 .dash-empty {
   padding: 2rem;
   text-align: center;
@@ -1053,6 +1062,212 @@ body {
   text-align: center;
   color: var(--dash-text-muted);
   line-height: 1.6;
+}
+
+.dash-reserve-panel,
+.dash-tickets-panel {
+  margin-top: 1.25rem;
+  border: 1px solid var(--dash-border);
+  padding: 1rem;
+  background: var(--dash-surface);
+}
+
+.dash-reserve-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.dash-reserve-title {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dash-reserve-list,
+.dash-tickets-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dash-reserve-item,
+.dash-tickets-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  padding: 0.7rem 0.75rem;
+}
+
+.dash-reserve-item-name,
+.dash-tickets-item-name {
+  margin: 0;
+  font-weight: 700;
+}
+
+.dash-reserve-item-meta,
+.dash-tickets-item-meta {
+  margin: 0.22rem 0 0;
+  color: var(--dash-text-muted);
+  font-size: 0.8rem;
+}
+
+.dash-reserve-cancel {
+  background: transparent;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.dash-reserve-cancel:hover:not(:disabled) {
+  opacity: 1;
+  background: #fee2e2;
+}
+
+.dash-ticket-status-cancelled {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  background: #fee2e2;
+  padding: 0.3rem 0.45rem;
+}
+
+.profile-card-neo {
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface);
+  padding: 1.15rem;
+  max-width: 64rem;
+}
+
+.profile-top-actions {
+  margin-bottom: 0.9rem;
+}
+
+.profile-back-btn {
+  margin: 0;
+  text-decoration: none;
+  background: var(--dash-surface-muted);
+  color: var(--dash-text);
+  border: 1px solid var(--dash-border);
+}
+
+.profile-card-head {
+  margin-bottom: 0.95rem;
+}
+
+.profile-card-title {
+  margin: 0;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.profile-card-subtitle {
+  margin: 0.4rem 0 0;
+  color: var(--dash-text-muted);
+}
+
+.profile-grid {
+  display: grid;
+  column-gap: 0.95rem;
+  row-gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-display-grid {
+  display: grid;
+  column-gap: 0.95rem;
+  row-gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-display-item {
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  border-radius: var(--dash-radius);
+  padding: 0.62rem 0.7rem;
+}
+
+.profile-display-label {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  font-weight: 700;
+  color: var(--dash-text-muted);
+}
+
+.profile-display-value {
+  margin: 0.3rem 0 0;
+  font-weight: 600;
+}
+
+.profile-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.profile-field input,
+.profile-field select {
+  width: 100%;
+  min-height: 2.55rem;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  color: var(--dash-text);
+  padding: 0.58rem 0.65rem;
+  border-radius: var(--dash-radius);
+}
+
+.profile-field select {
+  appearance: auto;
+}
+
+.profile-field-full {
+  grid-column: 1 / -1;
+}
+
+.profile-save-btn {
+  margin-top: 0;
+}
+
+.profile-action-row {
+  margin-top: 1rem;
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.profile-cancel-btn {
+  min-height: 2.5rem;
+}
+
+@media (width <= 900px) {
+  .profile-grid,
+  .profile-display-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profile-feedback-ok {
+  margin-top: 0.8rem;
+  color: #065f46;
+  font-size: 0.86rem;
+}
+
+.profile-feedback-error {
+  margin-top: 0.8rem;
+  color: #991b1b;
+  font-size: 0.86rem;
 }
 
 .dash-auth-modal {

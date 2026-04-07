@@ -5,6 +5,7 @@ export interface UserInfo {
   email: string;
   phone: string;
   role: string;
+  preferredNotificationChannel?: NotificationChannel;
 }
 
 export interface LoginResponse {
@@ -58,4 +59,31 @@ export interface EventWritePayload {
   location: string;
   capacity: number;
   ticketPrice: number;
+}
+
+export type NotificationChannel = "EMAIL" | "SMS";
+
+export interface Reservation {
+  id: string;
+  userId: string;
+  eventId: string;
+  eventName: string;
+  eventDate: string;
+  eventLocation: string;
+  eventTicketPrice: number;
+  status: "ACTIVE" | "CANCELLED";
+  reservedAt: string;
+  cancelledAt?: string | null;
+  updatedAt?: string | null;
+}
+
+export interface UserProfile {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email?: string | null;
+  phone?: string | null;
+  role?: string;
+  status?: string;
+  preferredNotificationChannel?: NotificationChannel;
 }
