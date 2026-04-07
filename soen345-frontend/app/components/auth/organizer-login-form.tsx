@@ -13,7 +13,7 @@ type OrganizerLoginFormProps = {
 };
 
 export function OrganizerLoginForm({
-  redirect = "/organization/register",
+  redirect = "/organizer/dashboard",
   onSuccess,
   onSwitchToOrgRegister,
   useModalLinks = false,
@@ -52,7 +52,7 @@ export function OrganizerLoginForm({
     <div className="auth-card">
       <h1 className="auth-title">Organizer Sign In</h1>
       <p className="auth-subtitle">
-        Sign in with an organizer-enabled account to create organizer users.
+        Sign in with an organizer-enabled account to manage events.
       </p>
 
       {error && <div className="auth-error">{error}</div>}

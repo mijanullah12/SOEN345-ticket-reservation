@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 import ticketReservation.soen345.domain.Permission;
 import ticketReservation.soen345.dto.request.RegisterRequest;
 import ticketReservation.soen345.dto.response.RegisterResponse;
@@ -33,6 +34,13 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable String id) {
         UserResponse user = userService.getUserById(id);
+        return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
+        String userId = authentication.getName();
+        UserResponse user = userService.getUserById(userId);
         return ResponseEntity.ok(user);
     }
 }

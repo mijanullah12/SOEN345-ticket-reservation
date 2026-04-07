@@ -50,3 +50,12 @@ export interface Event {
   createdAt?: string | null;
   updatedAt?: string | null;
 }
+
+export interface EventWritePayload {
+  name: string;
+  description?: string;
+  date: string;
+  location: string;
+  capacity: number;
+  ticketPrice: number;
+}

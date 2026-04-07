@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { LogoutButton } from "../../dashboard/logout-button";
+import { useUserProfile } from "./use-user-profile";
 
 type MenuMode = "login" | "signup" | "orgLogin" | "orgSignup";
 
@@ -17,9 +18,22 @@ export function ProfileMenu({
 }: ProfileMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const { user } = useUserProfile(isAuthenticated);
 
-  const profileLabel = isAuthenticated ? "You" : "Guest";
-  const profileInitial = profileLabel.charAt(0).toUpperCase();
+  const firstName = user?.firstName?.trim() ?? "";
+  const lastName = user?.lastName?.trim() ?? "";
+  const hasName = Boolean(firstName) && Boolean(lastName) && isAuthenticated;
+
+  const profileLabel = hasName
+    ? `${firstName} ${lastName}`
+    : isAuthenticated
+      ? "You"
+      : "Guest";
+
+  const profileInitial = hasName
+    ? `${firstName.charAt(0)}${lastName.charAt(0)}`
+    : profileLabel.charAt(0);
+  const profileInitialUpper = profileInitial.toUpperCase();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -41,12 +55,15 @@ export function ProfileMenu({
         aria-label="Account menu"
         onClick={() => setMenuOpen((prev) => !prev)}
       >
-        <span className="dash-profile-initial">{profileInitial}</span>
+        <span className="dash-profile-initial">{profileInitialUpper}</span>
       </button>
       {menuOpen ? (
         <div className="dash-profile-menu" role="menu">
           {isAuthenticated ? (
             <>
+              <Link href="/organizer/dashboard" className="dash-profile-item">
+                Organizer dashboard
+              </Link>
               <Link href="/profile" className="dash-profile-item">
                 Profile
               </Link>
