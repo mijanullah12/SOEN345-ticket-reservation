@@ -47,6 +47,9 @@ export function ProfileMenu({
         <div className="dash-profile-menu" role="menu">
           {isAuthenticated ? (
             <>
+              <Link href="/organizer/dashboard" className="dash-profile-item">
+                Organizer dashboard
+              </Link>
               <Link href="/profile" className="dash-profile-item">
                 Profile
               </Link>
