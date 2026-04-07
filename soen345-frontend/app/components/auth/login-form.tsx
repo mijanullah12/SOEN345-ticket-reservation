@@ -1,14 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { api } from "@/lib/api";
 
-function LoginForm() {
+type LoginFormProps = {
+  redirect?: string;
+  onSuccess?: () => void;
+  onSwitchToRegister?: () => void;
+  useModalLinks?: boolean;
+  showOrganizerLinks?: boolean;
+};
+
+export function LoginForm({
+  redirect = "/dashboard",
+  onSuccess,
+  onSwitchToRegister,
+  useModalLinks = false,
+  showOrganizerLinks = true,
+}: LoginFormProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirect = searchParams.get("redirect") ?? "/dashboard";
 
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -25,7 +37,11 @@ function LoginForm() {
         method: "POST",
         body: JSON.stringify({ identifier, password, portal: "user" }),
       });
-      router.push(redirect);
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.push(redirect);
+      }
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
       setError(apiErr.message ?? "Login failed. Please try again.");
@@ -61,7 +77,7 @@ function LoginForm() {
           <input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="********"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -69,31 +85,37 @@ function LoginForm() {
         </div>
 
         <button type="submit" className="auth-btn" disabled={loading}>
-          {loading ? "Signing in…" : "Sign In"}
+          {loading ? "Signing in..." : "Sign In"}
         </button>
       </form>
 
       <p className="auth-footer">
-        Don&apos;t have an account? <Link href="/register">Create one</Link>
+        Don't have an account?{" "}
+        {useModalLinks ? (
+          <button
+            type="button"
+            className="auth-link-btn"
+            onClick={onSwitchToRegister}
+          >
+            Create one
+          </button>
+        ) : (
+          <Link href="/dashboard">Create one</Link>
+        )}
       </p>
-      <p className="auth-footer">
-        Organizer access?{" "}
-        <Link href="/organizer/login">Login as organizer</Link>
-      </p>
-      <p className="auth-footer">
-        Need to create organizer accounts?{" "}
-        <Link href="/organization/register">Create organizer account</Link>
-      </p>
-    </div>
-  );
-}
 
-export default function LoginPage() {
-  return (
-    <main className="auth-container">
-      <Suspense>
-        <LoginForm />
-      </Suspense>
-    </main>
+      {showOrganizerLinks ? (
+        <>
+          <p className="auth-footer">
+            Organizer access?{" "}
+            <Link href="/organizer/login">Login as organizer</Link>
+          </p>
+          <p className="auth-footer">
+            Need to create organizer accounts?{" "}
+            <Link href="/organization/register">Create organizer account</Link>
+          </p>
+        </>
+      ) : null}
+    </div>
   );
 }

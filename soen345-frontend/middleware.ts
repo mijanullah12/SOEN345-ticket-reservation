@@ -1,8 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const PROTECTED_PATHS = ["/dashboard"];
-const AUTH_PAGES = ["/login", "/register", "/organizer/login", "/"];
+const PROTECTED_PATHS: string[] = [];
+const AUTH_PAGES = ["/organizer/login", "/"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -31,8 +31,6 @@ export const config = {
   matcher: [
     "/",
     "/dashboard/:path*",
-    "/login",
-    "/register",
     "/organizer/login",
     "/organizer/register",
     "/organization/register",

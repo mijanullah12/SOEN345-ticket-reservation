@@ -385,10 +385,13 @@ class EventControllerTest {
         }
 
         @Test
-        @DisplayName("Should return 403 when unauthenticated")
-        void getAvailableEvents_Unauthenticated_Returns403() throws Exception {
+        @DisplayName("Should return events when unauthenticated")
+        void getAvailableEvents_Unauthenticated_Returns200() throws Exception {
+            when(eventService.getAvailableEvents()).thenReturn(List.of());
+
             mockMvc.perform(get(BASE_URL))
-                    .andExpect(status().isForbidden());
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(0));
         }
     }
 

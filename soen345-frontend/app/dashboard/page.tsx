@@ -1,25 +1,30 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { fetchEventsWithAuth } from "@/lib/fetch-events";
-import { DashboardClient } from "./components/dashboard-client";
+import { DashboardClient } from "@/app/components/dashboard/dashboard-client";
+import { fetchEventsPublic, fetchEventsWithAuth } from "@/lib/fetch-events";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("auth_token")?.value;
 
-  if (!token) {
-    redirect("/login");
-  }
+  const result = token
+    ? await fetchEventsWithAuth(token)
+    : await fetchEventsPublic();
 
-  const result = await fetchEventsWithAuth(token);
+  const unauthorized = !result.ok && result.reason === "unauthorized";
+  const finalResult = unauthorized ? await fetchEventsPublic() : result;
+  const isAuthenticated = Boolean(token) && !unauthorized;
 
-  if (!result.ok && result.reason === "unauthorized") {
-    redirect("/login");
-  }
-
-  const events = result.ok ? result.events : [];
+  const events = finalResult.ok ? finalResult.events : [];
   const loadError =
-    !result.ok && result.reason === "error" ? result.message : null;
+    !finalResult.ok && finalResult.reason === "error"
+      ? finalResult.message
+      : null;
 
-  return <DashboardClient events={events} loadError={loadError} />;
+  return (
+    <DashboardClient
+      events={events}
+      loadError={loadError}
+      isAuthenticated={isAuthenticated}
+    />
+  );
 }
