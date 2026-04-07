@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import LoginPage from "@/app/login/page";
+import { LoginForm } from "@/app/components/auth/login-form";
 
 const pushMock = vi.fn();
 
@@ -22,9 +22,9 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("LoginPage", () => {
+describe("LoginForm", () => {
   it("renders the sign-in heading and form fields", () => {
-    render(<LoginPage />);
+    render(<LoginForm />);
 
     expect(
       screen.getByRole("heading", { name: /sign in/i }),
@@ -37,17 +37,17 @@ describe("LoginPage", () => {
   });
 
   it("has a link to the register page", () => {
-    render(<LoginPage />);
+    render(<LoginForm />);
 
     const link = screen.getByRole("link", { name: /create one/i });
-    expect(link).toHaveAttribute("href", "/register");
+    expect(link).toHaveAttribute("href", "/dashboard");
   });
 
   it("redirects to /dashboard on successful login", async () => {
     apiMock.mockResolvedValueOnce({ user: { id: "1" } });
     const user = userEvent.setup();
 
-    render(<LoginPage />);
+    render(<LoginForm />);
 
     await user.type(screen.getByLabelText(/email or phone/i), "test@test.com");
     await user.type(screen.getByLabelText(/password/i), "Pass1234");
@@ -68,7 +68,7 @@ describe("LoginPage", () => {
     apiMock.mockRejectedValueOnce({ message: "Invalid credentials" });
     const user = userEvent.setup();
 
-    render(<LoginPage />);
+    render(<LoginForm />);
 
     await user.type(screen.getByLabelText(/email or phone/i), "bad@test.com");
     await user.type(screen.getByLabelText(/password/i), "wrong");
@@ -82,7 +82,7 @@ describe("LoginPage", () => {
     apiMock.mockRejectedValueOnce({});
     const user = userEvent.setup();
 
-    render(<LoginPage />);
+    render(<LoginForm />);
 
     await user.type(screen.getByLabelText(/email or phone/i), "x@x.com");
     await user.type(screen.getByLabelText(/password/i), "anything");

@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { OrganizerDashboardClient } from "@/app/components/organizer/organizer-dashboard-client";
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
+}));
+
 vi.mock("@/lib/api", () => ({
   api: vi.fn(),
 }));

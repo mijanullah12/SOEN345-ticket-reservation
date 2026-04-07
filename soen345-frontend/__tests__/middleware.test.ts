@@ -30,26 +30,18 @@ beforeEach(() => {
 
 describe("middleware", () => {
   describe("protected routes", () => {
-    it("redirects unauthenticated users from /dashboard to /login", () => {
+    it("allows unauthenticated users to access /dashboard", () => {
       middleware(buildRequest("/dashboard"));
 
-      expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
-      const redirectUrl = (NextResponse.redirect as ReturnType<typeof vi.fn>)
-        .mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe("/login");
-      expect(redirectUrl.searchParams.get("redirect")).toBe("/dashboard");
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
 
-    it("redirects unauthenticated users from /dashboard/settings to /login", () => {
+    it("allows unauthenticated users to access /dashboard/settings", () => {
       middleware(buildRequest("/dashboard/settings"));
 
-      expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
-      const redirectUrl = (NextResponse.redirect as ReturnType<typeof vi.fn>)
-        .mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe("/login");
-      expect(redirectUrl.searchParams.get("redirect")).toBe(
-        "/dashboard/settings",
-      );
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
 
     it("allows authenticated users to access /dashboard", () => {
@@ -70,22 +62,18 @@ describe("middleware", () => {
       expect(redirectUrl.pathname).toBe("/dashboard");
     });
 
-    it("redirects authenticated users from /login to /dashboard", () => {
+    it("allows authenticated users to access /login", () => {
       middleware(buildRequest("/login", true));
 
-      expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
-      const redirectUrl = (NextResponse.redirect as ReturnType<typeof vi.fn>)
-        .mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe("/dashboard");
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
 
-    it("redirects authenticated users from /register to /dashboard", () => {
+    it("allows authenticated users to access /register", () => {
       middleware(buildRequest("/register", true));
 
-      expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
-      const redirectUrl = (NextResponse.redirect as ReturnType<typeof vi.fn>)
-        .mock.calls[0][0] as URL;
-      expect(redirectUrl.pathname).toBe("/dashboard");
+      expect(NextResponse.next).toHaveBeenCalledTimes(1);
+      expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
 
     it("redirects authenticated users from /organizer/login to /dashboard", () => {

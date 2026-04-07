@@ -2,12 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import DashboardPage from "@/app/dashboard/page";
 
-const redirectMock = vi.fn((url: string) => {
-  throw new Error(`REDIRECT:${url}`);
-});
-
 vi.mock("next/navigation", () => ({
-  redirect: (url: string) => redirectMock(url),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
@@ -21,8 +16,10 @@ vi.mock("next/headers", () => ({
 }));
 
 const fetchEventsWithAuthMock = vi.fn();
+const fetchEventsPublicMock = vi.fn();
 vi.mock("@/lib/fetch-events", () => ({
   fetchEventsWithAuth: (...args: unknown[]) => fetchEventsWithAuthMock(...args),
+  fetchEventsPublic: (...args: unknown[]) => fetchEventsPublicMock(...args),
 }));
 
 beforeEach(() => {
@@ -36,15 +33,21 @@ function atLocalToday(hour: number, minute = 0): string {
 }
 
 describe("DashboardPage", () => {
-  it("redirects to login when auth_token cookie is missing", async () => {
+  it("uses public events when auth_token cookie is missing", async () => {
     cookiesGetMock.mockReturnValue(undefined);
+    fetchEventsPublicMock.mockResolvedValueOnce({
+      ok: true,
+      events: [],
+    });
 
-    await expect(DashboardPage()).rejects.toThrow("REDIRECT:/login");
-    expect(redirectMock).toHaveBeenCalledWith("/login");
+    const ui = await DashboardPage();
+    render(ui);
+    expect(screen.getByRole("heading", { name: /^all$/i })).toBeInTheDocument();
+    expect(fetchEventsPublicMock).toHaveBeenCalledTimes(1);
     expect(fetchEventsWithAuthMock).not.toHaveBeenCalled();
   });
 
-  it("redirects to login when fetch returns unauthorized", async () => {
+  it("falls back to public events when auth fetch returns unauthorized", async () => {
     cookiesGetMock.mockImplementation((name: string) =>
       name === "auth_token" ? { value: "expired" } : undefined,
     );
@@ -52,9 +55,16 @@ describe("DashboardPage", () => {
       ok: false,
       reason: "unauthorized",
     });
+    fetchEventsPublicMock.mockResolvedValueOnce({
+      ok: true,
+      events: [],
+    });
 
-    await expect(DashboardPage()).rejects.toThrow("REDIRECT:/login");
+    const ui = await DashboardPage();
+    render(ui);
+    expect(screen.getByRole("heading", { name: /^all$/i })).toBeInTheDocument();
     expect(fetchEventsWithAuthMock).toHaveBeenCalledWith("expired");
+    expect(fetchEventsPublicMock).toHaveBeenCalledTimes(1);
   });
 
   it("renders dashboard with events when fetch succeeds", async () => {
@@ -80,7 +90,7 @@ describe("DashboardPage", () => {
     const ui = await DashboardPage();
     render(ui);
 
-    expect(screen.getByText("THE KINETIC")).toBeInTheDocument();
+    expect(screen.getByText("Tiqthat")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", { name: /test film night/i }),
     ).toBeInTheDocument();
