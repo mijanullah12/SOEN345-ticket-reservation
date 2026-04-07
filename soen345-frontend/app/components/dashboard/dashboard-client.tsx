@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api } from "@/lib/api";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import { api } from "@/lib/api";
 import {
   DASHBOARD_BRAND,
   EVENT_CATEGORIES,
@@ -67,7 +67,7 @@ function buildReceiptMessage(
   reservation: Reservation,
   firstName: string | null | undefined,
 ): string {
-  const safeName = firstName && firstName.trim() ? firstName.trim() : "there";
+  const safeName = firstName?.trim() ? firstName.trim() : "there";
   const eventName = eventDisplayName(reservation.eventName);
   const dateLine = formatReceiptDate(reservation.eventDate);
   const locationLine = reservation.eventLocation;
@@ -465,7 +465,9 @@ export function DashboardClient({
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onSaved={() => {
-          setReservationMessage("Payment info saved. Please try reserving again.");
+          setReservationMessage(
+            "Payment info saved. Please try reserving again.",
+          );
           setReservationError(null);
         }}
       />
@@ -563,10 +565,7 @@ function ReservePanel({
                     max={maxQuantity > 0 ? maxQuantity : undefined}
                     value={quantity}
                     onChange={(e) =>
-                      onReserveQuantityChange(
-                        event.id,
-                        Number(e.target.value),
-                      )
+                      onReserveQuantityChange(event.id, Number(e.target.value))
                     }
                     disabled={Boolean(activeReservation) || maxQuantity < 1}
                     aria-label={`Tickets for ${event.name}`}
@@ -580,27 +579,27 @@ function ReservePanel({
                   Details
                 </button>
                 {activeReservation ? (
-                <button
-                  type="button"
-                  className="dash-btn-solid dash-reserve-cancel"
-                  onClick={() => onCancelReservation(activeReservation.id)}
-                  disabled={Boolean(isCancelling)}
-                >
-                  {isCancelling ? "Cancelling..." : "Cancel reservation"}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="dash-btn-solid"
-                  onClick={() => onReserve(event.id, quantity)}
-                  disabled={reserveDisabled}
-                >
-                  {isReserving
-                    ? "Reserving..."
-                    : organizerReady
-                      ? "Reserve"
-                      : "Organizer payout not set"}
-                </button>
+                  <button
+                    type="button"
+                    className="dash-btn-solid dash-reserve-cancel"
+                    onClick={() => onCancelReservation(activeReservation.id)}
+                    disabled={Boolean(isCancelling)}
+                  >
+                    {isCancelling ? "Cancelling..." : "Cancel reservation"}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="dash-btn-solid"
+                    onClick={() => onReserve(event.id, quantity)}
+                    disabled={reserveDisabled}
+                  >
+                    {isReserving
+                      ? "Reserving..."
+                      : organizerReady
+                        ? "Reserve"
+                        : "Organizer payout not set"}
+                  </button>
                 )}
               </div>
             </li>

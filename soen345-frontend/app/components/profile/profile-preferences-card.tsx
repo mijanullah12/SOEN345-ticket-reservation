@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PaymentInfoModal } from "@/app/components/dashboard/payment-info-modal";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { InfoTip } from "@/app/components/shared/info-tip";
-import { PaymentInfoModal } from "@/app/components/dashboard/payment-info-modal";
 import { api } from "@/lib/api";
 import type { NotificationChannel, UserProfile } from "@/lib/types";
 
@@ -33,9 +33,7 @@ export function ProfilePreferencesCard() {
     setPreferredNotificationChannel(
       user.preferredNotificationChannel ?? "EMAIL",
     );
-    setDefaultPaymentMethodId(
-      user.paymentInfo?.defaultPaymentMethodId ?? "",
-    );
+    setDefaultPaymentMethodId(user.paymentInfo?.defaultPaymentMethodId ?? "");
     setPayoutAccountId(user.paymentInfo?.payoutAccountId ?? "");
   }, [user]);
 
@@ -261,9 +259,7 @@ export function ProfilePreferencesCard() {
           {currentUser.role === "ORGANIZER" ? (
             <div className="profile-display-item">
               <p className="profile-display-label">Payout account ID</p>
-              <p className="profile-display-value">
-                {payoutAccountId || "-"}
-              </p>
+              <p className="profile-display-value">{payoutAccountId || "-"}</p>
             </div>
           ) : null}
         </div>

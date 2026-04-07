@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CardElement, Elements, useElements, useStripe } from "@stripe/react-stripe-js";
+import {
+  CardElement,
+  Elements,
+  useElements,
+  useStripe,
+} from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
+import { useEffect, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { InfoTip } from "@/app/components/shared/info-tip";
 import { api } from "@/lib/api";
@@ -147,10 +152,12 @@ function PaymentInfoForm({
 
   return (
     <div className="auth-form">
-      <label className="form-group">
-        Card details
-        <InfoTip text="Use test cards like 4242 4242 4242 4242. Any future expiry and any CVC will work in test mode." />
-        <div className="stripe-card-field">
+      <div className="form-group">
+        <label htmlFor="stripe-card-element">
+          Card details
+          <InfoTip text="Use test cards like 4242 4242 4242 4242. Any future expiry and any CVC will work in test mode." />
+        </label>
+        <div id="stripe-card-element" className="stripe-card-field">
           <CardElement
             options={{
               hidePostalCode: true,
@@ -165,7 +172,7 @@ function PaymentInfoForm({
             }}
           />
         </div>
-      </label>
+      </div>
       <button
         type="button"
         className="auth-btn"

@@ -47,7 +47,9 @@ export function EventDetailsModal({
         </button>
         <div className="auth-card">
           <h2 className="auth-title">{event.name}</h2>
-          <p className="auth-subtitle">{event.description ?? "No description."}</p>
+          <p className="auth-subtitle">
+            {event.description ?? "No description."}
+          </p>
           <div className="event-details-grid">
             <div className="event-details-item">
               <p className="event-details-label">Date & time</p>

@@ -365,7 +365,9 @@ export function OrganizerDashboardClient({
             Add your payout account so reservations can be accepted. Test values
             are allowed for now.
           </p>
-          {payoutMessage ? <p className="org-success">{payoutMessage}</p> : null}
+          {payoutMessage ? (
+            <p className="org-success">{payoutMessage}</p>
+          ) : null}
           {payoutError ? <p className="org-error">{payoutError}</p> : null}
           {loadingProfile ? (
             <p className="org-empty">Loading payout info...</p>
