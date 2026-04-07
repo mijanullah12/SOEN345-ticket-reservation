@@ -1,8 +1,31 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardClient } from "@/app/components/dashboard/dashboard-client";
 import type { Event } from "@/lib/types";
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+    push: vi.fn(),
+  }),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    ...rest
+  }: {
+    href: string;
+    children: ReactNode;
+  }) => (
+    <a href={href} {...rest}>
+      {children}
+    </a>
+  ),
+}));
 
 vi.mock("next/image", () => ({
   default: ({
@@ -60,7 +83,9 @@ function makeEvent(
 
 describe("DashboardClient", () => {
   it("renders brand, sidebar controls, category tabs, and logout", () => {
-    render(<DashboardClient events={[]} loadError={null} />);
+    render(
+      <DashboardClient events={[]} loadError={null} isAuthenticated={true} />,
+    );
 
     expect(screen.getByText("THE KINETIC")).toBeInTheDocument();
     expect(
@@ -99,7 +124,13 @@ describe("DashboardClient", () => {
   });
 
   it("shows load error banner when loadError is set", () => {
-    render(<DashboardClient events={[]} loadError="connection refused" />);
+    render(
+      <DashboardClient
+        events={[]}
+        loadError="connection refused"
+        isAuthenticated={false}
+      />,
+    );
 
     expect(
       screen.getByText(/could not load events from the server/i),
@@ -109,7 +140,9 @@ describe("DashboardClient", () => {
 
   it("shows tickets placeholder when Tickets sidebar item is selected", async () => {
     const user = userEvent.setup();
-    render(<DashboardClient events={[]} loadError={null} />);
+    render(
+      <DashboardClient events={[]} loadError={null} isAuthenticated={false} />,
+    );
 
     await user.click(screen.getByRole("button", { name: /^Tickets$/i }));
 
@@ -130,7 +163,9 @@ describe("DashboardClient", () => {
       }),
     ];
 
-    render(<DashboardClient events={events} loadError={null} />);
+    render(
+      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+    );
 
     expect(
       screen.getByRole("heading", { name: /^movies$/i }),
@@ -150,7 +185,9 @@ describe("DashboardClient", () => {
       }),
     ];
 
-    render(<DashboardClient events={events} loadError={null} />);
+    render(
+      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+    );
 
     await user.click(screen.getByRole("button", { name: /^Sports$/i }));
 
@@ -178,7 +215,9 @@ describe("DashboardClient", () => {
       }),
     ];
 
-    render(<DashboardClient events={events} loadError={null} />);
+    render(
+      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+    );
 
     await user.click(screen.getByRole("button", { name: /^Upcoming$/i }));
 
@@ -201,7 +240,9 @@ describe("DashboardClient", () => {
       }),
     ];
 
-    render(<DashboardClient events={events} loadError={null} />);
+    render(
+      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+    );
 
     await user.click(screen.getByRole("button", { name: /^Concerts$/i }));
 

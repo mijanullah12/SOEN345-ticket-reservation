@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { cookies } from "next/headers";
+import Link from "next/link";
 
 export default async function ProfilePage() {
   const cookieStore = await cookies();
