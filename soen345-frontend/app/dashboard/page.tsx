@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
-import { fetchEventsPublic, fetchEventsWithAuth } from "@/lib/fetch-events";
 import { DashboardClient } from "@/app/components/dashboard/dashboard-client";
+import { fetchEventsPublic, fetchEventsWithAuth } from "@/lib/fetch-events";
 
 export default async function DashboardPage() {
   const cookieStore = await cookies();
@@ -16,7 +16,9 @@ export default async function DashboardPage() {
 
   const events = finalResult.ok ? finalResult.events : [];
   const loadError =
-    !finalResult.ok && finalResult.reason === "error" ? finalResult.message : null;
+    !finalResult.ok && finalResult.reason === "error"
+      ? finalResult.message
+      : null;
 
   return (
     <DashboardClient

@@ -11,7 +11,10 @@ type ProfileMenuProps = {
   onOpenAuthModal: (mode: MenuMode) => void;
 };
 
-export function ProfileMenu({ isAuthenticated, onOpenAuthModal }: ProfileMenuProps) {
+export function ProfileMenu({
+  isAuthenticated,
+  onOpenAuthModal,
+}: ProfileMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 

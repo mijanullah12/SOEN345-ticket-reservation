@@ -17,9 +17,9 @@ import {
 } from "@/lib/dashboard-filters";
 import type { Event } from "@/lib/types";
 import { LogoutButton } from "../../dashboard/logout-button";
-import { SidebarNavIcon } from "./sidebar-icons";
-import { ProfileMenu } from "./profile-menu";
 import { AuthModal, type AuthModalMode } from "./auth-modal";
+import { ProfileMenu } from "./profile-menu";
+import { SidebarNavIcon } from "./sidebar-icons";
 
 function formatEventStamp(iso: string): string {
   const d = new Date(iso);

@@ -1,10 +1,10 @@
 "use client";
 
+import { useEffect } from "react";
 import { LoginForm } from "@/app/components/auth/login-form";
 import { OrganizationRegisterForm } from "@/app/components/auth/organization-register-form";
 import { OrganizerLoginForm } from "@/app/components/auth/organizer-login-form";
 import { RegisterForm } from "@/app/components/auth/register-form";
-import { useEffect } from "react";
 
 export type AuthModalMode = "login" | "signup" | "orgLogin" | "orgSignup";
 

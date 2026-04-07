@@ -164,7 +164,11 @@ describe("DashboardClient", () => {
     ];
 
     render(
-      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+      <DashboardClient
+        events={events}
+        loadError={null}
+        isAuthenticated={true}
+      />,
     );
 
     expect(
@@ -186,7 +190,11 @@ describe("DashboardClient", () => {
     ];
 
     render(
-      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+      <DashboardClient
+        events={events}
+        loadError={null}
+        isAuthenticated={true}
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: /^Sports$/i }));
@@ -216,7 +224,11 @@ describe("DashboardClient", () => {
     ];
 
     render(
-      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+      <DashboardClient
+        events={events}
+        loadError={null}
+        isAuthenticated={true}
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: /^Upcoming$/i }));
@@ -241,7 +253,11 @@ describe("DashboardClient", () => {
     ];
 
     render(
-      <DashboardClient events={events} loadError={null} isAuthenticated={true} />,
+      <DashboardClient
+        events={events}
+        loadError={null}
+        isAuthenticated={true}
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: /^Concerts$/i }));
