@@ -15,6 +15,7 @@ import ticketReservation.soen345.dto.request.UpdateEventRequest;
 import ticketReservation.soen345.dto.response.EventResponse;
 import ticketReservation.soen345.exception.ResourceNotFoundException;
 import ticketReservation.soen345.repository.EventRepository;
+import ticketReservation.soen345.repository.UserRepository;
 import ticketReservation.soen345.service.impl.EventServiceImpl;
 
 import java.math.BigDecimal;
@@ -34,6 +35,9 @@ class EventServiceImplTest {
     @Mock
     private EventRepository eventRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     private EventServiceImpl eventService;
 
     private static final Instant FUTURE_DATE = Instant.now().plus(7, ChronoUnit.DAYS);
@@ -42,7 +46,7 @@ class EventServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        eventService = new EventServiceImpl(eventRepository);
+        eventService = new EventServiceImpl(eventRepository, userRepository);
     }
 
     // ================================================================

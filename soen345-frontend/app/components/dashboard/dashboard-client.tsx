@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
+import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import {
   DASHBOARD_BRAND,
   EVENT_CATEGORIES,
@@ -19,6 +20,8 @@ import {
 import type { Event, Reservation } from "@/lib/types";
 import { LogoutButton } from "../../dashboard/logout-button";
 import { AuthModal, type AuthModalMode } from "./auth-modal";
+import { EventDetailsModal } from "./event-details-modal";
+import { PaymentInfoModal } from "./payment-info-modal";
 import { ProfileMenu } from "./profile-menu";
 import { SidebarNavIcon } from "./sidebar-icons";
 
@@ -45,6 +48,51 @@ function formatMoney(value: number | string): string {
   }).format(n);
 }
 
+function formatReceiptDate(iso: string): string {
+  const d = new Date(iso);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
+    d.getHours(),
+  )}:${pad(d.getMinutes())}`;
+}
+
+function eventDisplayName(name: string | null | undefined): string {
+  if (!name || !name.trim()) {
+    return "your event";
+  }
+  return name;
+}
+
+function buildReceiptMessage(
+  reservation: Reservation,
+  firstName: string | null | undefined,
+): string {
+  const safeName = firstName && firstName.trim() ? firstName.trim() : "there";
+  const eventName = eventDisplayName(reservation.eventName);
+  const dateLine = formatReceiptDate(reservation.eventDate);
+  const locationLine = reservation.eventLocation;
+
+  if (reservation.status === "CANCELLED") {
+    return (
+      `Hi ${safeName},\n\n` +
+      "Your reservation has been cancelled.\n" +
+      `Event: ${eventName}\n` +
+      `Date: ${dateLine}\n` +
+      `Location: ${locationLine}\n\n` +
+      "If this was a mistake, please make a new reservation."
+    );
+  }
+
+  return (
+    `Hi ${safeName},\n\n` +
+    "Your reservation is confirmed.\n" +
+    `Event: ${eventName}\n` +
+    `Date: ${dateLine}\n` +
+    `Location: ${locationLine}\n\n` +
+    "Thank you for using our ticket reservation system."
+  );
+}
+
 const SIDEBAR_ITEMS: { id: SidebarView; label: string }[] = [
   { id: "live", label: "Available Events" },
   { id: "upcoming", label: "Upcoming Events" },
@@ -69,6 +117,8 @@ export function DashboardClient({
   const [keywordQuery, setKeywordQuery] = useState("");
   const [dateQuery, setDateQuery] = useState("");
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [detailsEvent, setDetailsEvent] = useState<Event | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
   const [reservationError, setReservationError] = useState<string | null>(null);
@@ -78,8 +128,27 @@ export function DashboardClient({
   const [reservationActionKey, setReservationActionKey] = useState<
     string | null
   >(null);
+  const [reserveQuantities, setReserveQuantities] = useState<
+    Record<string, number>
+  >({});
+  const { user: currentUser } = useUserProfile(isAuthenticated);
+  const isOrganizer = currentUser?.role === "ORGANIZER";
 
   const category = useMemo(() => categoryById(categoryId), [categoryId]);
+
+  const sidebarItems = useMemo(
+    () =>
+      SIDEBAR_ITEMS.filter((item) =>
+        isOrganizer ? item.id !== "tickets" : true,
+      ),
+    [isOrganizer],
+  );
+
+  useEffect(() => {
+    if (isOrganizer && sidebarView === "tickets") {
+      setSidebarView("live");
+    }
+  }, [isOrganizer, sidebarView]);
 
   const sidebarFiltered = useMemo(
     () => filterBySidebar(events, sidebarView),
@@ -152,9 +221,38 @@ export function DashboardClient({
     void loadReservations();
   }, [loadReservations]);
 
-  async function reserveEvent(eventId: string) {
+  const handleReserveQuantityChange = useCallback(
+    (eventId: string, value: number) => {
+      const event = events.find((e) => e.id === eventId);
+      const max = event?.capacity ?? value;
+      const parsed = Number.isFinite(value) ? value : 1;
+      const next = Math.max(1, Math.min(max, parsed));
+      setReserveQuantities((prev) => ({ ...prev, [eventId]: next }));
+    },
+    [events],
+  );
+
+  const downloadReceipt = useCallback(
+    (reservation: Reservation) => {
+      const message = buildReceiptMessage(reservation, currentUser?.firstName);
+      const blob = new Blob([message], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `reservation-${reservation.id}.txt`;
+      link.click();
+      URL.revokeObjectURL(url);
+    },
+    [currentUser?.firstName],
+  );
+
+  async function reserveEvent(eventId: string, quantity: number) {
     if (!isAuthenticated) {
       setAuthModal("login");
+      return;
+    }
+    if (!Number.isFinite(quantity) || quantity < 1) {
+      setReservationError("Please select at least 1 ticket.");
       return;
     }
     setReservationMessage(null);
@@ -163,14 +261,20 @@ export function DashboardClient({
     try {
       await api<Reservation>("/api/reservations", {
         method: "POST",
-        body: JSON.stringify({ eventId }),
+        body: JSON.stringify({ eventId, quantity }),
       });
       setReservationMessage("Reservation confirmed.");
+      setReserveQuantities((prev) => ({ ...prev, [eventId]: 1 }));
       await loadReservations();
       router.refresh();
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setReservationError(e.message ?? "Could not reserve ticket.");
+      const message = e.message ?? "Could not reserve ticket.";
+      setReservationError(message);
+      const lower = message.toLowerCase();
+      if (lower.includes("payment method") || lower.includes("payment info")) {
+        setPaymentModalOpen(true);
+      }
     } finally {
       setReservationActionKey(null);
     }
@@ -203,7 +307,7 @@ export function DashboardClient({
         </div>
         <nav className="dash-sidebar-nav" aria-label="Event views">
           <ul className="dash-nav-list">
-            {SIDEBAR_ITEMS.map((item) => (
+            {sidebarItems.map((item) => (
               <li key={item.id}>
                 <button
                   type="button"
@@ -310,13 +414,14 @@ export function DashboardClient({
         ) : null}
 
         <div className="dash-content">
-          {sidebarView === "tickets" ? (
+          {sidebarView === "tickets" && !isOrganizer ? (
             <TicketsPanel
               isAuthenticated={isAuthenticated}
               reservations={reservations}
               loading={reservationsLoading}
               actionKey={reservationActionKey}
               onCancelReservation={cancelReservation}
+              onDownloadReceipt={downloadReceipt}
               onPromptLogin={() => setAuthModal("login")}
             />
           ) : (
@@ -327,16 +432,21 @@ export function DashboardClient({
                 featured={featured}
                 rest={rest}
               />
-              <ReservePanel
-                isAuthenticated={isAuthenticated}
-                events={searchedEvents}
-                activeReservationByEventId={activeReservationByEventId}
-                loading={reservationsLoading}
-                actionKey={reservationActionKey}
-                onReserve={reserveEvent}
-                onCancelReservation={cancelReservation}
-                onPromptLogin={() => setAuthModal("login")}
-              />
+              {!isOrganizer ? (
+                <ReservePanel
+                  isAuthenticated={isAuthenticated}
+                  events={searchedEvents}
+                  activeReservationByEventId={activeReservationByEventId}
+                  reserveQuantities={reserveQuantities}
+                  loading={reservationsLoading}
+                  actionKey={reservationActionKey}
+                  onReserve={reserveEvent}
+                  onReserveQuantityChange={handleReserveQuantityChange}
+                  onCancelReservation={cancelReservation}
+                  onShowDetails={setDetailsEvent}
+                  onPromptLogin={() => setAuthModal("login")}
+                />
+              ) : null}
             </>
           )}
         </div>
@@ -351,6 +461,18 @@ export function DashboardClient({
           router.refresh();
         }}
       />
+      <PaymentInfoModal
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        onSaved={() => {
+          setReservationMessage("Payment info saved. Please try reserving again.");
+          setReservationError(null);
+        }}
+      />
+      <EventDetailsModal
+        event={detailsEvent}
+        onClose={() => setDetailsEvent(null)}
+      />
     </div>
   );
 }
@@ -359,19 +481,25 @@ function ReservePanel({
   isAuthenticated,
   events,
   activeReservationByEventId,
+  reserveQuantities,
   loading,
   actionKey,
   onReserve,
+  onReserveQuantityChange,
   onCancelReservation,
+  onShowDetails,
   onPromptLogin,
 }: {
   isAuthenticated: boolean;
   events: Event[];
   activeReservationByEventId: Map<string, Reservation>;
+  reserveQuantities: Record<string, number>;
   loading: boolean;
   actionKey: string | null;
-  onReserve: (eventId: string) => void;
+  onReserve: (eventId: string, quantity: number) => void;
+  onReserveQuantityChange: (eventId: string, quantity: number) => void;
   onCancelReservation: (reservationId: string) => void;
+  onShowDetails: (event: Event) => void;
   onPromptLogin: () => void;
 }) {
   const featured = events.slice(0, 4);
@@ -399,6 +527,14 @@ function ReservePanel({
           const isReserving = actionKey === `reserve-${event.id}`;
           const isCancelling =
             activeReservation && actionKey === `cancel-${activeReservation.id}`;
+          const organizerReady = event.organizerPayoutReady !== false;
+          const quantity = reserveQuantities[event.id] ?? 1;
+          const maxQuantity = event.capacity;
+          const invalidQuantity = quantity < 1 || quantity > maxQuantity;
+          const reserveDisabled =
+            Boolean(isReserving || loading) ||
+            !organizerReady ||
+            invalidQuantity;
           return (
             <li key={event.id} className="dash-reserve-item">
               <div>
@@ -410,8 +546,40 @@ function ReservePanel({
                   })}{" "}
                   · {event.location}
                 </p>
+                <p className="dash-reserve-item-meta">
+                  Organizer: {event.organizerName ?? "Unknown"}
+                  {event.organizerEmail ? ` Â· ${event.organizerEmail}` : ""}
+                </p>
+                <p className="dash-reserve-item-meta">
+                  {formatMoney(event.ticketPrice)} per ticket
+                </p>
               </div>
-              {activeReservation ? (
+              <div className="dash-reserve-actions">
+                <label className="dash-reserve-qty">
+                  <span>Qty</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={maxQuantity > 0 ? maxQuantity : undefined}
+                    value={quantity}
+                    onChange={(e) =>
+                      onReserveQuantityChange(
+                        event.id,
+                        Number(e.target.value),
+                      )
+                    }
+                    disabled={Boolean(activeReservation) || maxQuantity < 1}
+                    aria-label={`Tickets for ${event.name}`}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="dash-btn-outline"
+                  onClick={() => onShowDetails(event)}
+                >
+                  Details
+                </button>
+                {activeReservation ? (
                 <button
                   type="button"
                   className="dash-btn-solid dash-reserve-cancel"
@@ -424,12 +592,17 @@ function ReservePanel({
                 <button
                   type="button"
                   className="dash-btn-solid"
-                  onClick={() => onReserve(event.id)}
-                  disabled={Boolean(isReserving || loading)}
+                  onClick={() => onReserve(event.id, quantity)}
+                  disabled={reserveDisabled}
                 >
-                  {isReserving ? "Reserving..." : "Reserve"}
+                  {isReserving
+                    ? "Reserving..."
+                    : organizerReady
+                      ? "Reserve"
+                      : "Organizer payout not set"}
                 </button>
-              )}
+                )}
+              </div>
             </li>
           );
         })}
@@ -444,6 +617,7 @@ function TicketsPanel({
   loading,
   actionKey,
   onCancelReservation,
+  onDownloadReceipt,
   onPromptLogin,
 }: {
   isAuthenticated: boolean;
@@ -451,6 +625,7 @@ function TicketsPanel({
   loading: boolean;
   actionKey: string | null;
   onCancelReservation: (reservationId: string) => void;
+  onDownloadReceipt: (reservation: Reservation) => void;
   onPromptLogin: () => void;
 }) {
   if (!isAuthenticated) {
@@ -480,6 +655,8 @@ function TicketsPanel({
         <ul className="dash-tickets-list">
           {reservations.map((reservation) => {
             const isCancelling = actionKey === `cancel-${reservation.id}`;
+            const quantity = reservation.quantity ?? 1;
+            const total = reservation.eventTicketPrice * quantity;
             return (
               <li key={reservation.id} className="dash-tickets-item">
                 <div>
@@ -493,21 +670,33 @@ function TicketsPanel({
                     })}{" "}
                     · {reservation.eventLocation}
                   </p>
+                  <p className="dash-tickets-item-meta">
+                    Tickets: {quantity} · Total: {formatMoney(total)}
+                  </p>
                 </div>
-                {reservation.status === "ACTIVE" ? (
+                <div className="dash-tickets-actions">
                   <button
                     type="button"
-                    className="dash-btn-solid dash-reserve-cancel"
-                    onClick={() => onCancelReservation(reservation.id)}
-                    disabled={Boolean(isCancelling)}
+                    className="dash-btn-outline dash-receipt-btn"
+                    onClick={() => onDownloadReceipt(reservation)}
                   >
-                    {isCancelling ? "Cancelling..." : "Cancel"}
+                    Download receipt
                   </button>
-                ) : (
-                  <span className="dash-ticket-status-cancelled">
-                    Cancelled
-                  </span>
-                )}
+                  {reservation.status === "ACTIVE" ? (
+                    <button
+                      type="button"
+                      className="dash-btn-solid dash-reserve-cancel"
+                      onClick={() => onCancelReservation(reservation.id)}
+                      disabled={Boolean(isCancelling)}
+                    >
+                      {isCancelling ? "Cancelling..." : "Cancel"}
+                    </button>
+                  ) : (
+                    <span className="dash-ticket-status-cancelled">
+                      Cancelled
+                    </span>
+                  )}
+                </div>
               </li>
             );
           })}

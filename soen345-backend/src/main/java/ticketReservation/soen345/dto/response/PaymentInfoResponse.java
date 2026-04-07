@@ -1,4 +1,4 @@
-package ticketReservation.soen345.domain;
+package ticketReservation.soen345.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentInfo {
+public class PaymentInfoResponse {
     private String customerId;
     private String defaultPaymentMethodId;
     private String payoutAccountId;

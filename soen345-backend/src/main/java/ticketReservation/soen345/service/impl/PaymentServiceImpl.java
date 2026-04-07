@@ -28,11 +28,19 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         String customerId = payer.getPaymentInfo() != null ? payer.getPaymentInfo().getCustomerId() : null;
+        String paymentMethodId = payer.getPaymentInfo() != null
+                ? payer.getPaymentInfo().getDefaultPaymentMethodId()
+                : null;
         Map<String, String> metadata = new HashMap<>();
         metadata.put("payerUserId", payer.getId());
         metadata.put("payeeUserId", payee.getId());
 
-        String providerPaymentId = paymentGateway.createPaymentIntent(amount, currency, customerId, metadata);
+        String providerPaymentId = paymentGateway.createPaymentIntent(
+                amount,
+                currency,
+                customerId,
+                paymentMethodId,
+                metadata);
 
         Payment payment = Payment.builder()
                 .payerUserId(payer.getId())

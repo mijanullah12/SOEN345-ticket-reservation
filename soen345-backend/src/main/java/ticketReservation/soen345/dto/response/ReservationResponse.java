@@ -18,10 +18,12 @@ public class ReservationResponse {
     private String id;
     private String userId;
     private String eventId;
+    private String paymentId;
     private String eventName;
     private Instant eventDate;
     private String eventLocation;
     private BigDecimal eventTicketPrice;
+    private Integer quantity;
     private ReservationStatus status;
     private Instant reservedAt;
     private Instant cancelledAt;

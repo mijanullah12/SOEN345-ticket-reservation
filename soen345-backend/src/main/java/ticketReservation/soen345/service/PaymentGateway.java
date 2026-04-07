@@ -4,7 +4,12 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public interface PaymentGateway {
-    String createPaymentIntent(BigDecimal amount, String currency, String customerId, Map<String, String> metadata);
+    String createPaymentIntent(
+            BigDecimal amount,
+            String currency,
+            String customerId,
+            String paymentMethodId,
+            Map<String, String> metadata);
 
     String confirmPayment(String providerPaymentId);
 

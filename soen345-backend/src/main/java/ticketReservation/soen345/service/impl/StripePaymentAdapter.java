@@ -25,7 +25,12 @@ public class StripePaymentAdapter implements PaymentGateway {
     private final StripeProperties stripeProperties;
 
     @Override
-    public String createPaymentIntent(BigDecimal amount, String currency, String customerId, Map<String, String> metadata) {
+    public String createPaymentIntent(
+            BigDecimal amount,
+            String currency,
+            String customerId,
+            String paymentMethodId,
+            Map<String, String> metadata) {
         configureStripe();
         long minorUnits = toMinorUnits(amount);
 
@@ -36,6 +41,10 @@ public class StripePaymentAdapter implements PaymentGateway {
 
         if (customerId != null && !customerId.isBlank()) {
             builder.setCustomer(customerId);
+        }
+
+        if (paymentMethodId != null && !paymentMethodId.isBlank()) {
+            builder.setPaymentMethod(paymentMethodId);
         }
 
         if (metadata != null && !metadata.isEmpty()) {

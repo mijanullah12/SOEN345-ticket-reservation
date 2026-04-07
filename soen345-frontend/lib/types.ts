@@ -47,6 +47,9 @@ export interface Event {
   capacity: number;
   ticketPrice: number;
   organizerId?: string | null;
+  organizerPayoutReady?: boolean | null;
+  organizerName?: string | null;
+  organizerEmail?: string | null;
   status: "ACTIVE" | "CANCELLED";
   createdAt?: string | null;
   updatedAt?: string | null;
@@ -71,6 +74,7 @@ export interface Reservation {
   eventDate: string;
   eventLocation: string;
   eventTicketPrice: number;
+  quantity?: number | null;
   status: "ACTIVE" | "CANCELLED";
   reservedAt: string;
   cancelledAt?: string | null;
@@ -86,4 +90,11 @@ export interface UserProfile {
   role?: string;
   status?: string;
   preferredNotificationChannel?: NotificationChannel;
+  paymentInfo?: {
+    customerId?: string | null;
+    defaultPaymentMethodId?: string | null;
+    payoutAccountId?: string | null;
+    payoutEmail?: string | null;
+    payoutDisplayName?: string | null;
+  } | null;
 }

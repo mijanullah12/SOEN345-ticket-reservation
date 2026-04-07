@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import { InfoTip } from "@/app/components/shared/info-tip";
+import { PaymentInfoModal } from "@/app/components/dashboard/payment-info-modal";
 import { api } from "@/lib/api";
 import type { NotificationChannel, UserProfile } from "@/lib/types";
 
@@ -15,6 +17,9 @@ export function ProfilePreferencesCard() {
   const [phone, setPhone] = useState("");
   const [preferredNotificationChannel, setPreferredNotificationChannel] =
     useState<NotificationChannel>("EMAIL");
+  const [defaultPaymentMethodId, setDefaultPaymentMethodId] = useState("");
+  const [payoutAccountId, setPayoutAccountId] = useState("");
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +33,10 @@ export function ProfilePreferencesCard() {
     setPreferredNotificationChannel(
       user.preferredNotificationChannel ?? "EMAIL",
     );
+    setDefaultPaymentMethodId(
+      user.paymentInfo?.defaultPaymentMethodId ?? "",
+    );
+    setPayoutAccountId(user.paymentInfo?.payoutAccountId ?? "");
   }, [user]);
 
   async function saveProfile() {
@@ -35,15 +44,22 @@ export function ProfilePreferencesCard() {
     setError(null);
     setSaving(true);
     try {
+      const payload: Record<string, unknown> = {
+        firstName,
+        lastName,
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        preferredNotificationChannel,
+      };
+      if (currentUser.role === "ORGANIZER") {
+        payload.paymentInfo = {
+          payoutAccountId: payoutAccountId.trim() || null,
+        };
+      }
+
       const updated = await api<UserProfile>("/api/users/me", {
         method: "PATCH",
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          email: email.trim() || null,
-          phone: phone.trim() || null,
-          preferredNotificationChannel,
-        }),
+        body: JSON.stringify(payload),
       });
       setMessage("Profile updated.");
       setFirstName(updated.firstName ?? "");
@@ -53,6 +69,10 @@ export function ProfilePreferencesCard() {
       setPreferredNotificationChannel(
         updated.preferredNotificationChannel ?? "EMAIL",
       );
+      setDefaultPaymentMethodId(
+        updated.paymentInfo?.defaultPaymentMethodId ?? "",
+      );
+      setPayoutAccountId(updated.paymentInfo?.payoutAccountId ?? "");
       setIsEditing(false);
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
@@ -80,6 +100,10 @@ export function ProfilePreferencesCard() {
     setPreferredNotificationChannel(
       currentUser.preferredNotificationChannel ?? "EMAIL",
     );
+    setDefaultPaymentMethodId(
+      currentUser.paymentInfo?.defaultPaymentMethodId ?? "",
+    );
+    setPayoutAccountId(currentUser.paymentInfo?.payoutAccountId ?? "");
   }
 
   function handleStartEditing() {
@@ -180,6 +204,21 @@ export function ProfilePreferencesCard() {
               <option value="SMS">SMS</option>
             </select>
           </div>
+          {currentUser.role === "ORGANIZER" ? (
+            <div className="form-group profile-field">
+              <label htmlFor="profile-payout-account-id">
+                Payout account ID
+                <InfoTip text="Your payout account identifier from the payment provider (for example, Stripe acct_123) so you can receive funds." />
+              </label>
+              <input
+                id="profile-payout-account-id"
+                value={payoutAccountId}
+                onChange={(e) => setPayoutAccountId(e.target.value)}
+                disabled={saving}
+                placeholder="acct_123"
+              />
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="profile-display-grid">
@@ -211,6 +250,22 @@ export function ProfilePreferencesCard() {
               {preferredNotificationChannel}
             </p>
           </div>
+          {currentUser.role !== "ORGANIZER" ? (
+            <div className="profile-display-item">
+              <p className="profile-display-label">Payment method</p>
+              <p className="profile-display-value">
+                {defaultPaymentMethodId || "-"}
+              </p>
+            </div>
+          ) : null}
+          {currentUser.role === "ORGANIZER" ? (
+            <div className="profile-display-item">
+              <p className="profile-display-label">Payout account ID</p>
+              <p className="profile-display-value">
+                {payoutAccountId || "-"}
+              </p>
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -235,18 +290,43 @@ export function ProfilePreferencesCard() {
             </button>
           </>
         ) : (
-          <button
-            type="button"
-            className="dash-btn-solid dash-btn-accent profile-save-btn"
-            onClick={handleStartEditing}
-          >
-            Edit profile
-          </button>
+          <>
+            <button
+              type="button"
+              className="dash-btn-solid dash-btn-accent profile-save-btn"
+              onClick={handleStartEditing}
+            >
+              Edit profile
+            </button>
+            {currentUser.role !== "ORGANIZER" ? (
+              <button
+                type="button"
+                className="dash-btn-solid"
+                onClick={() => setPaymentModalOpen(true)}
+              >
+                Add/update payment method
+              </button>
+            ) : null}
+          </>
         )}
       </div>
 
       {message ? <p className="profile-feedback-ok">{message}</p> : null}
       {error ? <p className="profile-feedback-error">{error}</p> : null}
+
+      {currentUser.role !== "ORGANIZER" ? (
+        <PaymentInfoModal
+          open={paymentModalOpen}
+          onClose={() => setPaymentModalOpen(false)}
+          onSaved={(updated) => {
+            setDefaultPaymentMethodId(
+              updated.paymentInfo?.defaultPaymentMethodId ?? "",
+            );
+            setMessage("Payment method updated.");
+            setError(null);
+          }}
+        />
+      ) : null}
     </section>
   );
 }

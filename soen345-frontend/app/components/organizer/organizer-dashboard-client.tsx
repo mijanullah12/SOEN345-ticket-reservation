@@ -2,8 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import { InfoTip } from "@/app/components/shared/info-tip";
 import { api } from "@/lib/api";
-import type { Event, EventWritePayload } from "@/lib/types";
+import type { Event, EventWritePayload, UserProfile } from "@/lib/types";
 
 type OrganizerDashboardClientProps = {
   initialEvents: Event[];
@@ -92,6 +94,13 @@ export function OrganizerDashboardClient({
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { user, loading: loadingProfile } = useUserProfile(true);
+  const [payoutAccountId, setPayoutAccountId] = useState("");
+  const [payoutEmail, setPayoutEmail] = useState("");
+  const [payoutDisplayName, setPayoutDisplayName] = useState("");
+  const [payoutSaving, setPayoutSaving] = useState(false);
+  const [payoutMessage, setPayoutMessage] = useState<string | null>(null);
+  const [payoutError, setPayoutError] = useState<string | null>(null);
 
   const sortedEvents = useMemo(
     () => [...events].sort((a, b) => +new Date(b.date) - +new Date(a.date)),
@@ -115,6 +124,13 @@ export function OrganizerDashboardClient({
     // Sync with latest backend state after mount.
     void refreshEvents();
   }, [refreshEvents]);
+
+  useEffect(() => {
+    if (!user) return;
+    setPayoutAccountId(user.paymentInfo?.payoutAccountId ?? "");
+    setPayoutEmail(user.paymentInfo?.payoutEmail ?? "");
+    setPayoutDisplayName(user.paymentInfo?.payoutDisplayName ?? "");
+  }, [user]);
 
   function startEdit(event: Event) {
     setEditingId(event.id);
@@ -177,6 +193,34 @@ export function OrganizerDashboardClient({
     } catch (err: unknown) {
       const e = err as { message?: string };
       setError(e.message ?? "Could not cancel event.");
+    }
+  }
+
+  async function handleSavePayout(e: React.FormEvent) {
+    e.preventDefault();
+    setPayoutMessage(null);
+    setPayoutError(null);
+    setPayoutSaving(true);
+    try {
+      const updated = await api<UserProfile>("/api/users/me", {
+        method: "PATCH",
+        body: JSON.stringify({
+          paymentInfo: {
+            payoutAccountId: payoutAccountId.trim() || null,
+            payoutEmail: payoutEmail.trim() || null,
+            payoutDisplayName: payoutDisplayName.trim() || null,
+          },
+        }),
+      });
+      setPayoutAccountId(updated.paymentInfo?.payoutAccountId ?? "");
+      setPayoutEmail(updated.paymentInfo?.payoutEmail ?? "");
+      setPayoutDisplayName(updated.paymentInfo?.payoutDisplayName ?? "");
+      setPayoutMessage("Payout details updated.");
+    } catch (err: unknown) {
+      const e = err as { message?: string };
+      setPayoutError(e.message ?? "Could not update payout details.");
+    } finally {
+      setPayoutSaving(false);
     }
   }
 
@@ -311,6 +355,71 @@ export function OrganizerDashboardClient({
               ) : null}
             </div>
           </form>
+        </article>
+
+        <article className="org-card">
+          <div className="org-list-head">
+            <h2 className="org-list-title">Payout details</h2>
+          </div>
+          <p className="org-subtitle">
+            Add your payout account so reservations can be accepted. Test values
+            are allowed for now.
+          </p>
+          {payoutMessage ? <p className="org-success">{payoutMessage}</p> : null}
+          {payoutError ? <p className="org-error">{payoutError}</p> : null}
+          {loadingProfile ? (
+            <p className="org-empty">Loading payout info...</p>
+          ) : null}
+          {!loadingProfile ? (
+            <form className="org-form" onSubmit={handleSavePayout}>
+              <div className="form-group">
+                <label htmlFor="org-payout-email">
+                  Payout email
+                  <InfoTip text="Email that should receive payout notifications (can be a test address)." />
+                </label>
+                <input
+                  id="org-payout-email"
+                  type="email"
+                  value={payoutEmail}
+                  onChange={(e) => setPayoutEmail(e.target.value)}
+                  placeholder="payouts@example.com"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="org-payout-name">
+                  Payout display name
+                  <InfoTip text="Name that appears for payout records (can be a test value)." />
+                </label>
+                <input
+                  id="org-payout-name"
+                  value={payoutDisplayName}
+                  onChange={(e) => setPayoutDisplayName(e.target.value)}
+                  placeholder="Neon Nights Promotions"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="org-payout-id">
+                  Payout account ID (optional)
+                  <InfoTip text="If you have a provider ID (example: acct_123), add it here. Leave blank to auto-generate a test ID." />
+                </label>
+                <input
+                  id="org-payout-id"
+                  value={payoutAccountId}
+                  onChange={(e) => setPayoutAccountId(e.target.value)}
+                  placeholder="acct_123"
+                />
+              </div>
+              <div className="org-actions">
+                <button
+                  type="submit"
+                  className="dash-btn-solid org-primary-btn"
+                  disabled={payoutSaving}
+                >
+                  {payoutSaving ? "Saving..." : "Save payout info"}
+                </button>
+              </div>
+            </form>
+          ) : null}
         </article>
 
         <article className="org-card">
