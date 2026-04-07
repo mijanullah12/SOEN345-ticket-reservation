@@ -56,7 +56,7 @@ export function useUserProfile(enabled = true): ProfileState {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   return state;
 }
