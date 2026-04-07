@@ -3,6 +3,7 @@ package ticketReservation.soen345.config;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -11,10 +12,12 @@ import org.springframework.data.mongodb.core.index.IndexOperations;
 import org.springframework.data.mongodb.core.index.IndexResolver;
 import org.springframework.data.mongodb.core.index.MongoPersistentEntityIndexResolver;
 import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
+import org.springframework.lang.NonNull;
 import ticketReservation.soen345.domain.User;
 
 @Configuration
 @EnableMongoAuditing
+@ConditionalOnBean(MongoTemplate.class)
 @RequiredArgsConstructor
 public class MongoConfig {
 
@@ -46,6 +49,7 @@ public class MongoConfig {
 
         indexOps.ensureIndex(new CompoundIndexDefinition(indexKeys) {
             @Override
+            @NonNull
             public Document getIndexOptions() {
                 return indexOptions;
             }
@@ -63,6 +67,7 @@ public class MongoConfig {
 
         indexOps.ensureIndex(new CompoundIndexDefinition(indexKeys) {
             @Override
+            @NonNull
             public Document getIndexOptions() {
                 return indexOptions;
             }

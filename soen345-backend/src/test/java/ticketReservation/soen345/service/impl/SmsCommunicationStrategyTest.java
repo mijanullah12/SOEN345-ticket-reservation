@@ -3,7 +3,6 @@ package ticketReservation.soen345.service.impl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ticketReservation.soen345.domain.Event;
@@ -26,9 +25,13 @@ class SmsCommunicationStrategyTest {
     @Mock
     private SmsSender smsSender;
 
-    @InjectMocks
-    private SmsCommunicationStrategy smsCommunicationStrategy =
-            new SmsCommunicationStrategy("+15551234567", smsSender);
+    private SmsCommunicationStrategy smsCommunicationStrategy;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        smsCommunicationStrategy =
+                new SmsCommunicationStrategy("+15551234567", smsSender);
+    }
 
     @Test
     void sendTo_UsesSmsSenderWithExpectedValues() {

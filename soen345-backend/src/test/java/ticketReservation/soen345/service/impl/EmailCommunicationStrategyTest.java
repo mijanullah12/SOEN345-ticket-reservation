@@ -3,7 +3,6 @@ package ticketReservation.soen345.service.impl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ticketReservation.soen345.domain.Event;
@@ -26,9 +25,13 @@ class EmailCommunicationStrategyTest {
     @Mock
     private EmailSender emailSender;
 
-    @InjectMocks
-    private EmailCommunicationStrategy emailCommunicationStrategy =
-            new EmailCommunicationStrategy("no-reply@tiqthat.me", emailSender);
+    private EmailCommunicationStrategy emailCommunicationStrategy;
+
+    @org.junit.jupiter.api.BeforeEach
+    void setUp() {
+        emailCommunicationStrategy =
+                new EmailCommunicationStrategy("no-reply@tiqthat.me", emailSender);
+    }
 
     @Test
     void sendTo_UsesEmailSenderWithExpectedValues() {
