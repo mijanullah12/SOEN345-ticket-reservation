@@ -23,6 +23,9 @@ vi.mock("@/lib/fetch-events", () => ({
   fetchEventsWithAuth: (...args: unknown[]) => fetchEventsWithAuthMock(...args),
 }));
 
+const mockFetch = vi.fn();
+vi.stubGlobal("fetch", mockFetch);
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -38,6 +41,10 @@ describe("OrganizerDashboardPage", () => {
 
   it("redirects to organizer login when token is unauthorized", async () => {
     cookiesGetMock.mockReturnValue({ value: "expired-token" });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ role: "ORGANIZER" }),
+    });
     fetchEventsWithAuthMock.mockResolvedValueOnce({
       ok: false,
       reason: "unauthorized",
@@ -50,6 +57,10 @@ describe("OrganizerDashboardPage", () => {
 
   it("renders organizer dashboard client for authenticated users", async () => {
     cookiesGetMock.mockReturnValue({ value: "good-token" });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ role: "ORGANIZER" }),
+    });
     fetchEventsWithAuthMock.mockResolvedValueOnce({
       ok: true,
       events: [],

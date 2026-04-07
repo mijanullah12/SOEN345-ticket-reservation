@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import RegisterPage from "@/app/register/page";
+import { RegisterForm } from "@/app/components/auth/register-form";
 
 const pushMock = vi.fn();
 
@@ -21,9 +21,9 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe("RegisterPage", () => {
+describe("RegisterForm", () => {
   it("renders the form with all required fields", () => {
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     expect(
       screen.getByRole("heading", { name: /create account/i }),
@@ -37,15 +37,15 @@ describe("RegisterPage", () => {
   });
 
   it("has a link to the login page", () => {
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     const link = screen.getByRole("link", { name: /sign in/i });
-    expect(link).toHaveAttribute("href", "/login");
+    expect(link).toHaveAttribute("href", "/dashboard");
   });
 
   it("shows validation error when neither email nor phone is provided", async () => {
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "John");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -61,7 +61,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error when password is too short", async () => {
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "John");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -78,7 +78,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error when password has no number", async () => {
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "John");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -97,7 +97,7 @@ describe("RegisterPage", () => {
 
   it("shows validation error when passwords do not match", async () => {
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "John");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -115,7 +115,7 @@ describe("RegisterPage", () => {
   it("calls the API and redirects to /login on success", async () => {
     apiMock.mockResolvedValueOnce({ id: "1" });
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "Jane");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -133,13 +133,13 @@ describe("RegisterPage", () => {
         email: "jane@test.com",
       }),
     });
-    expect(pushMock).toHaveBeenCalledWith("/login");
+    expect(pushMock).toHaveBeenCalledWith("/dashboard");
   });
 
   it("sends only phone (not email) when email is empty", async () => {
     apiMock.mockResolvedValueOnce({ id: "2" });
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "Jane");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -162,7 +162,7 @@ describe("RegisterPage", () => {
   it("displays API error message on failure", async () => {
     apiMock.mockRejectedValueOnce({ message: "Email already registered" });
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "Jane");
     await user.type(screen.getByLabelText(/last name/i), "Doe");
@@ -185,7 +185,7 @@ describe("RegisterPage", () => {
       ],
     });
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(<RegisterForm />);
 
     await user.type(screen.getByLabelText(/first name/i), "Jane");
     await user.type(screen.getByLabelText(/last name/i), "Doe");

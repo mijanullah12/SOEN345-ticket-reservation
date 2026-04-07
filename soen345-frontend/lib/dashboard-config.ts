@@ -4,7 +4,12 @@
  */
 export const DASHBOARD_BRAND = "Tiqthat";
 
-export type EventCategoryId = "movies" | "sports" | "concerts" | "travel";
+export type EventCategoryId =
+  | "all"
+  | "movies"
+  | "sports"
+  | "concerts"
+  | "travel";
 
 export interface EventCategoryDefinition {
   id: EventCategoryId;
@@ -20,6 +25,17 @@ export interface EventCategoryDefinition {
 }
 
 export const EVENT_CATEGORIES: EventCategoryDefinition[] = [
+  {
+    id: "all",
+    label: "All",
+    keywords: [],
+    imageHints: {
+      featured:
+        "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&q=80",
+      thumb: [],
+      hero: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&q=80",
+    },
+  },
   {
     id: "movies",
     label: "Movies",

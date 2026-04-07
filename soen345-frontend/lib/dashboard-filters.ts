@@ -15,6 +15,9 @@ export function eventsForCategory(
   events: Event[],
   category: EventCategoryDefinition,
 ): Event[] {
+  if (category.id === "all") {
+    return events;
+  }
   return events.filter((e) => {
     const text = eventText(e);
     return category.keywords.some((kw) => text.includes(kw.toLowerCase()));
