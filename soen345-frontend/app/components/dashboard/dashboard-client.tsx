@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   DASHBOARD_BRAND,
@@ -15,8 +17,10 @@ import {
   type SidebarView,
 } from "@/lib/dashboard-filters";
 import type { Event } from "@/lib/types";
-import { LogoutButton } from "../logout-button";
+import { LogoutButton } from "../../dashboard/logout-button";
 import { SidebarNavIcon } from "./sidebar-icons";
+import { ProfileMenu } from "./profile-menu";
+import { AuthModal, type AuthModalMode } from "./auth-modal";
 
 function formatEventStamp(iso: string): string {
   const d = new Date(iso);
@@ -51,12 +55,16 @@ const SIDEBAR_ITEMS: { id: SidebarView; label: string }[] = [
 export function DashboardClient({
   events,
   loadError,
+  isAuthenticated,
 }: {
   events: Event[];
   loadError: string | null;
+  isAuthenticated: boolean;
 }) {
+  const router = useRouter();
   const [sidebarView, setSidebarView] = useState<SidebarView>("live");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("movies");
+  const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
 
   const category = useMemo(() => categoryById(categoryId), [categoryId]);
 
@@ -107,7 +115,7 @@ export function DashboardClient({
           </ul>
         </nav>
         <div className="dash-sidebar-footer">
-          <LogoutButton />
+          {isAuthenticated ? <LogoutButton /> : null}
         </div>
       </aside>
 
@@ -126,13 +134,10 @@ export function DashboardClient({
               </button>
             ))}
           </nav>
-          <button
-            type="button"
-            className="dash-profile-btn"
-            aria-label="Account"
-          >
-            You
-          </button>
+          <ProfileMenu
+            isAuthenticated={isAuthenticated}
+            onOpenAuthModal={setAuthModal}
+          />
         </header>
 
         <div className="dash-ticker" aria-live="polite">
@@ -160,6 +165,15 @@ export function DashboardClient({
                 Your reserved tickets and confirmations will appear here once
                 booking is wired to the API.
               </p>
+              {!isAuthenticated ? (
+                <button
+                  type="button"
+                  className="dash-btn-solid"
+                  onClick={() => setAuthModal("login")}
+                >
+                  Log in to view tickets
+                </button>
+              ) : null}
             </div>
           ) : (
             <CategoryPanels
@@ -171,6 +185,16 @@ export function DashboardClient({
           )}
         </div>
       </div>
+
+      <AuthModal
+        mode={authModal}
+        onClose={() => setAuthModal(null)}
+        onSwitch={setAuthModal}
+        onAuthSuccess={() => {
+          setAuthModal(null);
+          router.refresh();
+        }}
+      />
     </div>
   );
 }

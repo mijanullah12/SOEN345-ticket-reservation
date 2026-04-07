@@ -6,6 +6,27 @@ export type FetchEventsResult =
   | { ok: false; reason: "unauthorized"; message?: string }
   | { ok: false; reason: "error"; message: string };
 
+export async function fetchEventsPublic(): Promise<FetchEventsResult> {
+  const res = await fetch(`${BACKEND_URL}/api/v1/events`, {
+    headers: {
+      Accept: "application/json",
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    return {
+      ok: false,
+      reason: "error",
+      message: text || `Events request failed (${res.status})`,
+    };
+  }
+
+  const events = (await res.json()) as Event[];
+  return { ok: true, events };
+}
+
 export async function fetchEventsWithAuth(
   token: string,
 ): Promise<FetchEventsResult> {

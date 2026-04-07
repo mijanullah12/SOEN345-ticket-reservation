@@ -2,7 +2,7 @@
  * Dashboard copy and taxonomy — adjust here instead of hunting through components.
  * Category tabs filter events by keywords in name/description (backend has no category field yet).
  */
-export const DASHBOARD_BRAND = "THE KINETIC";
+export const DASHBOARD_BRAND = "Tiqthat";
 
 export type EventCategoryId = "movies" | "sports" | "concerts" | "travel";
 

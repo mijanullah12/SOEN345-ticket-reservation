@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import { DashboardClient } from "@/app/dashboard/components/dashboard-client";
+import { DashboardClient } from "@/app/components/dashboard/dashboard-client";
 import type { Event } from "@/lib/types";
 
 vi.mock("next/image", () => ({

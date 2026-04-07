@@ -288,6 +288,20 @@ body {
   text-decoration: underline;
 }
 
+.auth-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--primary);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-link-btn:hover {
+  text-decoration: underline;
+}
+
 /* ─── Dashboard icon ──────────────────────────────── */
 
 .dashboard-icon {
@@ -328,6 +342,74 @@ body {
   background: var(--dash-bg);
   color: var(--dash-text);
   font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* â•â•â• Dashboard-styled auth (registration) â•â•â• */
+
+[data-app-shell="dashboard"].dash-auth-root {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      1200px 600px at 10% 10%,
+      rgb(167 255 196 / 0.28),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 90% 20%,
+      rgb(0 0 0 / 0.08),
+      transparent 55%
+    ),
+    var(--dash-bg);
+}
+
+[data-app-shell="dashboard"] .dash-auth-container {
+  background: transparent;
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .auth-card {
+  max-width: 520px;
+  border-radius: 0.75rem;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface);
+  box-shadow: 0 18px 60px rgb(0 0 0 / 0.08);
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .auth-title {
+  font-size: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .auth-subtitle {
+  color: var(--dash-text-muted);
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .form-group input {
+  background: var(--dash-surface-muted);
+  border-color: var(--dash-border);
+  color: var(--dash-text);
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .form-group input:focus {
+  border-color: var(--dash-accent-text);
+  box-shadow: 0 0 0 3px rgb(167 255 196 / 0.3);
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .auth-btn {
+  background: var(--dash-text);
+  color: var(--dash-surface);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .auth-btn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+[data-app-shell="dashboard"] .dash-auth-container .auth-footer a,
+[data-app-shell="dashboard"] .dash-auth-container .auth-link-btn {
+  color: var(--dash-accent-text);
 }
 
 /* Sidebar + main: always side-by-side so the nav reads as a true left menu */
@@ -516,9 +598,66 @@ body {
   border-radius: 9999px;
   border: 1px solid var(--dash-border);
   background: var(--dash-surface-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
   cursor: pointer;
+  color: var(--dash-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-profile-initial {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.dash-profile-wrap {
+  position: relative;
+}
+
+.dash-profile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  min-width: 160px;
+  background: var(--dash-surface);
+  border: 1px solid var(--dash-border);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+  display: flex;
+  flex-direction: column;
+  padding: 0.35rem;
+  z-index: 20;
+}
+
+.dash-profile-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--dash-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.dash-profile-item:hover {
+  background: var(--dash-surface-muted);
+}
+
+.dash-profile-menu .logout-btn {
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: var(--dash-text);
+  text-align: left;
+}
+
+.dash-profile-menu .logout-btn:hover:not(:disabled) {
+  border: none;
   color: var(--dash-text);
 }
 
@@ -631,4 +770,45 @@ body {
   text-align: center;
   color: var(--dash-text-muted);
   line-height: 1.6;
+}
+
+.dash-auth-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.dash-auth-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 0.45);
+  border: none;
+}
+
+.dash-auth-modal-card {
+  position: relative;
+  width: min(520px, 92vw);
+  z-index: 1;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface);
+  box-shadow: 0 22px 60px rgb(0 0 0 / 0.22);
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.dash-auth-modal-close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+}
+
+.dash-auth-modal .auth-card {
+  margin: 0;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 0.2);
 }
