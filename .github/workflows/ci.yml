@@ -11,6 +11,9 @@ jobs:
   frontend:
     name: Frontend (Next.js)
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
 
     steps:
       - name: Checkout Source
@@ -29,6 +32,18 @@ jobs:
         working-directory: soen345-frontend
         run: npm run lint
 
+      - name: Run Tests
+        working-directory: soen345-frontend
+        run: npm test
+
+      - name: Unit Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Test Results
+          path: soen345-frontend/test-results/junit.xml
+          reporter: jest-junit
+
       - name: Build
         working-directory: soen345-frontend
         run: npm run build
@@ -36,6 +51,9 @@ jobs:
   backend:
     name: Backend (Spring Boot)
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
 
     services:
       mongodb:
@@ -62,3 +80,11 @@ jobs:
         env:
           MONGODB_URI: mongodb://localhost:27017
         run: ./mvnw test
+
+      - name: Unit Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Unit Test Results
+          path: soen345-backend/target/surefire-reports/*.xml
+          reporter: java-junit
