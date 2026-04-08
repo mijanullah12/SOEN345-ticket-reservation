@@ -4,20 +4,25 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ticketReservation.soen345.domain.Event;
 import ticketReservation.soen345.domain.EventStatus;
+import ticketReservation.soen345.domain.PaymentInfo;
+import ticketReservation.soen345.domain.User;
 import ticketReservation.soen345.dto.request.CreateEventRequest;
 import ticketReservation.soen345.dto.request.UpdateEventRequest;
 import ticketReservation.soen345.dto.response.EventResponse;
 import ticketReservation.soen345.exception.ResourceNotFoundException;
 import ticketReservation.soen345.repository.EventRepository;
+import ticketReservation.soen345.repository.UserRepository;
 import ticketReservation.soen345.service.EventService;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
 
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
 
     @Override
     public EventResponse createEvent(CreateEventRequest request, String organizerId) {
@@ -98,6 +103,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private EventResponse mapToResponse(Event event) {
+        OrganizerSummary organizerSummary = organizerSummary(event.getOrganizerId());
         return EventResponse.builder()
                 .id(event.getId())
                 .name(event.getName())
@@ -107,9 +113,46 @@ public class EventServiceImpl implements EventService {
                 .capacity(event.getCapacity())
                 .ticketPrice(event.getTicketPrice())
                 .organizerId(event.getOrganizerId())
+                .organizerPayoutReady(isOrganizerPayoutReady(event.getOrganizerId()))
+                .organizerName(organizerSummary.name())
+                .organizerEmail(organizerSummary.email())
                 .status(event.getStatus())
                 .createdAt(event.getCreatedAt())
                 .updatedAt(event.getUpdatedAt())
                 .build();
+    }
+
+    private Boolean isOrganizerPayoutReady(String organizerId) {
+        if (organizerId == null || organizerId.isBlank()) {
+            return false;
+        }
+        return userRepository.findById(organizerId)
+                .map(User::getPaymentInfo)
+                .map(PaymentInfo::getPayoutAccountId)
+                .filter(value -> !value.isBlank())
+                .isPresent();
+    }
+
+    private OrganizerSummary organizerSummary(String organizerId) {
+        if (organizerId == null || organizerId.isBlank()) {
+            return new OrganizerSummary(null, null);
+        }
+        Optional<User> user = userRepository.findById(organizerId);
+        if (user.isEmpty()) {
+            return new OrganizerSummary(null, null);
+        }
+        User organizer = user.get();
+        String name = formatName(organizer.getFirstName(), organizer.getLastName());
+        return new OrganizerSummary(name, organizer.getEmail());
+    }
+
+    private String formatName(String first, String last) {
+        String safeFirst = first == null ? "" : first.trim();
+        String safeLast = last == null ? "" : last.trim();
+        String full = String.format("%s %s", safeFirst, safeLast).trim();
+        return full.isBlank() ? null : full;
+    }
+
+    private record OrganizerSummary(String name, String email) {
     }
 }

@@ -9,46 +9,38 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "users")
-public class User {
+@Document(collection = "payments")
+public class Payment {
 
     @Id
     private String id;
 
-    private String email;
+    private String payerUserId;
 
-    private String phone;
+    private String payeeUserId;
 
-    private String passwordHash;
-
-    private String firstName;
-
-    private String lastName;
-
-    private PaymentInfo paymentInfo;
+    private String providerPaymentId;
 
     @Builder.Default
-    private UserRole role = UserRole.CUSTOMER;
+    private PaymentProvider provider = PaymentProvider.STRIPE;
 
     @Builder.Default
-    private UserStatus status = UserStatus.ACTIVE;
+    private PaymentStatus status = PaymentStatus.PENDING;
 
-    @Builder.Default
-    private NotificationChannel preferredNotificationChannel = NotificationChannel.EMAIL;
+    private BigDecimal amount;
+
+    private String currency;
 
     @CreatedDate
     private Instant createdAt;
 
     @LastModifiedDate
     private Instant updatedAt;
-
-    public boolean hasPermission(Permission permission) {
-        return role != null && role.hasPermission(permission);
-    }
 }

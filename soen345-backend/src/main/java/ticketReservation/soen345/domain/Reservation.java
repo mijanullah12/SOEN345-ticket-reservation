@@ -25,6 +25,11 @@ public class Reservation {
 
     private String eventId;
 
+    private String paymentId;
+
+    @Builder.Default
+    private Integer quantity = 1;
+
     @Builder.Default
     private ReservationStatus status = ReservationStatus.ACTIVE;
 
