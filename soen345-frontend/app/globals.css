@@ -1162,6 +1162,25 @@ body {
   opacity: 0.88;
 }
 
+.dash-btn-outline {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.65rem 1.1rem;
+  background: transparent;
+  color: var(--dash-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid var(--dash-border);
+  cursor: pointer;
+  border-radius: var(--dash-radius);
+}
+
+.dash-btn-outline:hover:not(:disabled) {
+  background: var(--dash-surface-muted);
+}
+
 .dash-btn-accent {
   background: var(--dash-accent);
   color: var(--dash-accent-ink);
@@ -1219,6 +1238,32 @@ body {
   padding: 0.7rem 0.75rem;
 }
 
+.dash-reserve-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dash-reserve-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--dash-text-muted);
+}
+
+.dash-reserve-qty input {
+  width: 4.5rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface);
+  color: var(--dash-text);
+  font-size: 0.8rem;
+}
+
 .dash-reserve-item-name,
 .dash-tickets-item-name {
   margin: 0;
@@ -1251,6 +1296,18 @@ body {
   border: 1px solid #fca5a5;
   background: #fee2e2;
   padding: 0.3rem 0.45rem;
+}
+
+.dash-tickets-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dash-receipt-btn {
+  margin-top: 0;
 }
 
 .profile-card-neo {
@@ -1398,6 +1455,71 @@ body {
   font-size: 0.86rem;
 }
 
+.info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+}
+
+.info-tip-button {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  color: var(--dash-text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.info-tip-button:focus-visible {
+  outline: 2px solid var(--dash-accent);
+  outline-offset: 2px;
+}
+
+.info-tip-text {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  min-width: 180px;
+  max-width: 260px;
+  background: #111827;
+  color: #f9fafb;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.2rem;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  z-index: 5;
+}
+
+.info-tip:hover .info-tip-text,
+.info-tip-button:focus-visible + .info-tip-text {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.stripe-card-field {
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  padding: 0.6rem 0.65rem;
+  border-radius: var(--dash-radius);
+}
+
+.stripe-card-field:focus-within {
+  border-color: var(--dash-accent-text);
+  box-shadow: 0 0 0 3px rgb(167 255 196 / 0.3);
+}
+
 .dash-auth-modal {
   position: fixed;
   inset: 0;
@@ -1497,5 +1619,37 @@ body {
 
   .dash-auth-tab {
     padding-inline: 1rem;
+  }
+}
+
+.event-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.event-details-item {
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  padding: 0.7rem 0.75rem;
+}
+
+.event-details-label {
+  margin: 0;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dash-text-muted);
+}
+
+.event-details-value {
+  margin: 0.35rem 0 0;
+  font-weight: 600;
+}
+
+@media (width <= 900px) {
+  .event-details-grid {
+    grid-template-columns: 1fr;
   }
 }

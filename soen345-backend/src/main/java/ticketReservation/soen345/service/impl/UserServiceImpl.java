@@ -4,17 +4,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ticketReservation.soen345.domain.NotificationChannel;
+import ticketReservation.soen345.domain.PaymentInfo;
 import ticketReservation.soen345.domain.User;
 import ticketReservation.soen345.domain.UserRole;
 import ticketReservation.soen345.domain.UserStatus;
+import ticketReservation.soen345.dto.request.PaymentInfoRequest;
 import ticketReservation.soen345.dto.request.RegisterRequest;
 import ticketReservation.soen345.dto.request.UpdateUserProfileRequest;
+import ticketReservation.soen345.dto.response.PaymentInfoResponse;
 import ticketReservation.soen345.dto.response.RegisterResponse;
 import ticketReservation.soen345.dto.response.UserResponse;
 import ticketReservation.soen345.exception.DuplicateResourceException;
 import ticketReservation.soen345.exception.ResourceNotFoundException;
 import ticketReservation.soen345.repository.UserRepository;
 import ticketReservation.soen345.service.UserService;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -108,6 +113,11 @@ public class UserServiceImpl implements UserService {
             user.setPreferredNotificationChannel(request.getPreferredNotificationChannel());
         }
 
+        if (request.getPaymentInfo() != null) {
+            PaymentInfo updatedPaymentInfo = mergePaymentInfo(user.getPaymentInfo(), request.getPaymentInfo());
+            user.setPaymentInfo(updatedPaymentInfo);
+        }
+
         User saved = userRepository.save(user);
         return mapToUserResponse(saved);
     }
@@ -161,6 +171,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponse mapToUserResponse(User user) {
+        PaymentInfoResponse paymentInfo = mapToPaymentInfoResponse(user.getPaymentInfo());
         return UserResponse.builder()
                 .id(user.getId())
                 .firstName(user.getFirstName())
@@ -168,10 +179,82 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .phone(user.getPhone())
                 .preferredNotificationChannel(user.getPreferredNotificationChannel())
+                .paymentInfo(paymentInfo)
                 .role(user.getRole())
                 .status(user.getStatus())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
+    }
+
+    private PaymentInfoResponse mapToPaymentInfoResponse(PaymentInfo paymentInfo) {
+        if (paymentInfo == null) {
+            return null;
+        }
+        return PaymentInfoResponse.builder()
+                .customerId(paymentInfo.getCustomerId())
+                .defaultPaymentMethodId(paymentInfo.getDefaultPaymentMethodId())
+                .payoutAccountId(paymentInfo.getPayoutAccountId())
+                .payoutEmail(paymentInfo.getPayoutEmail())
+                .payoutDisplayName(paymentInfo.getPayoutDisplayName())
+                .build();
+    }
+
+    private PaymentInfo mergePaymentInfo(PaymentInfo existing, PaymentInfoRequest request) {
+        boolean payoutEmailProvided = request.getPayoutEmail() != null;
+        boolean payoutDisplayNameProvided = request.getPayoutDisplayName() != null;
+
+        String customerId = request.getCustomerId() != null
+                ? normalizePaymentField(request.getCustomerId())
+                : existing != null ? existing.getCustomerId() : null;
+        String defaultPaymentMethodId = request.getDefaultPaymentMethodId() != null
+                ? normalizePaymentField(request.getDefaultPaymentMethodId())
+                : existing != null ? existing.getDefaultPaymentMethodId() : null;
+        String payoutAccountId = request.getPayoutAccountId() != null
+                ? normalizePaymentField(request.getPayoutAccountId())
+                : existing != null ? existing.getPayoutAccountId() : null;
+        String payoutEmail = payoutEmailProvided
+                ? normalizePaymentField(request.getPayoutEmail())
+                : existing != null ? existing.getPayoutEmail() : null;
+        String payoutDisplayName = payoutDisplayNameProvided
+                ? normalizePaymentField(request.getPayoutDisplayName())
+                : existing != null ? existing.getPayoutDisplayName() : null;
+
+        boolean hasFriendlyDetails = payoutEmail != null || payoutDisplayName != null;
+        boolean shouldGenerateFake = Boolean.TRUE.equals(request.getCreateFakePayoutAccount())
+                || (payoutAccountId == null && hasFriendlyDetails
+                && (payoutEmailProvided || payoutDisplayNameProvided));
+
+        if (payoutAccountId == null && shouldGenerateFake) {
+            payoutAccountId = generateFakePayoutAccountId();
+        }
+
+        if (customerId == null
+                && defaultPaymentMethodId == null
+                && payoutAccountId == null
+                && payoutEmail == null
+                && payoutDisplayName == null) {
+            return null;
+        }
+
+        return PaymentInfo.builder()
+                .customerId(customerId)
+                .defaultPaymentMethodId(defaultPaymentMethodId)
+                .payoutAccountId(payoutAccountId)
+                .payoutEmail(payoutEmail)
+                .payoutDisplayName(payoutDisplayName)
+                .build();
+    }
+
+    private String normalizePaymentField(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private String generateFakePayoutAccountId() {
+        return "fake_payout_" + UUID.randomUUID();
     }
 }

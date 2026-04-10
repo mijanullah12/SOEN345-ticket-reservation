@@ -22,6 +22,7 @@ public class UserResponse {
     private String email;
     private String phone;
     private NotificationChannel preferredNotificationChannel;
+    private PaymentInfoResponse paymentInfo;
     private UserRole role;
     private UserStatus status;
     private Instant createdAt;

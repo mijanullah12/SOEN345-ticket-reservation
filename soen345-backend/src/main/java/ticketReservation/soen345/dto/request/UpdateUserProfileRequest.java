@@ -31,4 +31,6 @@ public class UpdateUserProfileRequest {
     private String lastName;
 
     private NotificationChannel preferredNotificationChannel;
+
+    private PaymentInfoRequest paymentInfo;
 }

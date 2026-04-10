@@ -23,6 +23,9 @@ public class EventResponse {
     private Integer capacity;
     private BigDecimal ticketPrice;
     private String organizerId;
+    private Boolean organizerPayoutReady;
+    private String organizerName;
+    private String organizerEmail;
     private EventStatus status;
     private Instant createdAt;
     private Instant updatedAt;
