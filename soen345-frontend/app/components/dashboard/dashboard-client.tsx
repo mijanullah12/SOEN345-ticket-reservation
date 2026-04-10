@@ -46,7 +46,6 @@ function formatMoney(value: number | string): string {
 }
 
 const SIDEBAR_ITEMS: { id: SidebarView; label: string }[] = [
-  { id: "live", label: "Available Events" },
   { id: "upcoming", label: "Upcoming Events" },
   { id: "archive", label: "Reservation History" },
   { id: "tickets", label: "Tickets" },
@@ -62,7 +61,7 @@ export function DashboardClient({
   isAuthenticated: boolean;
 }) {
   const router = useRouter();
-  const [sidebarView, setSidebarView] = useState<SidebarView>("live");
+  const [sidebarView, setSidebarView] = useState<SidebarView>("upcoming");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");

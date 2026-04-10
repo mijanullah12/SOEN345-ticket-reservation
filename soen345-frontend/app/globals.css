@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-geist-sans: "Geist";
+  --font-geist-mono: "Geist Mono";
   --background: #f8f9fa;
   --foreground: #1a1a2e;
   --card-bg: #ffffff;
@@ -1437,4 +1439,30 @@ body {
 .dash-auth-modal .auth-card {
   margin: 0;
   box-shadow: 0 20px 60px rgb(0 0 0 / 0.2);
+}
+
+.dash-auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 1rem 1rem 0;
+  background: var(--dash-surface);
+}
+
+.dash-auth-tab {
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface-muted);
+  color: var(--dash-text-muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+}
+
+.dash-auth-tab[data-active="true"] {
+  background: var(--dash-accent);
+  color: var(--dash-accent-text);
+  border-color: var(--dash-accent-muted);
 }

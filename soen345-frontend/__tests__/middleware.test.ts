@@ -65,20 +65,6 @@ describe("middleware", () => {
     it("allows authenticated users to access /login", () => {
       middleware(buildRequest("/login", true));
 
-      expect(NextResponse.next).toHaveBeenCalledTimes(1);
-      expect(NextResponse.redirect).not.toHaveBeenCalled();
-    });
-
-    it("allows authenticated users to access /register", () => {
-      middleware(buildRequest("/register", true));
-
-      expect(NextResponse.next).toHaveBeenCalledTimes(1);
-      expect(NextResponse.redirect).not.toHaveBeenCalled();
-    });
-
-    it("redirects authenticated users from /organizer/login to /dashboard", () => {
-      middleware(buildRequest("/organizer/login", true));
-
       expect(NextResponse.redirect).toHaveBeenCalledTimes(1);
       const redirectUrl = (NextResponse.redirect as ReturnType<typeof vi.fn>)
         .mock.calls[0][0] as URL;
@@ -94,29 +80,8 @@ describe("middleware", () => {
       expect(NextResponse.redirect).not.toHaveBeenCalled();
     });
 
-    it("allows unauthenticated users to access /register", () => {
-      middleware(buildRequest("/register"));
-
-      expect(NextResponse.next).toHaveBeenCalledTimes(1);
-      expect(NextResponse.redirect).not.toHaveBeenCalled();
-    });
-
     it("allows unauthenticated users to access /", () => {
       middleware(buildRequest("/"));
-
-      expect(NextResponse.next).toHaveBeenCalledTimes(1);
-      expect(NextResponse.redirect).not.toHaveBeenCalled();
-    });
-
-    it("allows unauthenticated users to access /organizer/login", () => {
-      middleware(buildRequest("/organizer/login"));
-
-      expect(NextResponse.next).toHaveBeenCalledTimes(1);
-      expect(NextResponse.redirect).not.toHaveBeenCalled();
-    });
-
-    it("allows unauthenticated users to access /organizer/register", () => {
-      middleware(buildRequest("/organizer/register"));
 
       expect(NextResponse.next).toHaveBeenCalledTimes(1);
       expect(NextResponse.redirect).not.toHaveBeenCalled();

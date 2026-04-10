@@ -10,7 +10,6 @@ type LoginFormProps = {
   onSuccess?: () => void;
   onSwitchToRegister?: () => void;
   useModalLinks?: boolean;
-  showOrganizerLinks?: boolean;
 };
 
 export function LoginForm({
@@ -18,7 +17,6 @@ export function LoginForm({
   onSuccess,
   onSwitchToRegister,
   useModalLinks = false,
-  showOrganizerLinks = true,
 }: LoginFormProps) {
   const router = useRouter();
 
@@ -35,7 +33,7 @@ export function LoginForm({
     try {
       await api("/api/auth/login", {
         method: "POST",
-        body: JSON.stringify({ identifier, password, portal: "user" }),
+        body: JSON.stringify({ identifier, password }),
       });
       if (onSuccess) {
         onSuccess();
@@ -54,7 +52,7 @@ export function LoginForm({
     <div className="auth-card">
       <h1 className="auth-title">Sign In</h1>
       <p className="auth-subtitle">
-        Welcome back! Enter your credentials to continue.
+        Welcome back. Sign in with any customer or organizer account.
       </p>
 
       {error && <div className="auth-error">{error}</div>}
@@ -103,19 +101,10 @@ export function LoginForm({
           <Link href="/dashboard">Create one</Link>
         )}
       </p>
-
-      {showOrganizerLinks ? (
-        <>
-          <p className="auth-footer">
-            Organizer access?{" "}
-            <Link href="/organizer/login">Login as organizer</Link>
-          </p>
-          <p className="auth-footer">
-            Need to create organizer accounts?{" "}
-            <Link href="/organization/register">Create organizer account</Link>
-          </p>
-        </>
-      ) : null}
+      <p className="auth-footer">
+        Need to create organizer accounts?{" "}
+        <Link href="/organization/register">Create organizer account</Link>
+      </p>
     </div>
   );
 }

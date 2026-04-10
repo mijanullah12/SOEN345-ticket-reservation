@@ -92,9 +92,6 @@ describe("DashboardClient", () => {
       screen.getByRole("navigation", { name: /event views/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /^Available Events$/i }),
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole("button", { name: /^Upcoming Events$/i }),
     ).toBeInTheDocument();
     expect(
@@ -166,12 +163,16 @@ describe("DashboardClient", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows a movie event on Live + Movies when name matches keywords", () => {
+  it("shows a movie event on the default Upcoming view when name matches keywords", () => {
+    const future = new Date();
+    future.setDate(future.getDate() + 2);
+    future.setHours(20, 0, 0, 0);
+
     const events: Event[] = [
       makeEvent({
         id: "e1",
         name: "Indie Film Festival",
-        date: atLocalToday(20, 0),
+        date: future.toISOString(),
       }),
     ];
 
@@ -257,11 +258,16 @@ describe("DashboardClient", () => {
 
   it("shows ticker text for the selected category", async () => {
     const user = userEvent.setup();
+    const future = new Date();
+    future.setDate(future.getDate() + 2);
+    future.setHours(20, 0, 0, 0);
+
     const events: Event[] = [
       makeEvent({
         id: "t1",
         name: "Jazz Night",
         description: "live concert experience",
+        date: future.toISOString(),
         status: "ACTIVE",
       }),
     ];
@@ -282,16 +288,25 @@ describe("DashboardClient", () => {
 
   it("filters events using location and keyword search fields", async () => {
     const user = userEvent.setup();
+    const futureA = new Date();
+    futureA.setDate(futureA.getDate() + 2);
+    futureA.setHours(18, 0, 0, 0);
+    const futureB = new Date();
+    futureB.setDate(futureB.getDate() + 3);
+    futureB.setHours(18, 0, 0, 0);
+
     const events: Event[] = [
       makeEvent({
         id: "l1",
         name: "Downtown Concert",
         description: "live concert",
+        date: futureA.toISOString(),
         location: "Montreal",
       }),
       makeEvent({
         id: "l2",
         name: "Cinema Evening",
+        date: futureB.toISOString(),
         description: "movie special",
         location: "Toronto",
       }),
@@ -320,25 +335,27 @@ describe("DashboardClient", () => {
 
   it("applies filtering by date only", async () => {
     const user = userEvent.setup();
-    const today = new Date();
-    today.setHours(18, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const dateValue = `${today.getFullYear()}-${String(
-      today.getMonth() + 1,
-    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const upcomingA = new Date();
+    upcomingA.setDate(upcomingA.getDate() + 2);
+    upcomingA.setHours(18, 0, 0, 0);
+    const upcomingB = new Date(upcomingA);
+    upcomingB.setDate(upcomingA.getDate() + 1);
+    const dateValue = `${upcomingA.getFullYear()}-${String(
+      upcomingA.getMonth() + 1,
+    ).padStart(2, "0")}-${String(upcomingA.getDate()).padStart(2, "0")}`;
+    const nextDateName = "Later Show";
 
     const events: Event[] = [
       makeEvent({
         id: "d1",
-        name: "Today Show",
-        date: today.toISOString(),
+        name: "Upcoming Show",
+        date: upcomingA.toISOString(),
         location: "Montreal",
       }),
       makeEvent({
         id: "d2",
-        name: "Tomorrow Show",
-        date: tomorrow.toISOString(),
+        name: nextDateName,
+        date: upcomingB.toISOString(),
         location: "Montreal",
       }),
     ];
@@ -352,8 +369,8 @@ describe("DashboardClient", () => {
     );
 
     await user.type(screen.getByLabelText(/dates/i), dateValue);
-    expect(screen.getAllByText(/today show/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/tomorrow show/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/upcoming show/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(new RegExp(nextDateName, "i"))).not.toBeInTheDocument();
   });
 
   it("allows hiding and unhiding the search bar", async () => {

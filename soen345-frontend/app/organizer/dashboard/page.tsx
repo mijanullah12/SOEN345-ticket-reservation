@@ -9,7 +9,7 @@ export default async function OrganizerDashboardPage() {
   const token = cookieStore.get("auth_token")?.value;
 
   if (!token) {
-    redirect("/organizer/login?redirect=/organizer/dashboard");
+    redirect("/login?redirect=/organizer/dashboard");
   }
 
   const profileRes = await fetch(`${BACKEND_URL}/api/v1/users/me`, {
@@ -35,7 +35,7 @@ export default async function OrganizerDashboardPage() {
   const result = await fetchEventsWithAuth(token);
 
   if (!result.ok && result.reason === "unauthorized") {
-    redirect("/organizer/login?redirect=/organizer/dashboard");
+    redirect("/login?redirect=/organizer/dashboard");
   }
 
   const events = result.ok ? result.events : [];

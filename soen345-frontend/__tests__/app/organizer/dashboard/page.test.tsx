@@ -35,7 +35,7 @@ describe("OrganizerDashboardPage", () => {
     cookiesGetMock.mockReturnValue(undefined);
 
     await expect(OrganizerDashboardPage()).rejects.toThrow(
-      "REDIRECT:/organizer/login?redirect=/organizer/dashboard",
+      "REDIRECT:/login?redirect=/organizer/dashboard",
     );
   });
 
@@ -51,7 +51,7 @@ describe("OrganizerDashboardPage", () => {
     });
 
     await expect(OrganizerDashboardPage()).rejects.toThrow(
-      "REDIRECT:/organizer/login?redirect=/organizer/dashboard",
+      "REDIRECT:/login?redirect=/organizer/dashboard",
     );
   });
 

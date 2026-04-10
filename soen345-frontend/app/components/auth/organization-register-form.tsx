@@ -36,7 +36,7 @@ type OrganizationRegisterFormProps = {
 };
 
 export function OrganizationRegisterForm({
-  redirectToOrganizerLogin = "/organizer/login",
+  redirectToOrganizerLogin = "/login",
   onSuccess,
   onSwitchToOrgLogin,
   useModalLinks = false,
@@ -220,7 +220,7 @@ export function OrganizationRegisterForm({
             Login as organizer
           </button>
         ) : (
-          <Link href="/organizer/login">Login as organizer</Link>
+          <Link href="/login">Log in</Link>
         )}
       </p>
     </div>
