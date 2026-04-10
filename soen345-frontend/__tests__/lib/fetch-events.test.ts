@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BACKEND_URL } from "@/lib/backend";
-import { fetchEventsWithAuth } from "@/lib/fetch-events";
+import {
+  fetchEventsWithAuth,
+  fetchOrganizerEventsWithAuth,
+} from "@/lib/fetch-events";
 
 describe("fetchEventsWithAuth", () => {
   beforeEach(() => {
@@ -64,5 +67,36 @@ describe("fetchEventsWithAuth", () => {
       reason: "error",
       message: "Server exploded",
     });
+  });
+});
+
+describe("fetchOrganizerEventsWithAuth", () => {
+  beforeEach(() => {
+    vi.stubGlobal("fetch", vi.fn() as typeof fetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("requests the organizer-only events endpoint", async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response("[]", {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    await fetchOrganizerEventsWithAuth("organizer-token");
+
+    expect(fetch).toHaveBeenCalledWith(
+      `${BACKEND_URL}/api/v1/events/mine`,
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer organizer-token",
+        }),
+      }),
+    );
   });
 });

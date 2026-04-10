@@ -110,7 +110,7 @@ export function OrganizerDashboardClient({
   const refreshEvents = useCallback(async () => {
     setLoadingEvents(true);
     try {
-      const data = await api<Event[]>("/api/events", { method: "GET" });
+      const data = await api<Event[]>("/api/events/mine", { method: "GET" });
       setEvents(data);
     } catch (err: unknown) {
       const e = err as { message?: string };

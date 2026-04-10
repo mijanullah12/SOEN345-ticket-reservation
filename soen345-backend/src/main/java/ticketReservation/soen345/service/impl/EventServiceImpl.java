@@ -91,6 +91,14 @@ public class EventServiceImpl implements EventService {
                 .toList();
     }
 
+    @Override
+    public List<EventResponse> getOrganizerEvents(String organizerId) {
+        return eventRepository.findByOrganizerId(organizerId)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     private Event findActiveEventById(String eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", eventId));

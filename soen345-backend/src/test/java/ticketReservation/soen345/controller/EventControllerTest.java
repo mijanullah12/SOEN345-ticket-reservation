@@ -395,6 +395,39 @@ class EventControllerTest {
         }
     }
 
+    @Nested
+    @DisplayName("GET /api/v1/events/mine")
+    class GetOrganizerEventsTests {
+
+        @Test
+        @DisplayName("Should return organizer events for organizer")
+        @WithMockUser(username = "org456", roles = "ORGANIZER")
+        void getOrganizerEvents_WithOrganizerRole_Returns200() throws Exception {
+            List<EventResponse> events = List.of(buildEventResponse("e1", EventStatus.ACTIVE));
+            when(eventService.getOrganizerEvents("org456")).thenReturn(events);
+
+            mockMvc.perform(get(BASE_URL + "/mine"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.length()").value(1))
+                    .andExpect(jsonPath("$[0].organizerId").value("org456"));
+        }
+
+        @Test
+        @DisplayName("Should return 403 when called by customer")
+        @WithMockUser(roles = "CUSTOMER")
+        void getOrganizerEvents_WithCustomerRole_Returns403() throws Exception {
+            mockMvc.perform(get(BASE_URL + "/mine"))
+                    .andExpect(status().isForbidden());
+        }
+
+        @Test
+        @DisplayName("Should return 403 when unauthenticated")
+        void getOrganizerEvents_Unauthenticated_Returns403() throws Exception {
+            mockMvc.perform(get(BASE_URL + "/mine"))
+                    .andExpect(status().isForbidden());
+        }
+    }
+
     // ================================================================
     // Helpers
     // ================================================================

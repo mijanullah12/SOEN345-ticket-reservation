@@ -52,7 +52,7 @@ describe("OrganizerDashboardClient", () => {
     const user = userEvent.setup();
     apiMock.mockImplementation(async (path, options) => {
       const method = options?.method ?? "GET";
-      if (path === "/api/events" && method === "GET") return [];
+      if (path === "/api/events/mine" && method === "GET") return [];
       return [];
     });
 
@@ -60,7 +60,7 @@ describe("OrganizerDashboardClient", () => {
     await user.click(screen.getByRole("button", { name: /refresh/i }));
 
     expect(apiMock).toHaveBeenCalledWith(
-      "/api/events",
+      "/api/events/mine",
       expect.objectContaining({ method: "GET" }),
     );
   });
@@ -69,7 +69,7 @@ describe("OrganizerDashboardClient", () => {
     const user = userEvent.setup();
     apiMock.mockImplementation(async (path, options) => {
       const method = options?.method ?? "GET";
-      if (path === "/api/events" && method === "GET") {
+      if (path === "/api/events/mine" && method === "GET") {
         return [mkEvent("1", "Old Name")];
       }
       return [];
@@ -97,7 +97,7 @@ describe("OrganizerDashboardClient", () => {
     const user = userEvent.setup();
     apiMock.mockImplementation(async (path, options) => {
       const method = options?.method ?? "GET";
-      if (path === "/api/events" && method === "GET") {
+      if (path === "/api/events/mine" && method === "GET") {
         return [mkEvent("1", "Cancelable Event")];
       }
       if (path === "/api/events/1/cancel" && method === "PATCH") {
