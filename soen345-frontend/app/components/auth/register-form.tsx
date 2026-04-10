@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,6 +34,7 @@ type RegisterFormProps = {
   onSuccess?: () => void;
   onSwitchToLogin?: () => void;
   useModalLinks?: boolean;
+  headerSlot?: ReactNode;
 };
 
 export function RegisterForm({
@@ -40,6 +42,7 @@ export function RegisterForm({
   onSuccess,
   onSwitchToLogin,
   useModalLinks = false,
+  headerSlot,
 }: RegisterFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -113,6 +116,7 @@ export function RegisterForm({
 
   return (
     <div className="auth-card">
+      {headerSlot}
       <h1 className="auth-title">Create Account</h1>
       <p className="auth-subtitle">Fill in your details to get started.</p>
 

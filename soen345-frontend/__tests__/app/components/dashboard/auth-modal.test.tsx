@@ -8,11 +8,25 @@ vi.mock("@/app/components/auth/login-form", () => ({
 }));
 
 vi.mock("@/app/components/auth/register-form", () => ({
-  RegisterForm: () => <div>Customer Register Form</div>,
+  RegisterForm: ({ headerSlot }: { headerSlot?: React.ReactNode }) => (
+    <div>
+      {headerSlot}
+      Customer Register Form
+    </div>
+  ),
 }));
 
 vi.mock("@/app/components/auth/organization-register-form", () => ({
-  OrganizationRegisterForm: () => <div>Organizer Register Form</div>,
+  OrganizationRegisterForm: ({
+    headerSlot,
+  }: {
+    headerSlot?: React.ReactNode;
+  }) => (
+    <div>
+      {headerSlot}
+      Organizer Register Form
+    </div>
+  ),
 }));
 
 describe("AuthModal signup tabs", () => {

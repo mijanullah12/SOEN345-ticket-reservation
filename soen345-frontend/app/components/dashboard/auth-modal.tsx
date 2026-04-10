@@ -47,6 +47,32 @@ export function AuthModal({
 
   if (!mode) return null;
 
+  const signupTabs =
+    mode === "signup" || mode === "orgSignup" ? (
+      <div className="dash-auth-tabs" role="tablist" aria-label="Sign up options">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={signupTab === "customer"}
+          className="dash-auth-tab"
+          data-active={signupTab === "customer"}
+          onClick={() => setSignupTab("customer")}
+        >
+          Customer
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={signupTab === "organizer"}
+          className="dash-auth-tab"
+          data-active={signupTab === "organizer"}
+          onClick={() => setSignupTab("organizer")}
+        >
+          Organizer
+        </button>
+      </div>
+    ) : null;
+
   return (
     <div className="dash-auth-modal" role="dialog" aria-modal="true">
       <button
@@ -74,39 +100,19 @@ export function AuthModal({
         ) : null}
         {mode === "signup" || mode === "orgSignup" ? (
           <>
-            <div className="dash-auth-tabs" role="tablist" aria-label="Sign up options">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={signupTab === "customer"}
-                className="dash-auth-tab"
-                data-active={signupTab === "customer"}
-                onClick={() => setSignupTab("customer")}
-              >
-                Customer
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={signupTab === "organizer"}
-                className="dash-auth-tab"
-                data-active={signupTab === "organizer"}
-                onClick={() => setSignupTab("organizer")}
-              >
-                Organizer
-              </button>
-            </div>
             {signupTab === "customer" ? (
               <RegisterForm
                 useModalLinks
                 onSwitchToLogin={() => onSwitch("login")}
                 onSuccess={() => onSwitch("login")}
+                headerSlot={signupTabs}
               />
             ) : (
               <OrganizationRegisterForm
                 useModalLinks
                 onSwitchToOrgLogin={() => onSwitch("login")}
                 onSuccess={() => onSwitch("login")}
+                headerSlot={signupTabs}
               />
             )}
           </>

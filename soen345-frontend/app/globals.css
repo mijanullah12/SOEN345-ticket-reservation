@@ -401,8 +401,8 @@ body {
   letter-spacing: 0.12em;
 }
 
-[data-app-shell="dashboard"]
-  .dash-auth-container
+[data-app-shell="dashboard"],
+  .dash-auth-container,
   .auth-btn:hover:not(:disabled) {
   opacity: 0.88;
 }
@@ -1421,6 +1421,7 @@ body {
   width: min(520px, 92vw);
   z-index: 1;
   border: 1px solid var(--dash-border);
+  border-radius: 0.75rem;
   background: var(--dash-surface);
   box-shadow: 0 22px 60px rgb(0 0 0 / 0.22);
   max-height: 70vh;
@@ -1429,8 +1430,9 @@ body {
 
 .dash-auth-modal-close {
   position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
   padding: 0.35rem 0.75rem;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
@@ -1438,31 +1440,63 @@ body {
 
 .dash-auth-modal .auth-card {
   margin: 0;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.2);
+  width: 100%;
+  max-width: none;
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: none;
+  padding: 2.25rem 2.5rem 2.5rem;
 }
 
 .dash-auth-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-  padding: 1rem 1rem 0;
-  background: var(--dash-surface);
+  gap: 0.2rem;
+  width: max-content;
+  margin: 0 auto 1.35rem;
+  padding: 0.2rem;
+  border: 2px solid rgb(24 24 24);
+  border-radius: 999px;
+  background: rgb(24 24 24);
 }
 
 .dash-auth-tab {
-  border: 1px solid var(--dash-border);
-  background: var(--dash-surface-muted);
-  color: var(--dash-text-muted);
-  font-size: 0.72rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(241 241 241 / 0.92);
+  font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  padding: 0.7rem 0.85rem;
+  padding: 0.75rem 1.45rem;
   cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
 }
 
 .dash-auth-tab[data-active="true"] {
-  background: var(--dash-accent);
-  color: var(--dash-accent-text);
-  border-color: var(--dash-accent-muted);
+  background: rgb(244 244 244);
+  color: rgb(24 24 24);
+}
+
+@media (max-width: 640px) {
+  .dash-auth-modal .auth-card {
+    padding: 2rem 1.25rem 1.5rem;
+  }
+
+  .dash-auth-modal-close {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .dash-auth-tabs {
+    display: grid;
+    width: 100%;
+  }
+
+  .dash-auth-tab {
+    padding-inline: 1rem;
+  }
 }
