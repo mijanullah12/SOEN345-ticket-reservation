@@ -16,5 +16,6 @@ export default defineConfig({
     environment: "happy-dom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["__tests__/**/*.test.{ts,tsx}"],
+    reporters: ["verbose", ["junit", { outputFile: "test-results/junit.xml" }]],
   },
 });
