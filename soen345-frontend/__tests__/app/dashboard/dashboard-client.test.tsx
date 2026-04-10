@@ -30,7 +30,6 @@ vi.mock("next/link", () => ({
 vi.mock("next/image", () => ({
   default: ({
     alt,
-    src,
     className,
     sizes: _sizes,
     fill: _fill,
@@ -48,7 +47,6 @@ vi.mock("next/image", () => ({
       aria-label={alt ?? ""}
       className={className}
       data-testid="mock-next-image"
-      data-src={typeof src === "string" ? src : ""}
     />
   ),
 }));
@@ -370,7 +368,9 @@ describe("DashboardClient", () => {
 
     await user.type(screen.getByLabelText(/dates/i), dateValue);
     expect(screen.getAllByText(/upcoming show/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText(new RegExp(nextDateName, "i"))).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(new RegExp(nextDateName, "i")),
+    ).not.toBeInTheDocument();
   });
 
   it("allows hiding and unhiding the search bar", async () => {

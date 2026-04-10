@@ -405,11 +405,6 @@ body {
   letter-spacing: 0.12em;
 }
 
-[data-app-shell="dashboard"],
-  .dash-auth-container,
-  .auth-btn:hover:not(:disabled) {
-}
-
 [data-app-shell="dashboard"] .dash-auth-container .auth-footer a,
 [data-app-shell="dashboard"] .dash-auth-container .auth-link-btn {
   color: var(--dash-accent-text);

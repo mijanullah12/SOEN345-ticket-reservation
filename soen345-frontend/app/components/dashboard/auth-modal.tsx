@@ -49,7 +49,11 @@ export function AuthModal({
 
   const signupTabs =
     mode === "signup" || mode === "orgSignup" ? (
-      <div className="dash-auth-tabs" role="tablist" aria-label="Sign up options">
+      <div
+        className="dash-auth-tabs"
+        role="tablist"
+        aria-label="Sign up options"
+      >
         <button
           type="button"
           role="tab"
@@ -99,23 +103,21 @@ export function AuthModal({
           />
         ) : null}
         {mode === "signup" || mode === "orgSignup" ? (
-          <>
-            {signupTab === "customer" ? (
-              <RegisterForm
-                useModalLinks
-                onSwitchToLogin={() => onSwitch("login")}
-                onSuccess={() => onSwitch("login")}
-                headerSlot={signupTabs}
-              />
-            ) : (
-              <OrganizationRegisterForm
-                useModalLinks
-                onSwitchToOrgLogin={() => onSwitch("login")}
-                onSuccess={() => onSwitch("login")}
-                headerSlot={signupTabs}
-              />
-            )}
-          </>
+          signupTab === "customer" ? (
+            <RegisterForm
+              useModalLinks
+              onSwitchToLogin={() => onSwitch("login")}
+              onSuccess={() => onSwitch("login")}
+              headerSlot={signupTabs}
+            />
+          ) : (
+            <OrganizationRegisterForm
+              useModalLinks
+              onSwitchToOrgLogin={() => onSwitch("login")}
+              onSuccess={() => onSwitch("login")}
+              headerSlot={signupTabs}
+            />
+          )
         ) : null}
       </div>
     </div>
