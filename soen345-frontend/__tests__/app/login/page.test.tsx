@@ -63,6 +63,32 @@ describe("LoginForm", () => {
     expect(pushMock).toHaveBeenCalledWith("/dashboard");
   });
 
+  it("redirects organizers to /organizer/dashboard on successful login", async () => {
+    apiMock.mockResolvedValueOnce({ user: { id: "2", role: "ORGANIZER" } });
+    const user = userEvent.setup();
+
+    render(<LoginForm />);
+
+    await user.type(screen.getByLabelText(/email or phone/i), "org@test.com");
+    await user.type(screen.getByLabelText(/password/i), "Pass1234");
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(pushMock).toHaveBeenCalledWith("/organizer/dashboard");
+  });
+
+  it("rewrites stale tickets redirects to the organizer dashboard", async () => {
+    apiMock.mockResolvedValueOnce({ user: { id: "2", role: "ORGANIZER" } });
+    const user = userEvent.setup();
+
+    render(<LoginForm redirect="/available-tickets" />);
+
+    await user.type(screen.getByLabelText(/email or phone/i), "org@test.com");
+    await user.type(screen.getByLabelText(/password/i), "Pass1234");
+    await user.click(screen.getByRole("button", { name: /sign in/i }));
+
+    expect(pushMock).toHaveBeenCalledWith("/organizer/dashboard");
+  });
+
   it("displays an error message on failed login", async () => {
     apiMock.mockRejectedValueOnce({ message: "Invalid credentials" });
     const user = userEvent.setup();

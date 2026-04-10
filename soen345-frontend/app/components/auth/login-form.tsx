@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api";
+import type { UserInfo } from "@/lib/types";
 
 type LoginFormProps = {
   redirect?: string;
@@ -11,6 +12,34 @@ type LoginFormProps = {
   onSwitchToRegister?: () => void;
   useModalLinks?: boolean;
 };
+
+function defaultRedirectForRole(role: string | undefined): string {
+  return role === "ORGANIZER" || role === "ADMIN"
+    ? "/organizer/dashboard"
+    : "/dashboard";
+}
+
+function resolvePostLoginRedirect(
+  requestedRedirect: string,
+  user: UserInfo | undefined,
+): string {
+  if (
+    requestedRedirect.includes("available-tickets") ||
+    requestedRedirect.includes("/tickets")
+  ) {
+    return defaultRedirectForRole(user?.role);
+  }
+
+  if (requestedRedirect === "/dashboard" && user?.role === "ORGANIZER") {
+    return "/organizer/dashboard";
+  }
+
+  if (requestedRedirect === "/dashboard" && user?.role === "ADMIN") {
+    return "/organizer/dashboard";
+  }
+
+  return requestedRedirect;
+}
 
 export function LoginForm({
   redirect = "/dashboard",
@@ -31,14 +60,14 @@ export function LoginForm({
     setLoading(true);
 
     try {
-      await api("/api/auth/login", {
+      const response = await api<{ user?: UserInfo }>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ identifier, password }),
       });
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push(redirect);
+        router.push(resolvePostLoginRedirect(redirect, response.user));
       }
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
