@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="19" failures="0" errors="0" time="2.6821175">
+    <testsuite name="__tests__/app/login/page.test.tsx" timestamp="2026-04-11T01:10:27.293Z" hostname="JunSpace" tests="6" failures="0" errors="0" skipped="0" time="1.3910617">
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; renders the sign-in heading and form fields" time="0.0662971">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; has a link to the register page" time="0.0080203">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; redirects to /dashboard on successful login" time="0.5202875">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; shows a sign-up success popup when signup feedback exists" time="0.0070941">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; displays an error message on failed login" time="0.4139301">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; shows a fallback error when the API error has no message" time="0.3736058">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/dashboard/dashboard-client.test.tsx" timestamp="2026-04-11T01:10:27.300Z" hostname="JunSpace" tests="12" failures="0" errors="0" skipped="0" time="1.1790466">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; renders brand, sidebar controls, category tabs, and logout" time="0.1130871">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a sign-up success popup when signup feedback exists in session storage" time="0.0197873">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; does not render a greeting strip when the profile has no name" time="0.0162152">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows load error banner when loadError is set" time="0.0152907">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows tickets placeholder when Tickets sidebar item is selected" time="0.0726341">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a movie event on Live + Movies when name matches keywords" time="0.1113869">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows empty state when category has no matches for current sidebar slice" time="0.114937">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; lists upcoming-only events when Upcoming is selected" time="0.0780042">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows ticker text for the selected category" time="0.077845">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; filters events using location and keyword search fields" time="0.2823208">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; applies filtering by date only" time="0.1709096">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; allows hiding and unhiding the search bar" time="0.1046484">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/dashboard/logout-button.test.tsx" timestamp="2026-04-11T01:10:27.306Z" hostname="JunSpace" tests="1" failures="0" errors="0" skipped="0" time="0.1120092">
+        <testcase classname="__tests__/app/dashboard/logout-button.test.tsx" name="LogoutButton &gt; reloads the dashboard after OK when already on /dashboard" time="0.1104144">
+        </testcase>
+    </testsuite>
+</testsuites>

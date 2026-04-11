@@ -2,8 +2,15 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { StatusPopup } from "@/app/components/shared/status-popup";
+import {
+  buildDisplayName,
+  consumeAuthFeedback,
+  persistLoginFeedback,
+} from "@/lib/auth-feedback";
 import { api } from "@/lib/api";
+import type { LoginResponse } from "@/lib/types";
 
 type OrganizerLoginFormProps = {
   redirect?: string;
@@ -24,6 +31,33 @@ export function OrganizerLoginForm({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
+  const [signupPopupName, setSignupPopupName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const feedback = consumeAuthFeedback();
+    if (!feedback || feedback.kind !== "signup") {
+      return;
+    }
+
+    setSignupPopupName(
+      buildDisplayName(feedback.firstName, feedback.lastName) || "Organizer",
+    );
+  }, []);
+
+  function acknowledgeLoginSuccess() {
+    setLoginPopupName(null);
+    if (onSuccess) {
+      onSuccess();
+      return;
+    }
+    if (typeof window !== "undefined") {
+      window.location.assign(redirect);
+      return;
+    }
+    router.push(redirect);
+    router.refresh();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,15 +65,18 @@ export function OrganizerLoginForm({
     setLoading(true);
 
     try {
-      await api("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ identifier, password, portal: "organizer" }),
-      });
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push(redirect);
-      }
+      const response = await api<{ user?: LoginResponse["user"] }>(
+        "/api/auth/login",
+        {
+          method: "POST",
+          body: JSON.stringify({ identifier, password, portal: "organizer" }),
+        },
+      );
+      persistLoginFeedback(response.user);
+      setLoginPopupName(
+        buildDisplayName(response.user?.firstName, response.user?.lastName) ||
+          "Organizer",
+      );
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
       setError(apiErr.message ?? "Login failed. Please try again.");
@@ -106,6 +143,22 @@ export function OrganizerLoginForm({
       <p className="auth-footer">
         Back to regular login? <Link href="/dashboard">Sign in</Link>
       </p>
+      <StatusPopup
+        open={Boolean(loginPopupName || signupPopupName)}
+        title={loginPopupName ? "Successful log in" : "Successful sign up"}
+        detail={
+          loginPopupName
+            ? `Welcome back, ${loginPopupName}.`
+            : signupPopupName
+            ? `Organizer account created for ${signupPopupName}. You can sign in now.`
+            : undefined
+        }
+        onClose={
+          loginPopupName
+            ? acknowledgeLoginSuccess
+            : () => setSignupPopupName(null)
+        }
+      />
     </div>
   );
 }

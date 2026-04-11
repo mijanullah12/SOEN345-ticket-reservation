@@ -41,9 +41,12 @@ export function ProfileMenu({
     if (!menuOpen) return;
     function handleClick(event: MouseEvent) {
       if (!menuRef.current) return;
-      if (!menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
+      if (menuRef.current.contains(event.target as Node)) return;
+
+      // Ignore clicks on portals rendered into body (e.g. StatusPopup)
+      if ((event.target as Element).closest(".status-popup-backdrop")) return;
+
+      setMenuOpen(false);
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);

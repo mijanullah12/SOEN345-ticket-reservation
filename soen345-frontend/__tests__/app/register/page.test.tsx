@@ -19,6 +19,7 @@ const apiMock = vi.mocked(api);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
 });
 
 describe("RegisterForm", () => {
@@ -134,6 +135,8 @@ describe("RegisterForm", () => {
       }),
     });
     expect(pushMock).toHaveBeenCalledWith("/dashboard");
+    expect(sessionStorage.getItem("auth-feedback")).toContain("\"kind\":\"signup\"");
+    expect(sessionStorage.getItem("auth-feedback")).toContain("Jane");
   });
 
   it("sends only phone (not email) when email is empty", async () => {

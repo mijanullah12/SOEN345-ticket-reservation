@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { persistSignupFeedback } from "@/lib/auth-feedback";
 import { api } from "@/lib/api";
 
 interface FormState {
@@ -92,6 +93,10 @@ export function OrganizationRegisterForm({
       await api("/api/auth/register-organizer", {
         method: "POST",
         body: JSON.stringify(payload),
+      });
+      persistSignupFeedback({
+        firstName: form.firstName,
+        lastName: form.lastName,
       });
 
       if (onSuccess) {

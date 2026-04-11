@@ -3,7 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import { StatusPopup } from "@/app/components/shared/status-popup";
 import { InfoTip } from "@/app/components/shared/info-tip";
+import {
+  buildDisplayName,
+  consumeAuthFeedback,
+} from "@/lib/auth-feedback";
 import { api } from "@/lib/api";
 import type { Event, EventWritePayload, UserProfile } from "@/lib/types";
 
@@ -101,6 +106,7 @@ export function OrganizerDashboardClient({
   const [payoutSaving, setPayoutSaving] = useState(false);
   const [payoutMessage, setPayoutMessage] = useState<string | null>(null);
   const [payoutError, setPayoutError] = useState<string | null>(null);
+  const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
 
   const sortedEvents = useMemo(
     () => [...events].sort((a, b) => +new Date(b.date) - +new Date(a.date)),
@@ -110,7 +116,7 @@ export function OrganizerDashboardClient({
   const refreshEvents = useCallback(async () => {
     setLoadingEvents(true);
     try {
-      const data = await api<Event[]>("/api/events", { method: "GET" });
+      const data = await api<Event[]>("/api/events/mine", { method: "GET" });
       setEvents(data);
     } catch (err: unknown) {
       const e = err as { message?: string };
@@ -131,6 +137,19 @@ export function OrganizerDashboardClient({
     setPayoutEmail(user.paymentInfo?.payoutEmail ?? "");
     setPayoutDisplayName(user.paymentInfo?.payoutDisplayName ?? "");
   }, [user]);
+
+  useEffect(() => {
+    const feedback = consumeAuthFeedback();
+    if (!feedback || feedback.kind !== "signup") {
+      return;
+    }
+
+    const displayName =
+      buildDisplayName(feedback.firstName, feedback.lastName) || "Organizer";
+    setLoginPopupName(displayName);
+  }, []);
+
+  const greetingName = buildDisplayName(user?.firstName, user?.lastName);
 
   function startEdit(event: Event) {
     setEditingId(event.id);
@@ -226,6 +245,9 @@ export function OrganizerDashboardClient({
 
   return (
     <main className="org-container">
+      {greetingName ? (
+        <div className="org-welcome-strip">HI {greetingName}</div>
+      ) : null}
       <section className="org-grid">
         <article className="org-card">
           <div className="org-top-actions">
@@ -483,6 +505,16 @@ export function OrganizerDashboardClient({
           )}
         </article>
       </section>
+      <StatusPopup
+        open={Boolean(loginPopupName)}
+        title="Successful sign up"
+        detail={
+          loginPopupName
+            ? `Organizer account created for ${loginPopupName}. You can sign in now.`
+            : undefined
+        }
+        onClose={() => setLoginPopupName(null)}
+      />
     </main>
   );
 }
