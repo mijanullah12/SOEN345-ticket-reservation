@@ -9,7 +9,7 @@ vi.mock("next/link", () => ({
     href,
     className,
   }: {
-    children: unknown;
+    children: ReactNode;
     href: string;
     className?: string;
   }) => (
@@ -32,6 +32,7 @@ vi.mock("@/app/components/dashboard/use-user-profile", () => ({
 }));
 
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import {ReactNode} from "react";
 
 const useUserProfileMock = vi.mocked(useUserProfile);
 

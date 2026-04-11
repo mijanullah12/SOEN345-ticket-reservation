@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { createPortal } from "react-dom";
 
 type StatusPopupProps = {
@@ -18,12 +17,6 @@ export function StatusPopup({
   onClose,
   actionLabel = "OK",
 }: StatusPopupProps) {
-  useEffect(() => {
-    console.log("✅ StatusPopup mounted, open =", open);
-    return () => {
-      console.log("❌ StatusPopup unmounted");
-    };
-  }, [open]);
   if (!open) {
     return null;
   }

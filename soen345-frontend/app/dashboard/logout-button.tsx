@@ -43,7 +43,6 @@ export function LogoutButton({ className }: { className?: string }) {
       >
         {loading ? "Logging out..." : "Log Out"}
       </button>
-      {showSuccess && console.log("POPUP RENDERED")}
       <StatusPopup
         open={showSuccess}
         title="Successful log-out"
