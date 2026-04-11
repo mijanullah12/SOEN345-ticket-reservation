@@ -11,4 +11,5 @@ public interface EventService {
     EventResponse updateEvent(String eventId, UpdateEventRequest request);
     EventResponse cancelEvent(String eventId);
     List<EventResponse> getAvailableEvents();
+    List<EventResponse> getOrganizerEvents(String organizerId);
 }

@@ -69,4 +69,9 @@ public class EventController {
     public ResponseEntity<List<EventResponse>> getAvailableEvents() {
         return ResponseEntity.ok(eventService.getAvailableEvents());
     }
+
+    @GetMapping("/mine")
+    public ResponseEntity<List<EventResponse>> getOrganizerEvents(Authentication authentication) {
+        return ResponseEntity.ok(eventService.getOrganizerEvents(authentication.getName()));
+    }
 }
