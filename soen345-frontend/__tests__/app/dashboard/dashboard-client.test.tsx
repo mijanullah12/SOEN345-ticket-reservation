@@ -1,7 +1,7 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DashboardClient } from "@/app/components/dashboard/dashboard-client";
 import type { Event } from "@/lib/types";
 
@@ -48,7 +48,7 @@ vi.mock("next/image", () => ({
       aria-label={alt ?? ""}
       className={className}
       data-testid="mock-next-image"
-      data-src={typeof src === "string" ? src : ""}
+      data-src={src}
     />
   ),
 }));
@@ -60,6 +60,14 @@ vi.mock("@/app/dashboard/logout-button", () => ({
     </button>
   ),
 }));
+
+vi.mock("@/app/components/dashboard/use-user-profile", () => ({
+  useUserProfile: vi.fn(),
+}));
+
+import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+
+const useUserProfileMock = vi.mocked(useUserProfile);
 
 function atLocalToday(hour: number, minute = 0): string {
   const d = new Date();
@@ -82,6 +90,20 @@ function makeEvent(
 }
 
 describe("DashboardClient", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    sessionStorage.clear();
+    useUserProfileMock.mockReturnValue({
+      user: {
+        id: "u1",
+        firstName: "Avery",
+        lastName: "Stone",
+        role: "CUSTOMER",
+      },
+      loading: false,
+    });
+  });
+
   it("renders brand, sidebar controls, category tabs, and logout", () => {
     render(
       <DashboardClient events={[]} loadError={null} isAuthenticated={true} />,
@@ -133,6 +155,47 @@ describe("DashboardClient", () => {
     expect(
       screen.getByRole("button", { name: /log out/i }),
     ).toBeInTheDocument();
+    expect(screen.getByText(/hi avery stone/i)).toBeInTheDocument();
+  });
+
+  it("shows a sign-up success popup when signup feedback exists in session storage", () => {
+    sessionStorage.setItem(
+      "auth-feedback",
+      JSON.stringify({
+        kind: "signup",
+        firstName: "Avery",
+        lastName: "Stone",
+      }),
+    );
+
+    render(
+      <DashboardClient events={[]} loadError={null} isAuthenticated={false} />,
+    );
+
+    expect(screen.getByText(/successful sign up/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /account created for avery stone\. you can sign in now\./i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render a greeting strip when the profile has no name", () => {
+    useUserProfileMock.mockReturnValue({
+      user: {
+        id: "u2",
+        firstName: "",
+        lastName: "",
+        role: "CUSTOMER",
+      },
+      loading: false,
+    });
+
+    render(
+      <DashboardClient events={[]} loadError={null} isAuthenticated={true} />,
+    );
+
+    expect(screen.queryByText(/hi guest/i)).not.toBeInTheDocument();
   });
 
   it("shows load error banner when loadError is set", () => {

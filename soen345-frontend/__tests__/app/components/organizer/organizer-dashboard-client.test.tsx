@@ -11,9 +11,15 @@ vi.mock("@/lib/api", () => ({
   api: vi.fn(),
 }));
 
+vi.mock("@/app/components/dashboard/use-user-profile", () => ({
+  useUserProfile: vi.fn(),
+}));
+
+import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { api } from "@/lib/api";
 
 const apiMock = vi.mocked(api);
+const useUserProfileMock = vi.mocked(useUserProfile);
 
 function mkEvent(id: string, name: string) {
   return {
@@ -30,6 +36,17 @@ function mkEvent(id: string, name: string) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
+  useUserProfileMock.mockReturnValue({
+    user: {
+      id: "org-1",
+      firstName: "Omar",
+      lastName: "Nguyen",
+      role: "ORGANIZER",
+      paymentInfo: {},
+    },
+    loading: false,
+  });
 });
 
 describe("OrganizerDashboardClient", () => {
@@ -46,13 +63,14 @@ describe("OrganizerDashboardClient", () => {
       screen.getByRole("heading", { name: /organizer dashboard/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/warm-up event/i)).toBeInTheDocument();
+    expect(screen.getByText(/hi omar nguyen/i)).toBeInTheDocument();
   });
 
   it("requests events when refresh is clicked", async () => {
     const user = userEvent.setup();
     apiMock.mockImplementation(async (path, options) => {
       const method = options?.method ?? "GET";
-      if (path === "/api/events" && method === "GET") return [];
+      if (path === "/api/events/mine" && method === "GET") return [];
       return [];
     });
 
@@ -60,7 +78,7 @@ describe("OrganizerDashboardClient", () => {
     await user.click(screen.getByRole("button", { name: /refresh/i }));
 
     expect(apiMock).toHaveBeenCalledWith(
-      "/api/events",
+      "/api/events/mine",
       expect.objectContaining({ method: "GET" }),
     );
   });
@@ -69,7 +87,7 @@ describe("OrganizerDashboardClient", () => {
     const user = userEvent.setup();
     apiMock.mockImplementation(async (path, options) => {
       const method = options?.method ?? "GET";
-      if (path === "/api/events" && method === "GET") {
+      if (path === "/api/events/mine" && method === "GET") {
         return [mkEvent("1", "Old Name")];
       }
       return [];
@@ -97,7 +115,7 @@ describe("OrganizerDashboardClient", () => {
     const user = userEvent.setup();
     apiMock.mockImplementation(async (path, options) => {
       const method = options?.method ?? "GET";
-      if (path === "/api/events" && method === "GET") {
+      if (path === "/api/events/mine" && method === "GET") {
         return [mkEvent("1", "Cancelable Event")];
       }
       if (path === "/api/events/1/cancel" && method === "PATCH") {
@@ -122,5 +140,42 @@ describe("OrganizerDashboardClient", () => {
       expect.objectContaining({ method: "PATCH" }),
     );
     expect(await screen.findByText(/event cancelled/i)).toBeInTheDocument();
+  });
+
+  it("shows a sign-up success popup when signup feedback exists in session storage", () => {
+    sessionStorage.setItem(
+      "auth-feedback",
+      JSON.stringify({
+        kind: "signup",
+        firstName: "Omar",
+        lastName: "Nguyen",
+      }),
+    );
+
+    render(<OrganizerDashboardClient initialEvents={[]} />);
+
+    expect(screen.getByText(/successful sign up/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /organizer account created for omar nguyen\. you can sign in now\./i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render a greeting strip when the organizer profile has no name", () => {
+    useUserProfileMock.mockReturnValue({
+      user: {
+        id: "org-2",
+        firstName: "",
+        lastName: "",
+        role: "ORGANIZER",
+        paymentInfo: {},
+      },
+      loading: false,
+    });
+
+    render(<OrganizerDashboardClient initialEvents={[]} />);
+
+    expect(screen.queryByText(/hi organizer/i)).not.toBeInTheDocument();
   });
 });
