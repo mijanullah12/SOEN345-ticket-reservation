@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { OrganizerDashboardClient } from "@/app/components/organizer/organizer-dashboard-client";
 import { BACKEND_URL } from "@/lib/backend";
-import { fetchOrganizerEventsWithAuth } from "@/lib/fetch-events";
+import { fetchEventsWithAuth } from "@/lib/fetch-events";
 
 export default async function OrganizerDashboardPage() {
   const cookieStore = await cookies();
@@ -32,7 +32,7 @@ export default async function OrganizerDashboardPage() {
     redirect("/dashboard");
   }
 
-  const result = await fetchOrganizerEventsWithAuth(token);
+  const result = await fetchEventsWithAuth(token);
 
   if (!result.ok && result.reason === "unauthorized") {
     redirect("/organizer/login?redirect=/organizer/dashboard");
