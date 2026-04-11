@@ -31,8 +31,8 @@ vi.mock("@/app/components/dashboard/use-user-profile", () => ({
   useUserProfile: vi.fn(),
 }));
 
+import type { ReactNode } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
-import {ReactNode} from "react";
 
 const useUserProfileMock = vi.mocked(useUserProfile);
 

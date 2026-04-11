@@ -20,8 +20,7 @@ vi.mock("next/headers", () => ({
 
 const fetchEventsWithAuthMock = vi.fn();
 vi.mock("@/lib/fetch-events", () => ({
-  fetchEventsWithAuth: (...args: unknown[]) =>
-      fetchEventsWithAuthMock(...args),
+  fetchEventsWithAuth: (...args: unknown[]) => fetchEventsWithAuthMock(...args),
 }));
 
 const mockFetch = vi.fn();
