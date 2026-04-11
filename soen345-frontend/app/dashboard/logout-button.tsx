@@ -9,14 +9,14 @@ export function LogoutButton({ className }: { className?: string }) {
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-    async function handleLogout() {
-        setLoading(true);
-        await fetch("/api/auth/logout", { method: "POST" });
-        setShowSuccess(true);
-        setLoading(false);
-    }
+  async function handleLogout() {
+    setLoading(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    setShowSuccess(true);
+    setLoading(false);
+  }
   function acknowledgeLogout() {
-    console.log("Acknowledging logout")
+    console.log("Acknowledging logout");
     setShowSuccess(false);
     setLoading(false);
     if (typeof window !== "undefined") {
@@ -43,7 +43,7 @@ export function LogoutButton({ className }: { className?: string }) {
       >
         {loading ? "Logging out..." : "Log Out"}
       </button>
-        {showSuccess && console.log("POPUP RENDERED")}
+      {showSuccess && console.log("POPUP RENDERED")}
       <StatusPopup
         open={showSuccess}
         title="Successful log-out"

@@ -358,10 +358,6 @@ body {
     var(--dash-bg);
 }
 
-[data-app-shell="dashboard"] .dash-auth-container {
-  background: transparent;
-}
-
 [data-app-shell="dashboard"] .dash-auth-container .auth-card {
   max-width: 520px;
   border-radius: 0.75rem;
@@ -400,9 +396,13 @@ body {
 }
 
 [data-app-shell="dashboard"],
-  .dash-auth-container,
-  .auth-btn:hover:not(:disabled) {
+.dash-auth-container,
+.auth-btn:hover:not(:disabled) {
   opacity: 0.88;
+}
+
+[data-app-shell="dashboard"] .dash-auth-container {
+  background: transparent;
 }
 
 [data-app-shell="dashboard"] .dash-auth-container .auth-footer a,

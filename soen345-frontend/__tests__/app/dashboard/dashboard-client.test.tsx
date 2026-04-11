@@ -174,7 +174,9 @@ describe("DashboardClient", () => {
 
     expect(screen.getByText(/successful sign up/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/account created for avery stone\. you can sign in now\./i),
+      screen.getByText(
+        /account created for avery stone\. you can sign in now\./i,
+      ),
     ).toBeInTheDocument();
   });
 

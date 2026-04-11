@@ -17,8 +17,12 @@ vi.mock("next/navigation", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubGlobal("fetch", vi.fn(() =>
-    Promise.resolve(new Response(null, { status: 200 }))) as typeof fetch);
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(() =>
+      Promise.resolve(new Response(null, { status: 200 })),
+    ) as typeof fetch,
+  );
   Object.defineProperty(window, "location", {
     configurable: true,
     value: {

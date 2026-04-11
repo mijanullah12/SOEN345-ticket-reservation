@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { persistSignupFeedback } from "@/lib/auth-feedback";
 import { api } from "@/lib/api";
+import { persistSignupFeedback } from "@/lib/auth-feedback";
 
 interface FormState {
   firstName: string;

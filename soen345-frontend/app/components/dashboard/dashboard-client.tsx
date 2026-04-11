@@ -5,11 +5,8 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { StatusPopup } from "@/app/components/shared/status-popup";
-import {
-  buildDisplayName,
-  consumeAuthFeedback,
-} from "@/lib/auth-feedback";
 import { api } from "@/lib/api";
+import { buildDisplayName, consumeAuthFeedback } from "@/lib/auth-feedback";
 import {
   DASHBOARD_BRAND,
   EVENT_CATEGORIES,
@@ -115,9 +112,8 @@ export function DashboardClient({
   isAuthenticated: boolean;
 }) {
   const router = useRouter();
-  const [sessionAuthenticated, setSessionAuthenticated] = useState(
-    isAuthenticated,
-  );
+  const [sessionAuthenticated, setSessionAuthenticated] =
+    useState(isAuthenticated);
   const [sidebarView, setSidebarView] = useState<SidebarView>("live");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
   const [showSearch, setShowSearch] = useState(true);

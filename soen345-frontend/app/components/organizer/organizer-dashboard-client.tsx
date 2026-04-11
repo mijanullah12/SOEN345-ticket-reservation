@@ -3,13 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
-import { StatusPopup } from "@/app/components/shared/status-popup";
 import { InfoTip } from "@/app/components/shared/info-tip";
-import {
-  buildDisplayName,
-  consumeAuthFeedback,
-} from "@/lib/auth-feedback";
+import { StatusPopup } from "@/app/components/shared/status-popup";
 import { api } from "@/lib/api";
+import { buildDisplayName, consumeAuthFeedback } from "@/lib/auth-feedback";
 import type { Event, EventWritePayload, UserProfile } from "@/lib/types";
 
 type OrganizerDashboardClientProps = {

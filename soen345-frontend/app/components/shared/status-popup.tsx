@@ -1,7 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import {useEffect} from "react";
 
 type StatusPopupProps = {
   open: boolean;
@@ -28,13 +28,11 @@ export function StatusPopup({
     return null;
   }
 
-
-
   const popup = (
-    <div className="status-popup-backdrop" role="status" aria-live="polite">
-      <div className="status-popup" aria-label={title}>
+    <output className="status-popup-backdrop" aria-live="polite">
+      <section className="status-popup" aria-label={title}>
         <div className="status-popup-check" aria-hidden="true">
-          <svg viewBox="0 0 24 24" focusable="false">
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
             <path
               d="M20 6 9 17l-5-5"
               fill="none"
@@ -48,17 +46,17 @@ export function StatusPopup({
         <p className="status-popup-title">{title}</p>
         {detail ? <p className="status-popup-detail">{detail}</p> : null}
         <button
-            type="button"
-            className="status-popup-action"
-            onClick={() => {
-              console.log("Button clicked inside StatusPopup");
-              onClose?.();
-            }}
+          type="button"
+          className="status-popup-action"
+          onClick={() => {
+            console.log("Button clicked inside StatusPopup");
+            onClose?.();
+          }}
         >
           {actionLabel}
         </button>
-      </div>
-    </div>
+      </section>
+    </output>
   );
 
   if (typeof document === "undefined") {

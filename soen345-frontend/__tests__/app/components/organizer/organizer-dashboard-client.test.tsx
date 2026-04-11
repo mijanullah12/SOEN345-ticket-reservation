@@ -15,8 +15,8 @@ vi.mock("@/app/components/dashboard/use-user-profile", () => ({
   useUserProfile: vi.fn(),
 }));
 
-import { api } from "@/lib/api";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import { api } from "@/lib/api";
 
 const apiMock = vi.mocked(api);
 const useUserProfileMock = vi.mocked(useUserProfile);

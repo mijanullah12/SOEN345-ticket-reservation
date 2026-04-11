@@ -78,7 +78,7 @@ describe("LoginForm", () => {
       }),
     });
     expect(sessionStorage.getItem("auth-feedback")).toContain("Nora");
-    expect(sessionStorage.getItem("auth-feedback")).toContain("\"kind\":\"login\"");
+    expect(sessionStorage.getItem("auth-feedback")).toContain('"kind":"login"');
 
     await user.click(screen.getByRole("button", { name: /^ok$/i }));
 
@@ -101,7 +101,9 @@ describe("LoginForm", () => {
 
     expect(screen.getByText(/successful sign up/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/account created for nora stone\. you can sign in now\./i),
+      screen.getByText(
+        /account created for nora stone\. you can sign in now\./i,
+      ),
     ).toBeInTheDocument();
   });
 

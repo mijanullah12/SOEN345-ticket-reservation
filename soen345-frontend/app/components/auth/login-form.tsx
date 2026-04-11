@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { StatusPopup } from "@/app/components/shared/status-popup";
+import { api } from "@/lib/api";
 import {
   buildDisplayName,
   consumeAuthFeedback,
   persistLoginFeedback,
 } from "@/lib/auth-feedback";
-import { api } from "@/lib/api";
 import type { LoginResponse } from "@/lib/types";
 
 type LoginFormProps = {
@@ -160,8 +160,8 @@ export function LoginForm({
           loginPopupName
             ? `Welcome back, ${loginPopupName}.`
             : signupPopupName
-            ? `Account created for ${signupPopupName}. You can sign in now.`
-            : undefined
+              ? `Account created for ${signupPopupName}. You can sign in now.`
+              : undefined
         }
         onClose={
           loginPopupName
