@@ -35,6 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/register").permitAll()
                         .requestMatchers("/api/v1/auth/register-organizer").permitAll()
                         .requestMatchers("/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/events/mine").hasAnyRole("ADMIN", "ORGANIZER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/events").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/events").hasAnyRole("ADMIN", "ORGANIZER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/events/**").hasAnyRole("ADMIN", "ORGANIZER")

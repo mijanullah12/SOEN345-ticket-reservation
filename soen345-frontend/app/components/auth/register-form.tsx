@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { api } from "@/lib/api";
+import { persistSignupFeedback } from "@/lib/auth-feedback";
 
 interface FormState {
   firstName: string;
@@ -95,6 +96,10 @@ export function RegisterForm({
       await api("/api/auth/register", {
         method: "POST",
         body: JSON.stringify(payload),
+      });
+      persistSignupFeedback({
+        firstName: form.firstName,
+        lastName: form.lastName,
       });
 
       if (onSuccess) {

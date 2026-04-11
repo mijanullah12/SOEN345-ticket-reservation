@@ -342,7 +342,7 @@ class EventServiceImplTest {
 
             List<EventResponse> result = eventService.getAvailableEvents();
 
-            EventResponse response = result.get(0);
+            EventResponse response = result.getFirst();
             assertThat(response.getName()).isEqualTo(event.getName());
             assertThat(response.getDescription()).isEqualTo(event.getDescription());
             assertThat(response.getDate()).isEqualTo(event.getDate());
@@ -350,6 +350,37 @@ class EventServiceImplTest {
             assertThat(response.getCapacity()).isEqualTo(event.getCapacity());
             assertThat(response.getTicketPrice()).isEqualByComparingTo(event.getTicketPrice());
             assertThat(response.getOrganizerId()).isEqualTo(ORGANIZER_ID);
+        }
+    }
+
+    @Nested
+    @DisplayName("getOrganizerEvents")
+    class GetOrganizerEventsTests {
+
+        @Test
+        @DisplayName("Should return only events belonging to the organizer")
+        void getOrganizerEvents_ShouldReturnOrganizerEvents() {
+            Event event1 = buildEvent("e1", EventStatus.ACTIVE);
+            Event event2 = buildEvent("e2", EventStatus.CANCELLED);
+
+            when(eventRepository.findByOrganizerId(ORGANIZER_ID)).thenReturn(List.of(event1, event2));
+
+            List<EventResponse> result = eventService.getOrganizerEvents(ORGANIZER_ID);
+
+            assertThat(result).hasSize(2);
+            assertThat(result).extracting(EventResponse::getId).containsExactly("e1", "e2");
+            assertThat(result).allMatch(response -> ORGANIZER_ID.equals(response.getOrganizerId()));
+            verify(eventRepository).findByOrganizerId(ORGANIZER_ID);
+        }
+
+        @Test
+        @DisplayName("Should return empty list when organizer has no events")
+        void getOrganizerEvents_ShouldReturnEmptyListWhenOrganizerHasNone() {
+            when(eventRepository.findByOrganizerId(ORGANIZER_ID)).thenReturn(List.of());
+
+            List<EventResponse> result = eventService.getOrganizerEvents(ORGANIZER_ID);
+
+            assertThat(result).isEmpty();
         }
     }
 

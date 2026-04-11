@@ -18,9 +18,10 @@ vi.mock("next/headers", () => ({
   cookies: () => cookiesMock(),
 }));
 
-const fetchEventsWithAuthMock = vi.fn();
+const fetchOrganizerEventsWithAuthMock = vi.fn();
 vi.mock("@/lib/fetch-events", () => ({
-  fetchEventsWithAuth: (...args: unknown[]) => fetchEventsWithAuthMock(...args),
+  fetchOrganizerEventsWithAuth: (...args: unknown[]) =>
+    fetchOrganizerEventsWithAuthMock(...args),
 }));
 
 const mockFetch = vi.fn();
@@ -45,7 +46,7 @@ describe("OrganizerDashboardPage", () => {
       ok: true,
       json: async () => ({ role: "ORGANIZER" }),
     });
-    fetchEventsWithAuthMock.mockResolvedValueOnce({
+    fetchOrganizerEventsWithAuthMock.mockResolvedValueOnce({
       ok: false,
       reason: "unauthorized",
     });
@@ -61,13 +62,13 @@ describe("OrganizerDashboardPage", () => {
       ok: true,
       json: async () => ({ role: "ORGANIZER" }),
     });
-    fetchEventsWithAuthMock.mockResolvedValueOnce({
+    fetchOrganizerEventsWithAuthMock.mockResolvedValueOnce({
       ok: true,
       events: [],
     });
 
     const result = await OrganizerDashboardPage();
     expect(result).toBeTruthy();
-    expect(fetchEventsWithAuthMock).toHaveBeenCalledWith("good-token");
+    expect(fetchOrganizerEventsWithAuthMock).toHaveBeenCalledWith("good-token");
   });
 });

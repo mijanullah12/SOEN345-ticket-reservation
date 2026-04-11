@@ -4,7 +4,9 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
+import { StatusPopup } from "@/app/components/shared/status-popup";
 import { api } from "@/lib/api";
+import { buildDisplayName, consumeAuthFeedback } from "@/lib/auth-feedback";
 import {
   DASHBOARD_BRAND,
   EVENT_CATEGORIES,
@@ -110,11 +112,14 @@ export function DashboardClient({
 }) {
   const router = useRouter();
   const [sidebarView, setSidebarView] = useState<SidebarView>("upcoming");
+  const [sessionAuthenticated, setSessionAuthenticated] =
+    useState(isAuthenticated);
   const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
   const [dateQuery, setDateQuery] = useState("");
+  const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [detailsEvent, setDetailsEvent] = useState<Event | null>(null);
@@ -130,8 +135,12 @@ export function DashboardClient({
   const [reserveQuantities, setReserveQuantities] = useState<
     Record<string, number>
   >({});
-  const { user: currentUser } = useUserProfile(isAuthenticated);
+  const { user: currentUser } = useUserProfile(sessionAuthenticated);
   const isOrganizer = currentUser?.role === "ORGANIZER";
+  const greetingName = buildDisplayName(
+    currentUser?.firstName,
+    currentUser?.lastName,
+  );
 
   const category = useMemo(() => categoryById(categoryId), [categoryId]);
 
@@ -148,6 +157,23 @@ export function DashboardClient({
       setSidebarView("live");
     }
   }, [isOrganizer, sidebarView]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setSessionAuthenticated(true);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    const feedback = consumeAuthFeedback();
+    if (!feedback || feedback.kind !== "signup") {
+      return;
+    }
+
+    const displayName =
+      buildDisplayName(feedback.firstName, feedback.lastName) || "User";
+    setLoginPopupName(displayName);
+  }, []);
 
   const sidebarFiltered = useMemo(
     () => filterBySidebar(events, sidebarView),
@@ -197,7 +223,7 @@ export function DashboardClient({
   const rest = searchedEvents.slice(1, 5);
 
   const loadReservations = useCallback(async () => {
-    if (!isAuthenticated) {
+    if (!sessionAuthenticated) {
       setReservations([]);
       return;
     }
@@ -214,7 +240,7 @@ export function DashboardClient({
     } finally {
       setReservationsLoading(false);
     }
-  }, [isAuthenticated]);
+  }, [sessionAuthenticated]);
 
   useEffect(() => {
     void loadReservations();
@@ -246,7 +272,7 @@ export function DashboardClient({
   );
 
   async function reserveEvent(eventId: string, quantity: number) {
-    if (!isAuthenticated) {
+    if (!sessionAuthenticated) {
       setAuthModal("login");
       return;
     }
@@ -322,12 +348,15 @@ export function DashboardClient({
           </ul>
         </nav>
         <div className="dash-sidebar-footer">
-          {isAuthenticated ? <LogoutButton /> : null}
+          {sessionAuthenticated ? <LogoutButton /> : null}
         </div>
       </aside>
 
       <div className="dash-main">
         <header className="dash-topbar">
+          {sessionAuthenticated && greetingName ? (
+            <div className="dash-welcome-strip">HI {greetingName}</div>
+          ) : null}
           <div className="dash-topbar-main">
             <nav className="dash-category-tabs" aria-label="Event categories">
               {EVENT_CATEGORIES.map((c) => (
@@ -343,7 +372,7 @@ export function DashboardClient({
               ))}
             </nav>
             <ProfileMenu
-              isAuthenticated={isAuthenticated}
+              isAuthenticated={sessionAuthenticated}
               onOpenAuthModal={setAuthModal}
             />
           </div>
@@ -415,7 +444,7 @@ export function DashboardClient({
         <div className="dash-content">
           {sidebarView === "tickets" && !isOrganizer ? (
             <TicketsPanel
-              isAuthenticated={isAuthenticated}
+              isAuthenticated={sessionAuthenticated}
               reservations={reservations}
               loading={reservationsLoading}
               actionKey={reservationActionKey}
@@ -433,7 +462,7 @@ export function DashboardClient({
               />
               {!isOrganizer ? (
                 <ReservePanel
-                  isAuthenticated={isAuthenticated}
+                  isAuthenticated={sessionAuthenticated}
                   events={searchedEvents}
                   activeReservationByEventId={activeReservationByEventId}
                   reserveQuantities={reserveQuantities}
@@ -457,7 +486,8 @@ export function DashboardClient({
         onSwitch={setAuthModal}
         onAuthSuccess={() => {
           setAuthModal(null);
-          router.refresh();
+          setSessionAuthenticated(true);
+          void loadReservations();
         }}
       />
       <PaymentInfoModal
@@ -473,6 +503,16 @@ export function DashboardClient({
       <EventDetailsModal
         event={detailsEvent}
         onClose={() => setDetailsEvent(null)}
+      />
+      <StatusPopup
+        open={Boolean(loginPopupName)}
+        title="Successful sign up"
+        detail={
+          loginPopupName
+            ? `Account created for ${loginPopupName}. You can sign in now.`
+            : undefined
+        }
+        onClose={() => setLoginPopupName(null)}
       />
     </div>
   );

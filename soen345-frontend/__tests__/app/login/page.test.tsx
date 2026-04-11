@@ -4,9 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginForm } from "@/app/components/auth/login-form";
 
 const pushMock = vi.fn();
+const refreshMock = vi.fn();
+const assignMock = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, refresh: refreshMock }),
   useSearchParams: () => new URLSearchParams(),
 }));
 
@@ -20,6 +22,14 @@ const apiMock = vi.mocked(api);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  sessionStorage.clear();
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: {
+      ...window.location,
+      assign: assignMock,
+    },
+  });
 });
 
 describe("LoginForm", () => {
@@ -44,7 +54,9 @@ describe("LoginForm", () => {
   });
 
   it("redirects to /dashboard on successful login", async () => {
-    apiMock.mockResolvedValueOnce({ user: { id: "1" } });
+    apiMock.mockResolvedValueOnce({
+      user: { id: "1", firstName: "Nora", lastName: "Stone" },
+    });
     const user = userEvent.setup();
 
     render(<LoginForm />);
@@ -53,6 +65,10 @@ describe("LoginForm", () => {
     await user.type(screen.getByLabelText(/password/i), "Pass1234");
     await user.click(screen.getByRole("button", { name: /sign in/i }));
 
+    expect(screen.getByText(/successful log in/i)).toBeInTheDocument();
+    expect(screen.getByText(/welcome back, nora stone\./i)).toBeInTheDocument();
+    expect(pushMock).not.toHaveBeenCalled();
+
     expect(apiMock).toHaveBeenCalledWith("/api/auth/login", {
       method: "POST",
       body: JSON.stringify({
@@ -60,7 +76,34 @@ describe("LoginForm", () => {
         password: "Pass1234",
       }),
     });
-    expect(pushMock).toHaveBeenCalledWith("/dashboard");
+    expect(sessionStorage.getItem("auth-feedback")).toContain("Nora");
+    expect(sessionStorage.getItem("auth-feedback")).toContain('"kind":"login"');
+
+    await user.click(screen.getByRole("button", { name: /^ok$/i }));
+
+    expect(assignMock).toHaveBeenCalledWith("/dashboard");
+    expect(pushMock).not.toHaveBeenCalled();
+    expect(refreshMock).not.toHaveBeenCalled();
+  });
+
+  it("shows a sign-up success popup when signup feedback exists", () => {
+    sessionStorage.setItem(
+      "auth-feedback",
+      JSON.stringify({
+        kind: "signup",
+        firstName: "Nora",
+        lastName: "Stone",
+      }),
+    );
+
+    render(<LoginForm />);
+
+    expect(screen.getByText(/successful sign up/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /account created for nora stone\. you can sign in now\./i,
+      ),
+    ).toBeInTheDocument();
   });
 
   it("redirects organizers to /organizer/dashboard on successful login", async () => {

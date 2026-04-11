@@ -5,54 +5,26 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { StatusPopup } from "@/app/components/shared/status-popup";
 import { api } from "@/lib/api";
-import type { UserInfo } from "@/lib/types";
 import {
   buildDisplayName,
   consumeAuthFeedback,
   persistLoginFeedback,
 } from "@/lib/auth-feedback";
+import type { LoginResponse } from "@/lib/types";
 
-type LoginFormProps = {
+type OrganizerLoginFormProps = {
   redirect?: string;
   onSuccess?: () => void;
-  onSwitchToRegister?: () => void;
+  onSwitchToOrgRegister?: () => void;
   useModalLinks?: boolean;
 };
 
-function defaultRedirectForRole(role: string | undefined): string {
-  return role === "ORGANIZER" || role === "ADMIN"
-    ? "/organizer/dashboard"
-    : "/dashboard";
-}
-
-function resolvePostLoginRedirect(
-  requestedRedirect: string,
-  user: UserInfo | undefined,
-): string {
-  if (
-    requestedRedirect.includes("available-tickets") ||
-    requestedRedirect.includes("/tickets")
-  ) {
-    return defaultRedirectForRole(user?.role);
-  }
-
-  if (requestedRedirect === "/dashboard" && user?.role === "ORGANIZER") {
-    return "/organizer/dashboard";
-  }
-
-  if (requestedRedirect === "/dashboard" && user?.role === "ADMIN") {
-    return "/organizer/dashboard";
-  }
-
-  return requestedRedirect;
-}
-
-export function LoginForm({
-  redirect = "/dashboard",
+export function OrganizerLoginForm({
+  redirect = "/organizer/dashboard",
   onSuccess,
-  onSwitchToRegister,
+  onSwitchToOrgRegister,
   useModalLinks = false,
-}: LoginFormProps) {
+}: OrganizerLoginFormProps) {
   const router = useRouter();
 
   const [identifier, setIdentifier] = useState("");
@@ -69,7 +41,7 @@ export function LoginForm({
     }
 
     setSignupPopupName(
-      buildDisplayName(feedback.firstName, feedback.lastName) || "User",
+      buildDisplayName(feedback.firstName, feedback.lastName) || "Organizer",
     );
   }, []);
 
@@ -93,15 +65,18 @@ export function LoginForm({
     setLoading(true);
 
     try {
-      const response = await api<{ user?: UserInfo }>("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ identifier, password }),
-      });
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push(resolvePostLoginRedirect(redirect, response.user));
-      }
+      const response = await api<{ user?: LoginResponse["user"] }>(
+        "/api/auth/login",
+        {
+          method: "POST",
+          body: JSON.stringify({ identifier, password, portal: "organizer" }),
+        },
+      );
+      persistLoginFeedback(response.user);
+      setLoginPopupName(
+        buildDisplayName(response.user?.firstName, response.user?.lastName) ||
+          "Organizer",
+      );
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
       setError(apiErr.message ?? "Login failed. Please try again.");
@@ -112,9 +87,9 @@ export function LoginForm({
 
   return (
     <div className="auth-card">
-      <h1 className="auth-title">Sign In</h1>
+      <h1 className="auth-title">Organizer Sign In</h1>
       <p className="auth-subtitle">
-        Welcome back. Sign in with any customer or organizer account.
+        Sign in with an organizer-enabled account to manage events.
       </p>
 
       {error && <div className="auth-error">{error}</div>}
@@ -137,7 +112,7 @@ export function LoginForm({
           <input
             id="password"
             type="password"
-            placeholder="********"
+            placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -145,28 +120,45 @@ export function LoginForm({
         </div>
 
         <button type="submit" className="auth-btn" disabled={loading}>
-          {loading ? "Signing in..." : "Sign In"}
+          {loading ? "Signing in..." : "Login as organizer"}
         </button>
       </form>
 
       <p className="auth-footer">
-        Don't have an account?{" "}
+        Need organizer account creation?{" "}
         {useModalLinks ? (
           <button
             type="button"
             className="auth-link-btn"
-            onClick={onSwitchToRegister}
+            onClick={onSwitchToOrgRegister}
           >
-            Create one
+            Go to organization registration
           </button>
         ) : (
-          <Link href="/dashboard">Create one</Link>
+          <Link href="/organization/register">
+            Go to organization registration
+          </Link>
         )}
       </p>
       <p className="auth-footer">
-        Need to create organizer accounts?{" "}
-        <Link href="/organization/register">Create organizer account</Link>
+        Back to regular login? <Link href="/dashboard">Sign in</Link>
       </p>
+      <StatusPopup
+        open={Boolean(loginPopupName || signupPopupName)}
+        title={loginPopupName ? "Successful log in" : "Successful sign up"}
+        detail={
+          loginPopupName
+            ? `Welcome back, ${loginPopupName}.`
+            : signupPopupName
+              ? `Organizer account created for ${signupPopupName}. You can sign in now.`
+              : undefined
+        }
+        onClose={
+          loginPopupName
+            ? acknowledgeLoginSuccess
+            : () => setSignupPopupName(null)
+        }
+      />
     </div>
   );
 }
