@@ -1,0 +1,27 @@
+# Blueprint: https://render.com/docs/blueprint-spec
+# After first deploy, set secret env vars in the Render dashboard (or link to a secret store).
+services:
+  - type: web
+    name: soen345-backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./soen345-backend/Dockerfile
+    dockerContext: ./soen345-backend
+    healthCheckPath: /api/v1/events
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_FROM_NUMBER
+        sync: false
+      - key: STRIPE_API_KEY
+        sync: false
