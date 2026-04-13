@@ -20,6 +20,39 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## End-to-end tests (Playwright)
+
+Tests live in `e2e/` and assume the **Spring Boot API** is running (default **http://localhost:8080**) and MongoDB is reachable by that API (local Mongo or **MongoDB Atlas** via `MONGODB_URI` on the backend).
+
+1. **Frontend env** — in `.env`, set `BACKEND_URL` to the API origin (e.g. `http://localhost:8080`).
+
+2. **Backend** — from `soen345-backend`, start the app with a valid Mongo URI, for example:
+
+   ```bash
+   export MONGODB_URI="mongodb+srv://..."   # Unix/macOS
+   ./mvnw spring-boot:run
+   ```
+
+   On Windows (PowerShell): `$env:MONGODB_URI = "mongodb+srv://..."` then `.\mvnw.cmd spring-boot:run`.
+
+3. **Browsers (once per machine)** — from this directory:
+
+   ```bash
+   npx playwright install chromium
+   ```
+
+4. **Run the suite**:
+
+   ```bash
+   npm run test:e2e
+   ```
+
+   Playwright starts `npm run dev` for Next.js on **http://localhost:3000** if nothing is already listening there (`playwright.config.ts`).
+
+Optional: override bases with `PLAYWRIGHT_BACKEND_URL` and `PLAYWRIGHT_FRONTEND_URL`. After a run, open the HTML report with `npm run test:e2e:report`.
+
+**Note:** With no Stripe key and the default `resend_test_key`, the backend uses in-process mocks for payments and skips real Resend calls so reservation flows can complete locally.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
