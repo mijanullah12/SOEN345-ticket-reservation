@@ -8,12 +8,18 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import ticketReservation.soen345.domain.NotificationChannel;
+import ticketReservation.soen345.domain.PaymentInfo;
 import ticketReservation.soen345.domain.User;
 import ticketReservation.soen345.domain.UserRole;
 import ticketReservation.soen345.domain.UserStatus;
+import ticketReservation.soen345.dto.request.PaymentInfoRequest;
 import ticketReservation.soen345.dto.request.RegisterRequest;
+import ticketReservation.soen345.dto.request.UpdateUserProfileRequest;
 import ticketReservation.soen345.dto.response.RegisterResponse;
+import ticketReservation.soen345.dto.response.UserResponse;
 import ticketReservation.soen345.exception.DuplicateResourceException;
+import ticketReservation.soen345.exception.ResourceNotFoundException;
 import ticketReservation.soen345.repository.UserRepository;
 import ticketReservation.soen345.service.impl.UserServiceImpl;
 
@@ -120,5 +126,144 @@ class UserServiceImplTest {
 
         assertThat(response.getEmail()).isNull();
         assertThat(response.getPhone()).isEqualTo("+14155552671");
+    }
+
+    @Test
+    @DisplayName("registerOrganizer assigns ORGANIZER role")
+    void registerOrganizer() {
+        RegisterRequest request = RegisterRequest.builder()
+                .email("o@example.com")
+                .password("Password123")
+                .firstName("O")
+                .lastName("G")
+                .build();
+        when(userRepository.existsByEmail("o@example.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            u.setId("org-id");
+            u.setCreatedAt(Instant.now());
+            return u;
+        });
+
+        RegisterResponse response = userService.registerOrganizer(request);
+
+        assertThat(response.getRole()).isEqualTo(UserRole.ORGANIZER);
+    }
+
+    @Test
+    @DisplayName("registerAdmin assigns ADMIN role")
+    void registerAdmin() {
+        RegisterRequest request = RegisterRequest.builder()
+                .email("a@example.com")
+                .password("Password123")
+                .firstName("A")
+                .lastName("D")
+                .build();
+        when(userRepository.existsByEmail("a@example.com")).thenReturn(false);
+        when(passwordEncoder.encode(anyString())).thenReturn("hash");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User u = invocation.getArgument(0);
+            u.setId("adm-id");
+            u.setCreatedAt(Instant.now());
+            return u;
+        });
+
+        assertThat(userService.registerAdmin(request).getRole()).isEqualTo(UserRole.ADMIN);
+    }
+
+    @Test
+    @DisplayName("getUserById throws when missing")
+    void getUserMissing() {
+        when(userRepository.findById("x")).thenReturn(java.util.Optional.empty());
+        assertThatThrownBy(() -> userService.getUserById("x"))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("getUserById returns mapped response")
+    void getUserOk() {
+        User user = User.builder()
+                .id("u1")
+                .email("e@e.com")
+                .firstName("F")
+                .lastName("L")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+
+        UserResponse r = userService.getUserById("u1");
+        assertThat(r.getEmail()).isEqualTo("e@e.com");
+    }
+
+    @Test
+    @DisplayName("updateNotificationPreference persists channel")
+    void updateNotif() {
+        User user = User.builder()
+                .id("u1")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UserResponse r = userService.updateNotificationPreference("u1", NotificationChannel.SMS);
+
+        assertThat(r.getPreferredNotificationChannel()).isEqualTo(NotificationChannel.SMS);
+    }
+
+    @Test
+    @DisplayName("updateUserProfile merges payout fake account when requested")
+    void updateProfileFakePayout() {
+        User user = User.builder()
+                .id("u1")
+                .email("old@e.com")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.ORGANIZER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateUserProfileRequest req = UpdateUserProfileRequest.builder()
+                .paymentInfo(PaymentInfoRequest.builder()
+                        .payoutEmail("pay@org.com")
+                        .createFakePayoutAccount(true)
+                        .build())
+                .build();
+
+        UserResponse r = userService.updateUserProfile("u1", req);
+
+        assertThat(r.getPaymentInfo()).isNotNull();
+        assertThat(r.getPaymentInfo().getPayoutAccountId()).startsWith("fake_payout_");
+        assertThat(r.getPaymentInfo().getPayoutEmail()).isEqualTo("pay@org.com");
+    }
+
+    @Test
+    @DisplayName("updateUserProfile throws on duplicate email")
+    void duplicateEmailOnUpdate() {
+        User user = User.builder()
+                .id("u1")
+                .email("a@a.com")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.existsByEmail("b@b.com")).thenReturn(true);
+
+        UpdateUserProfileRequest req = UpdateUserProfileRequest.builder()
+                .email("b@b.com")
+                .build();
+
+        assertThatThrownBy(() -> userService.updateUserProfile("u1", req))
+                .isInstanceOf(DuplicateResourceException.class);
     }
 }
