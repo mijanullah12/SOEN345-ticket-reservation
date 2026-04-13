@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { AuthModal } from "@/app/components/dashboard/auth-modal";
@@ -84,5 +84,67 @@ describe("AuthModal signup tabs", () => {
 
     await user.click(screen.getByRole("tab", { name: /customer/i }));
     expect(screen.getByText(/customer register form/i)).toBeInTheDocument();
+  });
+});
+
+describe("AuthModal shell", () => {
+  it("renders nothing when mode is null", () => {
+    const { container } = render(
+      <AuthModal
+        mode={null}
+        onClose={() => undefined}
+        onSwitch={() => undefined}
+        onAuthSuccess={() => undefined}
+      />,
+    );
+    expect(container.firstChild).toBeNull();
+  });
+
+  it("shows login form in login mode", () => {
+    render(
+      <AuthModal
+        mode="login"
+        onClose={() => undefined}
+        onSwitch={() => undefined}
+        onAuthSuccess={() => undefined}
+      />,
+    );
+    expect(screen.getByText(/login form/i)).toBeInTheDocument();
+  });
+
+  it("calls onClose when Escape is pressed", () => {
+    const onClose = vi.fn();
+    render(
+      <AuthModal
+        mode="login"
+        onClose={onClose}
+        onSwitch={() => undefined}
+        onAuthSuccess={() => undefined}
+      />,
+    );
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose when backdrop or close button is clicked", async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(
+      <AuthModal
+        mode="login"
+        onClose={onClose}
+        onSwitch={() => undefined}
+        onAuthSuccess={() => undefined}
+      />,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: /close authentication modal/i }),
+    );
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    onClose.mockClear();
+    await user.click(screen.getByRole("button", { name: /^close$/i }));
+    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

@@ -19,12 +19,11 @@ export function LogoutButton({ className }: { className?: string }) {
     console.log("Acknowledging logout");
     setShowSuccess(false);
     setLoading(false);
-    if (typeof window !== "undefined") {
-      if (window.location.pathname.startsWith("/dashboard")) {
-        window.location.reload();
-        return;
-      }
-      // window.location.assign("/dashboard");
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/dashboard")
+    ) {
+      window.location.reload();
       return;
     }
     router.push("/dashboard");
