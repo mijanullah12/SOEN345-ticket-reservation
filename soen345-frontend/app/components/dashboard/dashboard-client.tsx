@@ -828,7 +828,9 @@ function ReservePanel({
           const isCancelling =
             activeReservation && actionKey === `cancel-${activeReservation.id}`;
           const organizerReady = event.organizerPayoutReady !== false;
-          const quantity = reserveQuantities[event.id] ?? 1;
+          const quantity = activeReservation
+            ? Math.max(1, activeReservation.quantity ?? 1)
+            : (reserveQuantities[event.id] ?? 1);
           const maxQuantity = event.capacity;
           const invalidQuantity = quantity < 1 || quantity > maxQuantity;
           const reserveDisabled =
