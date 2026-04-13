@@ -7,7 +7,6 @@ import com.stripe.model.Refund;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.RefundCreateParams;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 import ticketReservation.soen345.config.StripeProperties;
 import ticketReservation.soen345.exception.PaymentProcessingException;
 import ticketReservation.soen345.service.PaymentGateway;
@@ -16,7 +15,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
 
-@Component
 @RequiredArgsConstructor
 public class StripePaymentAdapter implements PaymentGateway {
 
