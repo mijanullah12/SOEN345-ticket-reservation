@@ -27,8 +27,6 @@ describe("SidebarNavIcon", () => {
 describe("OrganizerDashboardIcon", () => {
   it("renders organizer dashboard title", () => {
     render(<OrganizerDashboardIcon />);
-    expect(
-      screen.getByTitle(/organizer dashboard/i),
-    ).toBeInTheDocument();
+    expect(screen.getByTitle(/organizer dashboard/i)).toBeInTheDocument();
   });
 });

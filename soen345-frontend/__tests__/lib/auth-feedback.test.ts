@@ -30,7 +30,9 @@ describe("persistLoginFeedback and persistSignupFeedback", () => {
 
   it("writes signup feedback to session storage", () => {
     persistSignupFeedback({ firstName: "S", lastName: "U" });
-    expect(sessionStorage.getItem("auth-feedback")).toContain('"kind":"signup"');
+    expect(sessionStorage.getItem("auth-feedback")).toContain(
+      '"kind":"signup"',
+    );
   });
 });
 

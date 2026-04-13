@@ -3,18 +3,11 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ToastContainer, useToast } from "@/app/components/shared/toast";
 
-function ToastDemo({
-  variant,
-}: {
-  variant: "success" | "error";
-}) {
+function ToastDemo({ variant }: { variant: "success" | "error" }) {
   const { toasts, addToast, dismissToast } = useToast();
   return (
     <>
-      <button
-        type="button"
-        onClick={() => addToast("Hello", variant)}
-      >
+      <button type="button" onClick={() => addToast("Hello", variant)}>
         add
       </button>
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />

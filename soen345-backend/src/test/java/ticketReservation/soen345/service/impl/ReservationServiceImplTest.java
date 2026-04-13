@@ -243,6 +243,73 @@ class ReservationServiceImplTest {
         }
 
         @Test
+        @DisplayName("throws when event capacity is null")
+        void nullCapacity() {
+            Event event = activeEvent(5);
+            event.setCapacity(null);
+            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(customerWithPayment()));
+            when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(event));
+
+            CreateReservationRequest req = CreateReservationRequest.builder()
+                    .eventId(EVENT_ID)
+                    .quantity(1)
+                    .build();
+
+            assertThatThrownBy(() -> reservationService.reserveTicket(USER_ID, req))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("capacity");
+        }
+
+        @Test
+        @DisplayName("uses SMS notification channel when preferred")
+        void smsNotificationChannel() {
+            User customer = User.builder()
+                    .id(USER_ID)
+                    .email("c@example.com")
+                    .phone("+14155552671")
+                    .firstName("C")
+                    .lastName("U")
+                    .role(UserRole.CUSTOMER)
+                    .preferredNotificationChannel(NotificationChannel.SMS)
+                    .paymentInfo(PaymentInfo.builder()
+                            .customerId("cus_x")
+                            .defaultPaymentMethodId("pm_x")
+                            .build())
+                    .build();
+            User organizer = organizerWithPayout();
+            Event event = activeEvent(5);
+
+            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(customer));
+            when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(userRepository.findById(ORG_ID)).thenReturn(Optional.of(organizer));
+            when(reservationRepository.findByUserIdAndEventIdAndStatus(USER_ID, EVENT_ID, ReservationStatus.ACTIVE))
+                    .thenReturn(Optional.empty());
+
+            Payment pending = Payment.builder().id("pay1").providerPaymentId("pi_1").build();
+            when(paymentService.createPaymentIntent(any(), any(), any(), eq("usd"))).thenReturn(pending);
+            when(paymentService.confirmPayment("pay1")).thenReturn(pending);
+
+            when(reservationRepository.save(any(Reservation.class))).thenAnswer(inv -> {
+                Reservation r = inv.getArgument(0);
+                r.setId("res1");
+                return r;
+            });
+            when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            reservationService.reserveTicket(USER_ID, CreateReservationRequest.builder()
+                    .eventId(EVENT_ID)
+                    .quantity(1)
+                    .build());
+
+            verify(notificationService).sendMessage(
+                    eq(NotificationChannel.SMS),
+                    eq(NotificationType.CONFIRM_RESERVATION),
+                    eq(customer),
+                    eq(event),
+                    eq(null));
+        }
+
+        @Test
         @DisplayName("throws when duplicate active reservation")
         void duplicateActive() {
             when(userRepository.findById(USER_ID)).thenReturn(Optional.of(customerWithPayment()));
@@ -401,6 +468,57 @@ class ReservationServiceImplTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("already cancelled");
         }
+
+        @Test
+        @DisplayName("defaults quantity to 1 when null on cancel")
+        void cancel_DefaultQuantityWhenNull() {
+            Reservation reservation = Reservation.builder()
+                    .id("res1")
+                    .userId(USER_ID)
+                    .eventId(EVENT_ID)
+                    .quantity(null)
+                    .status(ReservationStatus.ACTIVE)
+                    .build();
+            Event event = activeEvent(3);
+
+            when(reservationRepository.findById("res1")).thenReturn(Optional.of(reservation));
+            when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(customerWithPayment()));
+            when(reservationRepository.save(any(Reservation.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            reservationService.cancelReservation(USER_ID, "res1");
+
+            ArgumentCaptor<Event> cap = ArgumentCaptor.forClass(Event.class);
+            verify(eventRepository).save(cap.capture());
+            assertThat(cap.getValue().getCapacity()).isEqualTo(4);
+        }
+
+        @Test
+        @DisplayName("cancel treats null event capacity as zero before restore")
+        void cancel_EventCapacityNull() {
+            Reservation reservation = Reservation.builder()
+                    .id("res1")
+                    .userId(USER_ID)
+                    .eventId(EVENT_ID)
+                    .quantity(2)
+                    .status(ReservationStatus.ACTIVE)
+                    .build();
+            Event event = activeEvent(0);
+            event.setCapacity(null);
+
+            when(reservationRepository.findById("res1")).thenReturn(Optional.of(reservation));
+            when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(event));
+            when(userRepository.findById(USER_ID)).thenReturn(Optional.of(customerWithPayment()));
+            when(reservationRepository.save(any(Reservation.class))).thenAnswer(inv -> inv.getArgument(0));
+            when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            reservationService.cancelReservation(USER_ID, "res1");
+
+            ArgumentCaptor<Event> cap = ArgumentCaptor.forClass(Event.class);
+            verify(eventRepository).save(cap.capture());
+            assertThat(cap.getValue().getCapacity()).isEqualTo(2);
+        }
     }
 
     @Nested
@@ -425,6 +543,25 @@ class ReservationServiceImplTest {
 
             assertThat(list).hasSize(1);
             assertThat(list.getFirst().getEventName()).isEqualTo("Show");
+        }
+
+        @Test
+        @DisplayName("throws when linked event no longer exists")
+        void eventMissing() {
+            Reservation r = Reservation.builder()
+                    .id("r1")
+                    .userId(USER_ID)
+                    .eventId(EVENT_ID)
+                    .quantity(1)
+                    .status(ReservationStatus.ACTIVE)
+                    .createdAt(Instant.now())
+                    .build();
+            when(reservationRepository.findByUserIdOrderByCreatedAtDesc(USER_ID)).thenReturn(List.of(r));
+            when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> reservationService.getMyReservations(USER_ID))
+                    .isInstanceOf(ResourceNotFoundException.class)
+                    .hasMessageContaining(EVENT_ID);
         }
     }
 }

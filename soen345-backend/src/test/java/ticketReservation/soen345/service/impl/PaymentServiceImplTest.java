@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -84,6 +85,32 @@ class PaymentServiceImplTest {
                 .isInstanceOf(PaymentProcessingException.class);
         assertThatThrownBy(() -> paymentService.createPaymentIntent(User.builder().build(), null, BigDecimal.ONE, "usd"))
                 .isInstanceOf(PaymentProcessingException.class);
+    }
+
+    @Test
+    @DisplayName("createPaymentIntent passes null customer and method when payer has no payment info")
+    void nullPayerPaymentInfo() {
+        User payer = User.builder().id("p1").build();
+        User payee = User.builder().id("p2").build();
+        when(paymentGateway.createPaymentIntent(
+                eq(BigDecimal.TEN),
+                eq("usd"),
+                isNull(),
+                isNull(),
+                any()))
+                .thenReturn("pi_x");
+        when(paymentRepository.save(any(Payment.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Payment result = paymentService.createPaymentIntent(payer, payee, BigDecimal.TEN, "usd");
+
+        assertThat(result.getProviderPaymentId()).isEqualTo("pi_x");
+        verify(paymentGateway).createPaymentIntent(
+                eq(BigDecimal.TEN),
+                eq("usd"),
+                isNull(),
+                isNull(),
+                argThat((Map<String, String> m) ->
+                        "p1".equals(m.get("payerUserId")) && "p2".equals(m.get("payeeUserId"))));
     }
 
     @Test

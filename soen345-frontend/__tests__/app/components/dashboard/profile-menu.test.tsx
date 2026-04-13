@@ -135,16 +135,12 @@ describe("ProfileMenu organizer access", () => {
     await user.click(screen.getByRole("button", { name: /account menu/i }));
 
     const menu1 = screen.getByRole("menu");
-    await user.click(
-      within(menu1).getByRole("button", { name: /^log in$/i }),
-    );
+    await user.click(within(menu1).getByRole("button", { name: /^log in$/i }));
     expect(onOpenAuthModal).toHaveBeenLastCalledWith("login");
 
     await user.click(screen.getByRole("button", { name: /account menu/i }));
     const menu2 = screen.getByRole("menu");
-    await user.click(
-      within(menu2).getByRole("button", { name: /^sign up$/i }),
-    );
+    await user.click(within(menu2).getByRole("button", { name: /^sign up$/i }));
     expect(onOpenAuthModal).toHaveBeenLastCalledWith("signup");
 
     await user.click(screen.getByRole("button", { name: /account menu/i }));
@@ -161,7 +157,10 @@ describe("ProfileMenu organizer access", () => {
 
     render(
       <>
-        <ProfileMenu isAuthenticated={false} onOpenAuthModal={() => undefined} />
+        <ProfileMenu
+          isAuthenticated={false}
+          onOpenAuthModal={() => undefined}
+        />
         <button type="button">outside</button>
       </>,
     );

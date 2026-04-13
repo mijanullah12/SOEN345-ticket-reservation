@@ -1,6 +1,7 @@
 package ticketReservation.soen345.service.impl;
 
 import com.stripe.exception.StripeException;
+import com.stripe.exception.InvalidRequestException;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.Refund;
 import com.stripe.param.PaymentIntentCreateParams;
@@ -40,6 +41,40 @@ class StripePaymentAdapterTest {
             pis.when(() -> PaymentIntent.create(any(PaymentIntentCreateParams.class))).thenReturn(pi);
             String id = adapter.createPaymentIntent(BigDecimal.valueOf(10.5), "usd", "cus_1", "pm_1", Map.of("a", "b"));
             assertThat(id).isEqualTo("pi_abc");
+        }
+    }
+
+    @Test
+    @DisplayName("createPaymentIntent omits customer, method, and metadata when blank or empty")
+    void createIntent_MinimalParams() {
+        StripeProperties props = mock(StripeProperties.class);
+        when(props.getApiKey()).thenReturn("sk_test_123");
+        StripePaymentAdapter adapter = new StripePaymentAdapter(props);
+
+        PaymentIntent pi = mock(PaymentIntent.class);
+        when(pi.getId()).thenReturn("pi_min");
+
+        try (MockedStatic<PaymentIntent> pis = mockStatic(PaymentIntent.class)) {
+            pis.when(() -> PaymentIntent.create(any(PaymentIntentCreateParams.class))).thenReturn(pi);
+            String id = adapter.createPaymentIntent(BigDecimal.ONE, "usd", "  ", null, Map.of());
+            assertThat(id).isEqualTo("pi_min");
+        }
+    }
+
+    @Test
+    @DisplayName("createPaymentIntent wraps StripeException")
+    void createIntent_StripeFailure() {
+        StripeProperties props = mock(StripeProperties.class);
+        when(props.getApiKey()).thenReturn("sk_test_123");
+        StripePaymentAdapter adapter = new StripePaymentAdapter(props);
+
+        try (MockedStatic<PaymentIntent> pis = mockStatic(PaymentIntent.class)) {
+            pis.when(() -> PaymentIntent.create(any(PaymentIntentCreateParams.class)))
+                    .thenThrow(new InvalidRequestException("x", "p", "m", "c", 400, null));
+
+            assertThatThrownBy(() -> adapter.createPaymentIntent(BigDecimal.ONE, "usd", null, null, null))
+                    .isInstanceOf(PaymentProcessingException.class)
+                    .hasMessageContaining("Failed to create Stripe payment intent");
         }
     }
 

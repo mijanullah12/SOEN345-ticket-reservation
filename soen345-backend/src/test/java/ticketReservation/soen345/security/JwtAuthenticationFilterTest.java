@@ -10,13 +10,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
@@ -50,6 +53,19 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
+    @DisplayName("continues chain when header is not Bearer")
+    void nonBearerHeader() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Basic dGVzdA==");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(jwtService, never()).isTokenValid(any());
+        verify(filterChain).doFilter(request, response);
+    }
+
+    @Test
     @DisplayName("continues chain when token invalid")
     void invalidToken() throws Exception {
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -78,5 +94,25 @@ class JwtAuthenticationFilterTest {
         verify(filterChain).doFilter(request, response);
         assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
         assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("uid");
+    }
+
+    @Test
+    @DisplayName("does not replace authentication when context already populated")
+    void existingAuthenticationPreserved() throws Exception {
+        UsernamePasswordAuthenticationToken existing =
+                new UsernamePasswordAuthenticationToken("prior", null, List.of());
+        SecurityContextHolder.getContext().setAuthentication(existing);
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer good");
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        when(jwtService.isTokenValid("good")).thenReturn(true);
+
+        filter.doFilterInternal(request, response, filterChain);
+
+        verify(jwtService, never()).extractUserId(any());
+        verify(jwtService, never()).extractRole(any());
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("prior");
+        verify(filterChain).doFilter(request, response);
     }
 }

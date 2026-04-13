@@ -266,4 +266,201 @@ class UserServiceImplTest {
         assertThatThrownBy(() -> userService.updateUserProfile("u1", req))
                 .isInstanceOf(DuplicateResourceException.class);
     }
+
+    @Test
+    @DisplayName("Should throw DuplicateResourceException when phone exists on registration")
+    void registerUser_DuplicatePhone_ShouldThrow() {
+        RegisterRequest request = RegisterRequest.builder()
+                .email("new@example.com")
+                .phone("+15550001111")
+                .password("Password123")
+                .firstName("John")
+                .lastName("Doe")
+                .build();
+
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(userRepository.existsByPhone("+15550001111")).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.registerUser(request))
+                .isInstanceOf(DuplicateResourceException.class)
+                .hasMessageContaining("phone");
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateUserProfile throws on duplicate phone")
+    void duplicatePhoneOnUpdate() {
+        User user = User.builder()
+                .id("u1")
+                .email("a@a.com")
+                .phone("+10000000001")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.existsByPhone("+10000000002")).thenReturn(true);
+
+        UpdateUserProfileRequest req = UpdateUserProfileRequest.builder()
+                .phone("+10000000002")
+                .build();
+
+        assertThatThrownBy(() -> userService.updateUserProfile("u1", req))
+                .isInstanceOf(DuplicateResourceException.class);
+    }
+
+    @Test
+    @DisplayName("updateUserProfile keeps email and phone when request omits them")
+    void updateProfile_KeepsContactWhenNullInRequest() {
+        User user = User.builder()
+                .id("u1")
+                .email("keep@e.com")
+                .phone("+1999")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UserResponse r = userService.updateUserProfile("u1", UpdateUserProfileRequest.builder().build());
+
+        assertThat(r.getEmail()).isEqualTo("keep@e.com");
+        assertThat(r.getPhone()).isEqualTo("+1999");
+    }
+
+    @Test
+    @DisplayName("updateUserProfile trims names when provided")
+    void updateProfile_TrimsNames() {
+        User user = User.builder()
+                .id("u1")
+                .email("e@e.com")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UserResponse r = userService.updateUserProfile("u1", UpdateUserProfileRequest.builder()
+                .firstName("  New  ")
+                .lastName("  Name  ")
+                .build());
+
+        assertThat(r.getFirstName()).isEqualTo("New");
+        assertThat(r.getLastName()).isEqualTo("Name");
+    }
+
+    @Test
+    @DisplayName("updateUserProfile updates preferred notification channel")
+    void updateProfile_NotificationChannel() {
+        User user = User.builder()
+                .id("u1")
+                .email("e@e.com")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .preferredNotificationChannel(NotificationChannel.EMAIL)
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UserResponse r = userService.updateUserProfile("u1", UpdateUserProfileRequest.builder()
+                .preferredNotificationChannel(NotificationChannel.SMS)
+                .build());
+
+        assertThat(r.getPreferredNotificationChannel()).isEqualTo(NotificationChannel.SMS);
+    }
+
+    @Test
+    @DisplayName("updateUserProfile generates fake payout id when email provided without flag")
+    void updateProfile_FakePayoutWithoutExplicitFlag() {
+        User user = User.builder()
+                .id("u1")
+                .email("o@e.com")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.ORGANIZER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateUserProfileRequest req = UpdateUserProfileRequest.builder()
+                .paymentInfo(PaymentInfoRequest.builder()
+                        .payoutEmail("pay@org.com")
+                        .createFakePayoutAccount(false)
+                        .build())
+                .build();
+
+        UserResponse r = userService.updateUserProfile("u1", req);
+
+        assertThat(r.getPaymentInfo().getPayoutAccountId()).startsWith("fake_payout_");
+    }
+
+    @Test
+    @DisplayName("updateUserProfile clears payment info when merged result is empty")
+    void updateProfile_PaymentInfoBecomesNull() {
+        User user = User.builder()
+                .id("u1")
+                .email("e@e.com")
+                .firstName("A")
+                .lastName("B")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .paymentInfo(PaymentInfo.builder().customerId("cus").build())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UpdateUserProfileRequest req = UpdateUserProfileRequest.builder()
+                .paymentInfo(PaymentInfoRequest.builder()
+                        .customerId("   ")
+                        .defaultPaymentMethodId("  ")
+                        .build())
+                .build();
+
+        UserResponse r = userService.updateUserProfile("u1", req);
+
+        assertThat(r.getPaymentInfo()).isNull();
+    }
+
+    @Test
+    @DisplayName("getUserById maps non-null payment info")
+    void getUserWithPaymentInfo() {
+        User user = User.builder()
+                .id("u1")
+                .email("e@e.com")
+                .firstName("F")
+                .lastName("L")
+                .role(UserRole.CUSTOMER)
+                .status(UserStatus.ACTIVE)
+                .createdAt(Instant.now())
+                .paymentInfo(PaymentInfo.builder()
+                        .customerId("cus_1")
+                        .defaultPaymentMethodId("pm_1")
+                        .payoutAccountId("acct_1")
+                        .payoutEmail("p@p.com")
+                        .payoutDisplayName("Pay")
+                        .build())
+                .build();
+        when(userRepository.findById("u1")).thenReturn(java.util.Optional.of(user));
+
+        UserResponse r = userService.getUserById("u1");
+
+        assertThat(r.getPaymentInfo()).isNotNull();
+        assertThat(r.getPaymentInfo().getCustomerId()).isEqualTo("cus_1");
+        assertThat(r.getPaymentInfo().getPayoutDisplayName()).isEqualTo("Pay");
+    }
 }

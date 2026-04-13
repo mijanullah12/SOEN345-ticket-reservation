@@ -10,6 +10,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ticketReservation.soen345.domain.Event;
 import ticketReservation.soen345.domain.EventStatus;
+import ticketReservation.soen345.domain.PaymentInfo;
+import ticketReservation.soen345.domain.User;
 import ticketReservation.soen345.dto.request.CreateEventRequest;
 import ticketReservation.soen345.dto.request.UpdateEventRequest;
 import ticketReservation.soen345.dto.response.EventResponse;
@@ -214,6 +216,21 @@ class EventServiceImplTest {
         }
 
         @Test
+        @DisplayName("Should update category when provided")
+        void updateEvent_ShouldUpdateCategory() {
+            Event existing = buildEvent(EVENT_ID, EventStatus.ACTIVE);
+
+            when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(existing));
+            when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
+
+            EventResponse response = eventService.updateEvent(EVENT_ID, UpdateEventRequest.builder()
+                    .category("music")
+                    .build());
+
+            assertThat(response.getCategory()).isEqualTo("music");
+        }
+
+        @Test
         @DisplayName("Should throw ResourceNotFoundException when event does not exist")
         void updateEvent_ShouldThrowWhenEventNotFound() {
             when(eventRepository.findById("missing-id")).thenReturn(Optional.empty());
@@ -351,6 +368,74 @@ class EventServiceImplTest {
             assertThat(response.getCapacity()).isEqualTo(event.getCapacity());
             assertThat(response.getTicketPrice()).isEqualByComparingTo(event.getTicketPrice());
             assertThat(response.getOrganizerId()).isEqualTo(ORGANIZER_ID);
+        }
+
+        @Test
+        @DisplayName("Should report payout not ready when organizer id is null")
+        void getAvailableEvents_NullOrganizerId() {
+            Event event = buildEvent("e1", EventStatus.ACTIVE);
+            event.setOrganizerId(null);
+            when(eventRepository.findByStatus(EventStatus.ACTIVE)).thenReturn(List.of(event));
+
+            EventResponse r = eventService.getAvailableEvents().getFirst();
+
+            assertThat(r.getOrganizerPayoutReady()).isFalse();
+            assertThat(r.getOrganizerName()).isNull();
+            assertThat(r.getOrganizerEmail()).isNull();
+        }
+
+        @Test
+        @DisplayName("Should map organizer summary and payout readiness from user repository")
+        void getAvailableEvents_OrganizerDetailsAndPayout() {
+            Event event = buildEvent("e1", EventStatus.ACTIVE);
+            User organizer = User.builder()
+                    .id(ORGANIZER_ID)
+                    .firstName("Ann")
+                    .lastName("Org")
+                    .email("ann@example.com")
+                    .paymentInfo(PaymentInfo.builder().payoutAccountId("acct_123").build())
+                    .build();
+            when(eventRepository.findByStatus(EventStatus.ACTIVE)).thenReturn(List.of(event));
+            when(userRepository.findById(ORGANIZER_ID)).thenReturn(Optional.of(organizer));
+
+            EventResponse r = eventService.getAvailableEvents().getFirst();
+
+            assertThat(r.getOrganizerName()).isEqualTo("Ann Org");
+            assertThat(r.getOrganizerEmail()).isEqualTo("ann@example.com");
+            assertThat(r.getOrganizerPayoutReady()).isTrue();
+        }
+
+        @Test
+        @DisplayName("Should treat missing organizer user as unknown")
+        void getAvailableEvents_OrganizerUserNotFound() {
+            Event event = buildEvent("e1", EventStatus.ACTIVE);
+            when(eventRepository.findByStatus(EventStatus.ACTIVE)).thenReturn(List.of(event));
+            when(userRepository.findById(ORGANIZER_ID)).thenReturn(Optional.empty());
+
+            EventResponse r = eventService.getAvailableEvents().getFirst();
+
+            assertThat(r.getOrganizerName()).isNull();
+            assertThat(r.getOrganizerEmail()).isNull();
+            assertThat(r.getOrganizerPayoutReady()).isFalse();
+        }
+
+        @Test
+        @DisplayName("Should not mark payout ready when payout account id is blank")
+        void getAvailableEvents_BlankPayoutId() {
+            Event event = buildEvent("e1", EventStatus.ACTIVE);
+            User organizer = User.builder()
+                    .id(ORGANIZER_ID)
+                    .firstName(null)
+                    .lastName("Solo")
+                    .paymentInfo(PaymentInfo.builder().payoutAccountId("   ").build())
+                    .build();
+            when(eventRepository.findByStatus(EventStatus.ACTIVE)).thenReturn(List.of(event));
+            when(userRepository.findById(ORGANIZER_ID)).thenReturn(Optional.of(organizer));
+
+            EventResponse r = eventService.getAvailableEvents().getFirst();
+
+            assertThat(r.getOrganizerName()).isEqualTo("Solo");
+            assertThat(r.getOrganizerPayoutReady()).isFalse();
         }
     }
 

@@ -104,4 +104,22 @@ class NotificationServiceImplTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Phone");
     }
+
+    @Test
+    @DisplayName("sends email for CANCEL_RESERVATION")
+    void emailCancel() {
+        User user = User.builder().email("a@b.com").build();
+        Event event = Event.builder().name("E").build();
+        Notification n = org.mockito.Mockito.mock(Notification.class);
+        when(emailNotificationFactory.createReservationCancellation()).thenReturn(n);
+
+        notificationService.sendMessage(
+                NotificationChannel.EMAIL,
+                NotificationType.CANCEL_RESERVATION,
+                user,
+                event,
+                null);
+
+        verify(emailCommunicationStrategy).sendTo(eq(user), eq(n), any());
+    }
 }

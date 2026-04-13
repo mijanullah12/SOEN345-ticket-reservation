@@ -160,7 +160,9 @@ describe("OrganizationRegisterForm", () => {
       }),
     });
     expect(pushMock).toHaveBeenCalledWith("/login");
-    expect(sessionStorage.getItem("auth-feedback")).toContain('"kind":"signup"');
+    expect(sessionStorage.getItem("auth-feedback")).toContain(
+      '"kind":"signup"',
+    );
     expect(sessionStorage.getItem("auth-feedback")).toContain("Jane");
   });
 
@@ -211,7 +213,9 @@ describe("OrganizationRegisterForm", () => {
   it("uses custom redirect path after success", async () => {
     apiMock.mockResolvedValueOnce({ id: "4" });
     const user = userEvent.setup();
-    render(<OrganizationRegisterForm redirectToOrganizerLogin="/custom-login" />);
+    render(
+      <OrganizationRegisterForm redirectToOrganizerLogin="/custom-login" />,
+    );
 
     await user.type(screen.getByLabelText(/first name/i), "Sam");
     await user.type(screen.getByLabelText(/last name/i), "Kim");
