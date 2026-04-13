@@ -243,8 +243,8 @@ export function DashboardClient({
 
   const activeFilters = useMemo(() => {
     const filters: { key: string; label: string }[] = [];
-    if (locationQuery) filters.push({ key: "location", label: `Location: ${locationQuery}` });
-    if (keywordQuery) filters.push({ key: "keyword", label: `Search: ${keywordQuery}` });
+    if (locationQuery) filters.push({ key: "location", label: `Venue: ${locationQuery}` });
+    if (keywordQuery) filters.push({ key: "keyword", label: `Name: ${keywordQuery}` });
     if (dateFrom) filters.push({ key: "dateFrom", label: `From: ${dateFrom}` });
     if (dateTo) filters.push({ key: "dateTo", label: `To: ${dateTo}` });
     if (priceMin) filters.push({ key: "priceMin", label: `Min $${priceMin}` });
@@ -488,19 +488,19 @@ export function DashboardClient({
             >
               <div className="dash-filter-row">
                 <label className="dash-search-segment">
-                  <span>Search</span>
+                  <span>Name</span>
                   <input
                     value={keywordQuery}
                     onChange={(e) => setKeywordQuery(e.target.value)}
-                    placeholder="Artist, Event or Venue"
+                    placeholder="Name of the event"
                   />
                 </label>
                 <label className="dash-search-segment">
-                  <span>Location</span>
+                  <span>Venue</span>
                   <input
                     value={locationQuery}
                     onChange={(e) => setLocationQuery(e.target.value)}
-                    placeholder="City or Postal Code"
+                    placeholder="Venue of the event"
                   />
                 </label>
                 <label className="dash-search-segment dash-sort-segment">
@@ -711,8 +711,7 @@ function ReservePanel({
   onShowDetails: (event: Event) => void;
   onPromptLogin: () => void;
 }) {
-  const featured = events.slice(0, 4);
-  if (featured.length === 0) {
+  if (events.length === 0) {
     return null;
   }
 
@@ -731,7 +730,7 @@ function ReservePanel({
         ) : null}
       </div>
       <ul className="dash-reserve-list">
-        {featured.map((event) => {
+        {events.map((event) => {
           const activeReservation = activeReservationByEventId.get(event.id);
           const isReserving = actionKey === `reserve-${event.id}`;
           const isCancelling =
@@ -943,14 +942,11 @@ function CategoryPanels({
   switch (categoryId) {
     case "all":
       return (
-        <>
-          <FeaturedCarousel
-            title="All Events"
-            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
-            events={featureSlides}
-          />
-          <MoviesPanel featured={featured} rest={rest} hints={cat.imageHints} />
-        </>
+        <FeaturedCarousel
+          title="All Events"
+          images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+          events={featureSlides}
+        />
       );
     case "movies":
       return (
