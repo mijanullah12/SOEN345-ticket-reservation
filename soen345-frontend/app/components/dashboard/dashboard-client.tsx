@@ -137,7 +137,8 @@ export function DashboardClient({
   const [reserveQuantities, setReserveQuantities] = useState<
     Record<string, number>
   >({});
-  const { user: currentUser, loading: profileLoading } = useUserProfile(sessionAuthenticated);
+  const { user: currentUser, loading: profileLoading } =
+    useUserProfile(sessionAuthenticated);
   const isOrganizer = currentUser?.role === "ORGANIZER";
   const greetingName = buildDisplayName(
     currentUser?.firstName,
@@ -351,9 +352,14 @@ export function DashboardClient({
             ))}
             {isOrganizer ? (
               <li>
-                <Link href="/organizer/dashboard" className="dash-nav-item dash-nav-link">
+                <Link
+                  href="/organizer/dashboard"
+                  className="dash-nav-item dash-nav-link"
+                >
                   <OrganizerDashboardIcon />
-                  <span className="dash-nav-item-label">Organizer Dashboard</span>
+                  <span className="dash-nav-item-label">
+                    Organizer Dashboard
+                  </span>
                 </Link>
               </li>
             ) : null}

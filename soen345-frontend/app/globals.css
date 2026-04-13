@@ -782,7 +782,7 @@ body {
   box-shadow: 0 0 0 2px rgb(167 255 196 / 0.3);
 }
 
-.org-form .form-group select {
+.org-form select {
   padding: 0.65rem 0.85rem;
   border-radius: 0;
   border: 1px solid var(--dash-border);
@@ -792,7 +792,7 @@ body {
   cursor: pointer;
 }
 
-.org-form .form-group select:focus {
+.org-form select:focus {
   outline: none;
   border-color: var(--dash-accent-muted);
   box-shadow: 0 0 0 2px rgb(167 255 196 / 0.3);
