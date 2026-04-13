@@ -11,7 +11,13 @@ test.describe("Role-based access control", () => {
     // The organizer dashboard page component (app/organizer/dashboard/page.tsx)
     // performs a server-side auth check and redirects unauthenticated requests
     // to /login with a redirect param.
-    await expect(page).toHaveURL(/\/login\?redirect=%2Forganizer%2Fdashboard/);
+    await expect(page).toHaveURL((url) => {
+      const u = new URL(url);
+      return (
+        u.pathname === "/login" &&
+        u.searchParams.get("redirect") === "/organizer/dashboard"
+      );
+    });
   });
 
   test("TC13: customer visiting /organizer/dashboard is redirected to /dashboard", async ({

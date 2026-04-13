@@ -1,6 +1,14 @@
 import { randomUUID } from "node:crypto";
 import type { APIRequestContext, Page } from "@playwright/test";
 
+/** Narrows the dashboard reserve list via the Name filter (avoids pagination misses). */
+export async function filterDashboardEventsByName(
+  page: Page,
+  nameSubstring: string,
+): Promise<void> {
+  await page.getByPlaceholder("Name of the event").fill(nameSubstring);
+}
+
 const API_BASE = process.env.PLAYWRIGHT_BACKEND_URL ?? "http://localhost:8080";
 const FRONTEND_BASE =
   process.env.PLAYWRIGHT_FRONTEND_URL ?? "http://localhost:3000";
@@ -111,6 +119,50 @@ export async function loginViaBrowser(
       `loginViaBrowser failed: ${res.status()} ${await res.text()}`,
     );
   }
+}
+
+/**
+ * PATCH /api/v1/users/me paymentInfo (customer card on file and/or organizer payout).
+ */
+export async function patchUserPaymentProfile(
+  request: APIRequestContext,
+  token: string,
+  paymentInfo: {
+    customerId?: string;
+    defaultPaymentMethodId?: string;
+    payoutAccountId?: string;
+  },
+): Promise<void> {
+  const res = await request.patch(`${API_BASE}/api/v1/users/me`, {
+    data: { paymentInfo },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok()) {
+    throw new Error(
+      `patchUserPaymentProfile failed: ${res.status()} ${await res.text()}`,
+    );
+  }
+}
+
+/**
+ * Ensures at least one public event appears on the customer dashboard (reserve panel).
+ * Call from tests that expect the "Log in to reserve" control.
+ */
+export async function seedPublicListingEvent(
+  request: APIRequestContext,
+): Promise<void> {
+  const organizer = await registerOrganizer(request);
+  const token = await getBackendToken(
+    request,
+    organizer.email,
+    organizer.password,
+  );
+  await patchUserPaymentProfile(request, token, {
+    payoutAccountId: "acct_e2e_test",
+  });
+  await seedEvent(request, token, {
+    name: `Public listing ${randomUUID()}`,
+  });
 }
 
 /**

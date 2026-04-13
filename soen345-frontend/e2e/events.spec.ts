@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import {
+  filterDashboardEventsByName,
   getBackendToken,
   loginViaBrowser,
   registerOrganizer,
@@ -144,12 +145,14 @@ test.describe("Event CRUD (organizer)", () => {
       organizer.email,
       organizer.password,
     );
+    const id = randomUUID();
     const event = await seedEvent(request, token, {
-      name: `Public Event ${randomUUID()}`,
+      name: `Public Event ${id}`,
     });
 
     // Visit dashboard as an unauthenticated user (no cookie set)
     await page.goto("/dashboard");
+    await filterDashboardEventsByName(page, id);
 
     // Event card or reserve panel entry should be visible
     await expect(

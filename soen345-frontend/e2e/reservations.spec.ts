@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import {
+  filterDashboardEventsByName,
   getBackendToken,
   loginViaBrowser,
+  patchUserPaymentProfile,
   registerCustomer,
   registerOrganizer,
   seedEvent,
@@ -21,6 +23,9 @@ async function seedOrganizerEvent(
     organizer.email,
     organizer.password,
   );
+  await patchUserPaymentProfile(request, orgToken, {
+    payoutAccountId: "acct_e2e_test",
+  });
   return seedEvent(request, orgToken, { name: eventName, capacity: 50 });
 }
 
@@ -29,15 +34,23 @@ test.describe("Reservation flows (customer)", () => {
     page,
     request,
   }) => {
-    const event = await seedOrganizerEvent(
-      request,
-      `Reservable Event ${randomUUID()}`,
-    );
+    const id = randomUUID();
+    const event = await seedOrganizerEvent(request, `Reservable Event ${id}`);
 
-    // Login as customer via browser
     const customer = await registerCustomer(request);
+    const custToken = await getBackendToken(
+      request,
+      customer.email,
+      customer.password,
+    );
+    await patchUserPaymentProfile(request, custToken, {
+      customerId: "cus_e2e_test",
+      defaultPaymentMethodId: "pm_e2e_test",
+    });
+
     await loginViaBrowser(page, customer.email, customer.password);
     await page.goto("/dashboard");
+    await filterDashboardEventsByName(page, id);
 
     // Find the event in the reserve panel and click Reserve
     const eventItem = page.locator(".dash-reserve-item", {
@@ -59,10 +72,8 @@ test.describe("Reservation flows (customer)", () => {
     page,
     request,
   }) => {
-    const event = await seedOrganizerEvent(
-      request,
-      `Tickets Tab Event ${randomUUID()}`,
-    );
+    const id = randomUUID();
+    const event = await seedOrganizerEvent(request, `Tickets Tab Event ${id}`);
 
     const customer = await registerCustomer(request);
     const custToken = await getBackendToken(
@@ -70,6 +81,10 @@ test.describe("Reservation flows (customer)", () => {
       customer.email,
       customer.password,
     );
+    await patchUserPaymentProfile(request, custToken, {
+      customerId: "cus_e2e_test",
+      defaultPaymentMethodId: "pm_e2e_test",
+    });
     await seedReservation(request, custToken, event.id);
 
     // Login as customer via browser
@@ -79,16 +94,14 @@ test.describe("Reservation flows (customer)", () => {
     // Click the "Tickets" sidebar nav item
     await page.locator(".dash-nav-item", { hasText: "Tickets" }).click();
 
-    // The event with the active reservation should appear
-    await expect(
-      page.locator(".dash-reserve-item", { hasText: event.name }),
-    ).toBeVisible();
+    // Tickets tab uses dash-tickets-item (not the reserve panel list)
+    const ticketRow = page.locator(".dash-tickets-item", {
+      hasText: event.name,
+    });
+    await expect(ticketRow).toBeVisible();
 
-    // The "Cancel reservation" button confirms an active reservation exists
     await expect(
-      page
-        .locator(".dash-reserve-item", { hasText: event.name })
-        .getByRole("button", { name: "Cancel reservation" }),
+      ticketRow.getByRole("button", { name: "Cancel" }),
     ).toBeVisible();
   });
 
@@ -96,9 +109,10 @@ test.describe("Reservation flows (customer)", () => {
     page,
     request,
   }) => {
+    const id = randomUUID();
     const event = await seedOrganizerEvent(
       request,
-      `Cancel Reservation Event ${randomUUID()}`,
+      `Cancel Reservation Event ${id}`,
     );
 
     const customer = await registerCustomer(request);
@@ -107,11 +121,16 @@ test.describe("Reservation flows (customer)", () => {
       customer.email,
       customer.password,
     );
+    await patchUserPaymentProfile(request, custToken, {
+      customerId: "cus_e2e_test",
+      defaultPaymentMethodId: "pm_e2e_test",
+    });
     await seedReservation(request, custToken, event.id);
 
     // Login as customer via browser
     await loginViaBrowser(page, customer.email, customer.password);
     await page.goto("/dashboard");
+    await filterDashboardEventsByName(page, id);
 
     const eventItem = page.locator(".dash-reserve-item", {
       hasText: event.name,

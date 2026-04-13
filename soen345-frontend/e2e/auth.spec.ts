@@ -1,11 +1,20 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
-import { loginViaBrowser, registerCustomer } from "./fixtures/auth";
+import {
+  loginViaBrowser,
+  registerCustomer,
+  seedPublicListingEvent,
+} from "./fixtures/auth";
 
 test.describe("Auth flows", () => {
-  test("TC1: register a new customer via the UI form", async ({ page }) => {
+  test("TC1: register a new customer via the UI form", async ({
+    page,
+    request,
+  }) => {
     const email = `reg-ui-${randomUUID()}@example.com`;
     const password = "Password123";
+
+    await seedPublicListingEvent(request);
 
     // Visit dashboard as unauthenticated user
     await page.goto("/dashboard");
@@ -28,11 +37,20 @@ test.describe("Auth flows", () => {
     await page.locator("#confirmPassword").fill(password);
     await page.getByRole("button", { name: "Create Account" }).click();
 
-    // After registration the modal closes and the user is back on the dashboard
-    await expect(page).toHaveURL(/\/dashboard/);
-    // The auth modal should be gone
-    await expect(page.locator("[role='dialog']")).not.toBeVisible();
-    // User is now authenticated — logout button appears
+    // Register only creates the account; the modal switches to Sign In.
+    await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible({
+      timeout: 15_000,
+    });
+    const signupOk = page.getByRole("button", { name: "OK" });
+    if (await signupOk.isVisible()) {
+      await signupOk.click();
+    }
+
+    await page.locator("#identifier").fill(email);
+    await page.locator("#password").fill(password);
+    await page.getByRole("button", { name: "Sign In" }).click();
+
+    await expect(page.getByRole("dialog")).not.toBeVisible();
     await expect(page.getByRole("button", { name: "Log Out" })).toBeVisible();
   });
 
@@ -76,6 +94,8 @@ test.describe("Auth flows", () => {
     page,
     request,
   }) => {
+    await seedPublicListingEvent(request);
+
     const user = await registerCustomer(request);
     await loginViaBrowser(page, user.email, user.password);
     await page.goto("/dashboard");
