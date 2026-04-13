@@ -1041,7 +1041,8 @@ body {
 }
 
 .dash-filter-panel {
-  border: 1px solid color-mix(in srgb, var(--dash-border) 82%, var(--dash-accent-muted));
+  border: 1px solid
+    color-mix(in srgb, var(--dash-border) 82%, var(--dash-accent-muted));
   background: var(--dash-surface);
   display: flex;
   flex-direction: column;
@@ -1054,7 +1055,8 @@ body {
 
 .dash-filter-panel-head {
   padding: 0.85rem 1.1rem 0.95rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--dash-border) 65%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--dash-border) 65%, transparent);
   background: linear-gradient(
     165deg,
     color-mix(in srgb, var(--dash-accent) 18%, var(--dash-surface)) 0%,
@@ -1100,7 +1102,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid color-mix(in srgb, var(--dash-border) 88%, var(--dash-accent-muted));
+  border: 1px solid
+    color-mix(in srgb, var(--dash-border) 88%, var(--dash-accent-muted));
   background: linear-gradient(
     180deg,
     var(--dash-surface) 0%,
@@ -1177,7 +1180,11 @@ body {
 
 .dash-search-segment input:hover,
 .dash-search-segment select:hover {
-  border-color: color-mix(in srgb, var(--dash-border) 50%, var(--dash-accent-muted));
+  border-color: color-mix(
+    in srgb,
+    var(--dash-border) 50%,
+    var(--dash-accent-muted)
+  );
 }
 
 .dash-search-segment input:focus,
@@ -1214,7 +1221,11 @@ body {
   gap: 0.45rem;
   padding: 0.65rem 1rem 0.85rem;
   border-top: 1px solid color-mix(in srgb, var(--dash-border) 70%, transparent);
-  background: color-mix(in srgb, var(--dash-surface-muted) 35%, var(--dash-surface));
+  background: color-mix(
+    in srgb,
+    var(--dash-surface-muted) 35%,
+    var(--dash-surface)
+  );
 }
 
 .dash-filter-chip {
@@ -1222,7 +1233,8 @@ body {
   align-items: center;
   gap: 0.4rem;
   padding: 0.32rem 0.65rem;
-  border: 1px solid color-mix(in srgb, var(--dash-border) 80%, var(--dash-accent-muted));
+  border: 1px solid
+    color-mix(in srgb, var(--dash-border) 80%, var(--dash-accent-muted));
   border-radius: 9999px;
   background: var(--dash-surface);
   color: var(--dash-text);
@@ -1514,7 +1526,8 @@ body {
 .dash-reserve-panel,
 .dash-tickets-panel {
   margin-top: 1.25rem;
-  border: 1px solid color-mix(in srgb, var(--dash-border) 82%, var(--dash-accent-muted));
+  border: 1px solid
+    color-mix(in srgb, var(--dash-border) 82%, var(--dash-accent-muted));
   border-radius: var(--dash-panel-radius);
   padding: 1rem 1.1rem 1.15rem;
   background: var(--dash-surface);
@@ -1644,9 +1657,15 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
+  min-width: 0;
+  margin: 0;
   padding: 0.35rem;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--dash-surface-muted) 65%, var(--dash-surface));
+  background: color-mix(
+    in srgb,
+    var(--dash-surface-muted) 65%,
+    var(--dash-surface)
+  );
   border: 1px solid color-mix(in srgb, var(--dash-border) 75%, transparent);
 }
 
@@ -1682,15 +1701,24 @@ body {
 
 .dash-pagination-btn:hover:not(:disabled) {
   background: color-mix(in srgb, var(--dash-surface) 70%, var(--dash-accent));
-  border-color: color-mix(in srgb, var(--dash-border) 60%, var(--dash-accent-muted));
+  border-color: color-mix(
+    in srgb,
+    var(--dash-border) 60%,
+    var(--dash-accent-muted)
+  );
 }
 
 .dash-pagination-btn[data-active="true"] {
   background: var(--dash-accent);
   color: var(--dash-accent-ink);
-  border-color: color-mix(in srgb, var(--dash-accent) 70%, var(--dash-accent-text));
+  border-color: color-mix(
+    in srgb,
+    var(--dash-accent) 70%,
+    var(--dash-accent-text)
+  );
   font-weight: 800;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--dash-accent-muted) 40%, transparent);
+  box-shadow: 0 2px 8px
+    color-mix(in srgb, var(--dash-accent-muted) 40%, transparent);
 }
 
 .dash-pagination-btn:disabled {
@@ -1713,7 +1741,11 @@ body {
 
 .dash-pagination-arrow:hover:not(:disabled) {
   border-color: var(--dash-accent-muted);
-  background: color-mix(in srgb, var(--dash-surface-muted) 50%, var(--dash-surface));
+  background: color-mix(
+    in srgb,
+    var(--dash-surface-muted) 50%,
+    var(--dash-surface)
+  );
 }
 
 .dash-pagination-info {

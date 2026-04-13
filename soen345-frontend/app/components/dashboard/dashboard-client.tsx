@@ -921,9 +921,8 @@ function ReservePanel({
             >
               Prev
             </button>
-            <div
+            <fieldset
               className="dash-pagination-pages"
-              role="group"
               aria-label="Page numbers"
             >
               {pageNumbers.map((n) => (
@@ -939,7 +938,7 @@ function ReservePanel({
                   {n + 1}
                 </button>
               ))}
-            </div>
+            </fieldset>
             <button
               type="button"
               className="dash-pagination-btn dash-pagination-arrow"
