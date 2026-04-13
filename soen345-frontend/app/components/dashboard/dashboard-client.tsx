@@ -119,7 +119,11 @@ export function DashboardClient({
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
-  const [dateQuery, setDateQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [sortBy, setSortBy] = useState<"date-asc" | "date-desc" | "price-asc" | "price-desc" | "name-asc" | "name-desc">("date-asc");
   const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -190,7 +194,7 @@ export function DashboardClient({
   );
 
   const searchedEvents = useMemo(() => {
-    return categoryEvents.filter((event) => {
+    const filtered = categoryEvents.filter((event) => {
       const locationText = event.location.toLowerCase();
       const eventText =
         `${event.name} ${event.description ?? ""}`.toLowerCase();
@@ -200,13 +204,85 @@ export function DashboardClient({
       const keywordOk = keywordQuery
         ? eventText.includes(keywordQuery.toLowerCase())
         : true;
-      const dateOk = dateQuery
-        ? new Date(event.date).toDateString() ===
-          new Date(`${dateQuery}T00:00:00`).toDateString()
+
+      const eventDate = new Date(event.date);
+      const dateFromOk = dateFrom
+        ? eventDate >= new Date(`${dateFrom}T00:00:00`)
         : true;
-      return locationOk && keywordOk && dateOk;
+      const dateToOk = dateTo
+        ? eventDate <= new Date(`${dateTo}T23:59:59`)
+        : true;
+
+      const parsedMin = priceMin !== "" ? Number.parseFloat(priceMin) : null;
+      const parsedMax = priceMax !== "" ? Number.parseFloat(priceMax) : null;
+      const priceMinOk = parsedMin !== null ? event.ticketPrice >= parsedMin : true;
+      const priceMaxOk = parsedMax !== null ? event.ticketPrice <= parsedMax : true;
+
+      return locationOk && keywordOk && dateFromOk && dateToOk && priceMinOk && priceMaxOk;
     });
-  }, [categoryEvents, dateQuery, keywordQuery, locationQuery]);
+
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "date-asc":
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "date-desc":
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case "price-asc":
+          return a.ticketPrice - b.ticketPrice;
+        case "price-desc":
+          return b.ticketPrice - a.ticketPrice;
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        default:
+          return 0;
+      }
+    });
+  }, [categoryEvents, dateFrom, dateTo, keywordQuery, locationQuery, priceMin, priceMax, sortBy]);
+
+  const activeFilters = useMemo(() => {
+    const filters: { key: string; label: string }[] = [];
+    if (locationQuery) filters.push({ key: "location", label: `Venue: ${locationQuery}` });
+    if (keywordQuery) filters.push({ key: "keyword", label: `Name: ${keywordQuery}` });
+    if (dateFrom) filters.push({ key: "dateFrom", label: `From: ${dateFrom}` });
+    if (dateTo) filters.push({ key: "dateTo", label: `To: ${dateTo}` });
+    if (priceMin) filters.push({ key: "priceMin", label: `Min $${priceMin}` });
+    if (priceMax) filters.push({ key: "priceMax", label: `Max $${priceMax}` });
+    if (sortBy !== "date-asc") {
+      const sortLabels: Record<string, string> = {
+        "date-desc": "Date (newest)",
+        "price-asc": "Price (low-high)",
+        "price-desc": "Price (high-low)",
+        "name-asc": "Name (A-Z)",
+        "name-desc": "Name (Z-A)",
+      };
+      filters.push({ key: "sort", label: `Sort: ${sortLabels[sortBy]}` });
+    }
+    return filters;
+  }, [locationQuery, keywordQuery, dateFrom, dateTo, priceMin, priceMax, sortBy]);
+
+  const clearFilter = useCallback((key: string) => {
+    switch (key) {
+      case "location": setLocationQuery(""); break;
+      case "keyword": setKeywordQuery(""); break;
+      case "dateFrom": setDateFrom(""); break;
+      case "dateTo": setDateTo(""); break;
+      case "priceMin": setPriceMin(""); break;
+      case "priceMax": setPriceMax(""); break;
+      case "sort": setSortBy("date-asc"); break;
+    }
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setLocationQuery("");
+    setKeywordQuery("");
+    setDateFrom("");
+    setDateTo("");
+    setPriceMin("");
+    setPriceMax("");
+    setSortBy("date-asc");
+  }, []);
 
   const tickerTrack = useMemo(
     () => buildTickerItems(searchedEvents, category),
@@ -399,38 +475,113 @@ export function DashboardClient({
               className="dash-search-toggle"
               onClick={() => setShowSearch((prev) => !prev)}
             >
-              {showSearch ? "Hide search filters" : "Show search filters"}
+              {showSearch ? "Hide filters" : "Show filters"}
+              {activeFilters.length > 0 && !showSearch ? (
+                <span className="dash-filter-badge">{activeFilters.length}</span>
+              ) : null}
             </button>
           </div>
           {showSearch ? (
             <section
-              className="dash-searchbar"
+              className="dash-filter-panel"
               aria-label="Event search filters"
             >
-              <label className="dash-search-segment">
-                <span>Location</span>
-                <input
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="City or Postal Code"
-                />
-              </label>
-              <label className="dash-search-segment">
-                <span>Dates</span>
-                <input
-                  type="date"
-                  value={dateQuery}
-                  onChange={(e) => setDateQuery(e.target.value)}
-                />
-              </label>
-              <label className="dash-search-segment">
-                <span>Search</span>
-                <input
-                  value={keywordQuery}
-                  onChange={(e) => setKeywordQuery(e.target.value)}
-                  placeholder="Artist, Event or Venue"
-                />
-              </label>
+              <div className="dash-filter-row">
+                <label className="dash-search-segment">
+                  <span>Name</span>
+                  <input
+                    value={keywordQuery}
+                    onChange={(e) => setKeywordQuery(e.target.value)}
+                    placeholder="Name of the event"
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>Venue</span>
+                  <input
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
+                    placeholder="Venue of the event"
+                  />
+                </label>
+                <label className="dash-search-segment dash-sort-segment">
+                  <span>Sort by</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    className="dash-sort-select"
+                  >
+                    <option value="date-asc">Date (soonest)</option>
+                    <option value="date-desc">Date (latest)</option>
+                    <option value="price-asc">Price (low to high)</option>
+                    <option value="price-desc">Price (high to low)</option>
+                    <option value="name-asc">Name (A–Z)</option>
+                    <option value="name-desc">Name (Z–A)</option>
+                  </select>
+                </label>
+              </div>
+              <div className="dash-filter-row">
+                <label className="dash-search-segment">
+                  <span>From date</span>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>To date</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>Min price</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={priceMin}
+                    onChange={(e) => setPriceMin(e.target.value)}
+                    placeholder="$0"
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>Max price</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={priceMax}
+                    onChange={(e) => setPriceMax(e.target.value)}
+                    placeholder="No limit"
+                  />
+                </label>
+              </div>
+              {activeFilters.length > 0 ? (
+                <div className="dash-filter-chips">
+                  {activeFilters.map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      className="dash-filter-chip"
+                      onClick={() => clearFilter(f.key)}
+                      aria-label={`Remove filter: ${f.label}`}
+                    >
+                      {f.label}
+                      <span className="dash-filter-chip-x" aria-hidden="true">&times;</span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="dash-filter-clear-all"
+                    onClick={clearAllFilters}
+                  >
+                    Clear all
+                  </button>
+                </div>
+              ) : null}
             </section>
           ) : null}
         </header>
@@ -560,8 +711,18 @@ function ReservePanel({
   onShowDetails: (event: Event) => void;
   onPromptLogin: () => void;
 }) {
-  const featured = events.slice(0, 4);
-  if (featured.length === 0) {
+  const PAGE_SIZE = 6;
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageEvents = events.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(0);
+  }, [events]);
+
+  if (events.length === 0) {
     return null;
   }
 
@@ -569,6 +730,9 @@ function ReservePanel({
     <section className="dash-reserve-panel">
       <div className="dash-reserve-head">
         <h3 className="dash-reserve-title">Reserve Tickets</h3>
+        <span className="dash-reserve-count">
+          {events.length} event{events.length !== 1 ? "s" : ""}
+        </span>
         {!isAuthenticated ? (
           <button
             type="button"
@@ -580,7 +744,7 @@ function ReservePanel({
         ) : null}
       </div>
       <ul className="dash-reserve-list">
-        {featured.map((event) => {
+        {pageEvents.map((event) => {
           const activeReservation = activeReservationByEventId.get(event.id);
           const isReserving = actionKey === `reserve-${event.id}`;
           const isCancelling =
@@ -662,6 +826,44 @@ function ReservePanel({
           );
         })}
       </ul>
+      {totalPages > 1 ? (
+        <nav className="dash-pagination" aria-label="Reserve tickets pagination">
+          <button
+            type="button"
+            className="dash-pagination-btn dash-pagination-arrow"
+            disabled={safePage === 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            aria-label="Previous page"
+          >
+            Prev
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              className="dash-pagination-btn"
+              data-active={i === safePage}
+              onClick={() => setPage(i)}
+              aria-label={`Page ${i + 1}`}
+              aria-current={i === safePage ? "page" : undefined}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="dash-pagination-btn dash-pagination-arrow"
+            disabled={safePage === totalPages - 1}
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            aria-label="Next page"
+          >
+            Next
+          </button>
+          <span className="dash-pagination-info">
+            Page {safePage + 1} of {totalPages}
+          </span>
+        </nav>
+      ) : null}
     </section>
   );
 }
@@ -792,14 +994,11 @@ function CategoryPanels({
   switch (categoryId) {
     case "all":
       return (
-        <>
-          <FeaturedCarousel
-            title="All Events"
-            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
-            events={featureSlides}
-          />
-          <MoviesPanel featured={featured} rest={rest} hints={cat.imageHints} />
-        </>
+        <FeaturedCarousel
+          title="All Events"
+          images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+          events={featureSlides}
+        />
       );
     case "movies":
       return (
