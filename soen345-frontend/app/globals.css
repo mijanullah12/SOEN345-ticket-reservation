@@ -778,6 +778,22 @@ body {
   box-shadow: 0 0 0 2px rgb(167 255 196 / 0.3);
 }
 
+.org-form .form-group select {
+  padding: 0.65rem 0.85rem;
+  border-radius: 0;
+  border: 1px solid var(--dash-border);
+  background: var(--dash-surface);
+  color: var(--dash-text);
+  font-size: inherit;
+  cursor: pointer;
+}
+
+.org-form .form-group select:focus {
+  outline: none;
+  border-color: var(--dash-accent-muted);
+  box-shadow: 0 0 0 2px rgb(167 255 196 / 0.3);
+}
+
 .org-actions {
   display: flex;
   gap: 0.55rem;

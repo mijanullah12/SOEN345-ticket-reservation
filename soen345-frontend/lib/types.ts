@@ -46,6 +46,7 @@ export interface Event {
   location: string;
   capacity: number;
   ticketPrice: number;
+  category?: string | null;
   organizerId?: string | null;
   organizerPayoutReady?: boolean | null;
   organizerName?: string | null;
@@ -62,6 +63,7 @@ export interface EventWritePayload {
   location: string;
   capacity: number;
   ticketPrice: number;
+  category?: string;
 }
 
 export type NotificationChannel = "EMAIL" | "SMS";

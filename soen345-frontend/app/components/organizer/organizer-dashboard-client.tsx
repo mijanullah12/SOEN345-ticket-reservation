@@ -7,6 +7,7 @@ import { InfoTip } from "@/app/components/shared/info-tip";
 import { StatusPopup } from "@/app/components/shared/status-popup";
 import { api } from "@/lib/api";
 import { buildDisplayName, consumeAuthFeedback } from "@/lib/auth-feedback";
+import { SELECTABLE_CATEGORIES } from "@/lib/dashboard-config";
 import type { Event, EventWritePayload, UserProfile } from "@/lib/types";
 
 type OrganizerDashboardClientProps = {
@@ -20,6 +21,7 @@ type FormState = {
   location: string;
   capacity: string;
   ticketPrice: string;
+  category: string;
 };
 
 const EMPTY_FORM: FormState = {
@@ -29,6 +31,7 @@ const EMPTY_FORM: FormState = {
   location: "",
   capacity: "",
   ticketPrice: "",
+  category: "",
 };
 
 function toDateTimeLocalValue(iso: string): string {
@@ -53,6 +56,7 @@ function eventToForm(event: Event): FormState {
     location: event.location,
     capacity: String(event.capacity),
     ticketPrice: String(event.ticketPrice),
+    category: event.category ?? "",
   };
 }
 
@@ -82,6 +86,7 @@ function toPayload(form: FormState): EventWritePayload {
     location: form.location.trim(),
     capacity: Number(form.capacity),
     ticketPrice: Number(form.ticketPrice),
+    category: form.category || undefined,
   };
 }
 
@@ -291,6 +296,24 @@ export function OrganizerDashboardClient({
             </div>
 
             <div className="form-group">
+              <label htmlFor="org-category">Event Type</label>
+              <select
+                id="org-category"
+                value={form.category}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, category: e.target.value }))
+                }
+              >
+                <option value="">— Select a category —</option>
+                {SELECTABLE_CATEGORIES.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-group">
               <label htmlFor="org-date">Date</label>
               <input
                 id="org-date"
@@ -467,6 +490,9 @@ export function OrganizerDashboardClient({
                     <p className="org-event-meta">
                       {formatWhen(event.date)} · {event.location} · Cap{" "}
                       {event.capacity} · ${event.ticketPrice}
+                      {event.category
+                        ? ` · ${SELECTABLE_CATEGORIES.find((c) => c.id === event.category)?.label ?? event.category}`
+                        : null}
                     </p>
                     <p
                       className={`org-event-status ${

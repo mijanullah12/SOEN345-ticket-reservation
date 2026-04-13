@@ -19,6 +19,9 @@ export function eventsForCategory(
     return events;
   }
   return events.filter((e) => {
+    if (e.category) {
+      return e.category === category.id;
+    }
     const text = eventText(e);
     return category.keywords.some((kw) => text.includes(kw.toLowerCase()));
   });

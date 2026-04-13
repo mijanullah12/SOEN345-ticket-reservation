@@ -42,6 +42,8 @@ public class Event {
     @NotNull
     private BigDecimal ticketPrice;
 
+    private String category;
+
     private String organizerId;
 
     @Builder.Default
