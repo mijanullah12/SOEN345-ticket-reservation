@@ -20,6 +20,22 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Unit tests and coverage (Vitest)
+
+Run all unit tests:
+
+```bash
+npm test
+```
+
+Generate a coverage report (HTML under `coverage/`, thresholds in `vitest.config.mts`):
+
+```bash
+npm run test:coverage
+```
+
+Then open `coverage/index.html`. For backend (JaCoCo) coverage, see **Code coverage** in the [repository root README](../README.md).
+
 ## End-to-end tests (Playwright)
 
 Tests live in `e2e/` and assume the **Spring Boot API** is running (default **http://localhost:8080**) and MongoDB is reachable by that API (local Mongo or **MongoDB Atlas** via `MONGODB_URI` on the backend).
