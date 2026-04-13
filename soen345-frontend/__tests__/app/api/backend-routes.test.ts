@@ -10,16 +10,22 @@ vi.mock("next/headers", () => ({
 const fetchMock = vi.fn();
 vi.stubGlobal("fetch", fetchMock);
 
-import { GET as eventsGet, POST as eventsPost } from "@/app/api/events/route";
-import { PUT as eventPut } from "@/app/api/events/[id]/route";
 import { PATCH as eventCancelPatch } from "@/app/api/events/[id]/cancel/route";
+import { PUT as eventPut } from "@/app/api/events/[id]/route";
 import { GET as eventsMineGet } from "@/app/api/events/mine/route";
+import { GET as eventsGet, POST as eventsPost } from "@/app/api/events/route";
 import { POST as setupIntentPost } from "@/app/api/payments/setup-intent/route";
-import { GET as reservationsGet, POST as reservationsPost } from "@/app/api/reservations/route";
 import { PATCH as reservationCancelPatch } from "@/app/api/reservations/[id]/cancel/route";
+import {
+  GET as reservationsGet,
+  POST as reservationsPost,
+} from "@/app/api/reservations/route";
 import { POST as usersAdminPost } from "@/app/api/users/admin/route";
-import { GET as usersMeGet, PATCH as usersMePatch } from "@/app/api/users/me/route";
 import { PATCH as notifPrefPatch } from "@/app/api/users/me/notification-preference/route";
+import {
+  GET as usersMeGet,
+  PATCH as usersMePatch,
+} from "@/app/api/users/me/route";
 
 function withAuth() {
   mockGet.mockImplementation((name: string) =>
@@ -95,9 +101,12 @@ describe("GET/POST /api/events", () => {
 describe("PUT /api/events/[id]", () => {
   it("returns 401 without token", async () => {
     noAuth();
-    const res = await eventPut(new Request("http://x", { method: "PUT", body: "{}" }), {
-      params: Promise.resolve({ id: "e1" }),
-    });
+    const res = await eventPut(
+      new Request("http://x", { method: "PUT", body: "{}" }),
+      {
+        params: Promise.resolve({ id: "e1" }),
+      },
+    );
     expect(res.status).toBe(401);
   });
 
@@ -129,7 +138,9 @@ describe("PUT /api/events/[id]", () => {
       body: JSON.stringify({ name: "U" }),
       headers: { "Content-Type": "application/json" },
     });
-    expect((await eventPut(req, { params: Promise.resolve({ id: "e1" }) })).status).toBe(500);
+    expect(
+      (await eventPut(req, { params: Promise.resolve({ id: "e1" }) })).status,
+    ).toBe(500);
   });
 });
 
@@ -352,7 +363,12 @@ describe("POST /api/users/admin", () => {
     });
     const req = new Request("http://x", {
       method: "POST",
-      body: JSON.stringify({ email: "a@a.com", password: "Pp123456", firstName: "A", lastName: "B" }),
+      body: JSON.stringify({
+        email: "a@a.com",
+        password: "Pp123456",
+        firstName: "A",
+        lastName: "B",
+      }),
       headers: { "Content-Type": "application/json" },
     });
     const res = await usersAdminPost(req);
@@ -364,7 +380,12 @@ describe("POST /api/users/admin", () => {
     fetchMock.mockRejectedValueOnce(new Error("x"));
     const req = new Request("http://x", {
       method: "POST",
-      body: JSON.stringify({ email: "a@a.com", password: "Pp123456", firstName: "A", lastName: "B" }),
+      body: JSON.stringify({
+        email: "a@a.com",
+        password: "Pp123456",
+        firstName: "A",
+        lastName: "B",
+      }),
       headers: { "Content-Type": "application/json" },
     });
     expect((await usersAdminPost(req)).status).toBe(500);

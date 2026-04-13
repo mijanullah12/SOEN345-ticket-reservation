@@ -22,6 +22,8 @@ describe("LoginPage", () => {
   it("defaults redirect to /dashboard", async () => {
     const ui = await LoginPage({});
     render(ui);
-    expect(screen.getByTestId("login-form").getAttribute("data-redirect")).toBe("/dashboard");
+    expect(screen.getByTestId("login-form").getAttribute("data-redirect")).toBe(
+      "/dashboard",
+    );
   });
 });

@@ -108,7 +108,9 @@ describe("fetchEventsPublic", () => {
   });
 
   it("returns error when not ok", async () => {
-    vi.mocked(fetch).mockResolvedValueOnce(new Response("nope", { status: 502 }));
+    vi.mocked(fetch).mockResolvedValueOnce(
+      new Response("nope", { status: 502 }),
+    );
     const result = await fetchEventsPublic();
     expect(result).toEqual({
       ok: false,
