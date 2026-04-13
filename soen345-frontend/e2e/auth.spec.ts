@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { loginViaBrowser, registerCustomer } from "./fixtures/auth";
 
@@ -11,7 +11,10 @@ test.describe("Auth flows", () => {
     await page.goto("/dashboard");
 
     // Click "Log in to reserve" in the reserve panel — opens the auth modal in login mode
-    await page.getByRole("button", { name: /log in to reserve/i }).first().click();
+    await page
+      .getByRole("button", { name: /log in to reserve/i })
+      .first()
+      .click();
 
     // Inside the login form in the modal, click "Create one" (a button when useModalLinks=true)
     // to switch the modal to the signup (register) tab
@@ -64,7 +67,9 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "Sign In" }).click();
 
     await expect(page.locator(".auth-error")).toBeVisible();
-    await expect(page.locator(".auth-error")).toContainText(/invalid credentials/i);
+    await expect(page.locator(".auth-error")).toContainText(
+      /invalid credentials/i,
+    );
   });
 
   test("TC4: logout clears session and dashboard shows unauthenticated state", async ({
@@ -85,7 +90,9 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "OK" }).click();
 
     // After logout the dashboard reloads in unauthenticated state
-    await expect(page.getByRole("button", { name: "Log Out" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Log Out" }),
+    ).not.toBeVisible();
     await expect(
       page.getByRole("button", { name: /log in to reserve/i }),
     ).toBeVisible();

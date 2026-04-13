@@ -1,11 +1,11 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import {
-  type TestUser,
   getBackendToken,
   loginViaBrowser,
   registerOrganizer,
   seedEvent,
+  type TestUser,
 } from "./fixtures/auth";
 
 /** Returns a datetime-local string (YYYY-MM-DDTHH:mm) 6 months from now. */
@@ -20,7 +20,11 @@ async function setupOrganizer(
   page: Parameters<typeof loginViaBrowser>[0],
 ): Promise<{ organizer: TestUser; token: string }> {
   const organizer = await registerOrganizer(request);
-  const token = await getBackendToken(request, organizer.email, organizer.password);
+  const token = await getBackendToken(
+    request,
+    organizer.email,
+    organizer.password,
+  );
   await loginViaBrowser(page, organizer.email, organizer.password);
   return { organizer, token };
 }

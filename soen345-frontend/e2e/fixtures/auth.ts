@@ -1,8 +1,7 @@
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import type { APIRequestContext, Page } from "@playwright/test";
 
-const API_BASE =
-  process.env.PLAYWRIGHT_BACKEND_URL ?? "http://localhost:8080";
+const API_BASE = process.env.PLAYWRIGHT_BACKEND_URL ?? "http://localhost:8080";
 const FRONTEND_BASE =
   process.env.PLAYWRIGHT_FRONTEND_URL ?? "http://localhost:3000";
 
