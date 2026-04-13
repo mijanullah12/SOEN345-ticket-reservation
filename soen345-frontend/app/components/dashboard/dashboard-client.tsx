@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { StatusPopup } from "@/app/components/shared/status-popup";
+import { ToastContainer, useToast } from "@/app/components/shared/toast";
 import { api } from "@/lib/api";
 import { buildDisplayName, consumeAuthFeedback } from "@/lib/auth-feedback";
 import {
@@ -130,10 +131,7 @@ export function DashboardClient({
   const [detailsEvent, setDetailsEvent] = useState<Event | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
-  const [reservationError, setReservationError] = useState<string | null>(null);
-  const [reservationMessage, setReservationMessage] = useState<string | null>(
-    null,
-  );
+  const { toasts, addToast, dismissToast } = useToast();
   const [reservationActionKey, setReservationActionKey] = useState<
     string | null
   >(null);
@@ -313,10 +311,9 @@ export function DashboardClient({
         method: "GET",
       });
       setReservations(data);
-      setReservationError(null);
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setReservationError(e.message ?? "Could not load reservations.");
+      addToast(e.message ?? "Could not load reservations.", "error");
     } finally {
       setReservationsLoading(false);
     }
@@ -357,25 +354,23 @@ export function DashboardClient({
       return;
     }
     if (!Number.isFinite(quantity) || quantity < 1) {
-      setReservationError("Please select at least 1 ticket.");
+      addToast("Please select at least 1 ticket.", "error");
       return;
     }
-    setReservationMessage(null);
-    setReservationError(null);
     setReservationActionKey(`reserve-${eventId}`);
     try {
       await api<Reservation>("/api/reservations", {
         method: "POST",
         body: JSON.stringify({ eventId, quantity }),
       });
-      setReservationMessage("Reservation confirmed.");
+      addToast("Reservation confirmed! Check your tickets.", "success");
       setReserveQuantities((prev) => ({ ...prev, [eventId]: 1 }));
       await loadReservations();
       router.refresh();
     } catch (err: unknown) {
       const e = err as { message?: string };
       const message = e.message ?? "Could not reserve ticket.";
-      setReservationError(message);
+      addToast(message, "error");
       const lower = message.toLowerCase();
       if (lower.includes("payment method") || lower.includes("payment info")) {
         setPaymentModalOpen(true);
@@ -386,19 +381,17 @@ export function DashboardClient({
   }
 
   async function cancelReservation(reservationId: string) {
-    setReservationMessage(null);
-    setReservationError(null);
     setReservationActionKey(`cancel-${reservationId}`);
     try {
       await api<Reservation>(`/api/reservations/${reservationId}/cancel`, {
         method: "PATCH",
       });
-      setReservationMessage("Reservation cancelled.");
+      addToast("Reservation cancelled.", "success");
       await loadReservations();
       router.refresh();
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setReservationError(e.message ?? "Could not cancel reservation.");
+      addToast(e.message ?? "Could not cancel reservation.", "error");
     } finally {
       setReservationActionKey(null);
     }
@@ -602,12 +595,6 @@ export function DashboardClient({
             Could not load events from the server. ({loadError})
           </p>
         ) : null}
-        {reservationError ? (
-          <p className="dash-error-banner">{reservationError}</p>
-        ) : null}
-        {reservationMessage ? (
-          <p className="dash-success-banner">{reservationMessage}</p>
-        ) : null}
 
         <div className="dash-content">
           {sidebarView === "tickets" && !isOrganizer ? (
@@ -662,12 +649,10 @@ export function DashboardClient({
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onSaved={() => {
-          setReservationMessage(
-            "Payment info saved. Please try reserving again.",
-          );
-          setReservationError(null);
+          addToast("Payment info saved. Please try reserving again.", "success");
         }}
       />
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <EventDetailsModal
         event={detailsEvent}
         onClose={() => setDetailsEvent(null)}

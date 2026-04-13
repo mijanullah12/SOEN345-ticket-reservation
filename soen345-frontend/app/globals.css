@@ -1917,6 +1917,119 @@ body {
   color: rgb(24 24 24);
 }
 
+/* ── Toast notifications ─────────────────────────────── */
+
+.toast-container {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  pointer-events: none;
+  max-width: 420px;
+  width: 100%;
+}
+
+.toast-card {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15), 0 2px 6px rgb(0 0 0 / 0.08);
+  animation: toast-enter 0.3s ease-out;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.toast-card.toast-exit {
+  animation: toast-leave 0.3s ease-in forwards;
+}
+
+.toast-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.toast-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  margin-top: 1px;
+}
+
+.toast-success .toast-icon {
+  color: #059669;
+}
+
+.toast-error .toast-icon {
+  color: #dc2626;
+}
+
+.toast-message {
+  flex: 1;
+  font-weight: 500;
+}
+
+.toast-close {
+  appearance: none;
+  border: none;
+  background: none;
+  color: inherit;
+  opacity: 0.5;
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0 0.15rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.toast-close:hover {
+  opacity: 1;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toast-leave {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(40px) scale(0.95);
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    top: 0.75rem;
+    right: 0.75rem;
+    left: 0.75rem;
+    max-width: none;
+  }
+}
+
 @media (max-width: 640px) {
   .dash-auth-modal .auth-card {
     padding: 2rem 1.25rem 1.5rem;
