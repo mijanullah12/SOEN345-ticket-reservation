@@ -444,37 +444,41 @@ export function DashboardClient({
             <div className="dash-welcome-strip">HI {greetingName}</div>
           ) : null}
           <div className="dash-topbar-main">
-            <nav className="dash-category-tabs" aria-label="Event categories">
-              {EVENT_CATEGORIES.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className="dash-category-tab"
-                  data-active={categoryId === c.id}
-                  onClick={() => setCategoryId(c.id)}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </nav>
+            {sidebarView === "upcoming" ? (
+              <nav className="dash-category-tabs" aria-label="Event categories">
+                {EVENT_CATEGORIES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className="dash-category-tab"
+                    data-active={categoryId === c.id}
+                    onClick={() => setCategoryId(c.id)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </nav>
+            ) : null}
             <ProfileMenu
               isAuthenticated={sessionAuthenticated}
               onOpenAuthModal={setAuthModal}
             />
           </div>
-          <div className="dash-search-controls">
-            <button
-              type="button"
-              className="dash-search-toggle"
-              onClick={() => setShowSearch((prev) => !prev)}
-            >
-              {showSearch ? "Hide filters" : "Show filters"}
-              {activeFilters.length > 0 && !showSearch ? (
-                <span className="dash-filter-badge">{activeFilters.length}</span>
-              ) : null}
-            </button>
-          </div>
-          {showSearch ? (
+          {sidebarView === "upcoming" ? (
+            <div className="dash-search-controls">
+              <button
+                type="button"
+                className="dash-search-toggle"
+                onClick={() => setShowSearch((prev) => !prev)}
+              >
+                {showSearch ? "Hide filters" : "Show filters"}
+                {activeFilters.length > 0 && !showSearch ? (
+                  <span className="dash-filter-badge">{activeFilters.length}</span>
+                ) : null}
+              </button>
+            </div>
+          ) : null}
+          {sidebarView === "upcoming" && showSearch ? (
             <section
               className="dash-filter-panel"
               aria-label="Event search filters"
