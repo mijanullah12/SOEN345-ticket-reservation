@@ -3,9 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { StatusPopup } from "@/app/components/shared/status-popup";
+import { ToastContainer, useToast } from "@/app/components/shared/toast";
 import { api } from "@/lib/api";
 import { buildDisplayName, consumeAuthFeedback } from "@/lib/auth-feedback";
 import {
@@ -119,17 +120,25 @@ export function DashboardClient({
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");
   const [keywordQuery, setKeywordQuery] = useState("");
-  const [dateQuery, setDateQuery] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [priceMin, setPriceMin] = useState("");
+  const [priceMax, setPriceMax] = useState("");
+  const [sortBy, setSortBy] = useState<
+    | "date-asc"
+    | "date-desc"
+    | "price-asc"
+    | "price-desc"
+    | "name-asc"
+    | "name-desc"
+  >("date-asc");
   const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [detailsEvent, setDetailsEvent] = useState<Event | null>(null);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [reservationsLoading, setReservationsLoading] = useState(false);
-  const [reservationError, setReservationError] = useState<string | null>(null);
-  const [reservationMessage, setReservationMessage] = useState<string | null>(
-    null,
-  );
+  const { toasts, addToast, dismissToast } = useToast();
   const [reservationActionKey, setReservationActionKey] = useState<
     string | null
   >(null);
@@ -150,14 +159,21 @@ export function DashboardClient({
   const sidebarItems = useMemo(
     () =>
       SIDEBAR_ITEMS.filter((item) => {
-        if (item.id === "tickets" && (!roleKnown || isOrganizer)) return false;
+        if (
+          (item.id === "tickets" || item.id === "archive") &&
+          (!roleKnown || isOrganizer)
+        )
+          return false;
         return true;
       }),
     [isOrganizer, roleKnown],
   );
 
   useEffect(() => {
-    if (isOrganizer && sidebarView === "tickets") {
+    if (
+      isOrganizer &&
+      (sidebarView === "tickets" || sidebarView === "archive")
+    ) {
       setSidebarView("upcoming");
     }
   }, [isOrganizer, sidebarView]);
@@ -190,7 +206,7 @@ export function DashboardClient({
   );
 
   const searchedEvents = useMemo(() => {
-    return categoryEvents.filter((event) => {
+    const filtered = categoryEvents.filter((event) => {
       const locationText = event.location.toLowerCase();
       const eventText =
         `${event.name} ${event.description ?? ""}`.toLowerCase();
@@ -200,13 +216,127 @@ export function DashboardClient({
       const keywordOk = keywordQuery
         ? eventText.includes(keywordQuery.toLowerCase())
         : true;
-      const dateOk = dateQuery
-        ? new Date(event.date).toDateString() ===
-          new Date(`${dateQuery}T00:00:00`).toDateString()
+
+      const eventDate = new Date(event.date);
+      const dateFromOk = dateFrom
+        ? eventDate >= new Date(`${dateFrom}T00:00:00`)
         : true;
-      return locationOk && keywordOk && dateOk;
+      const dateToOk = dateTo
+        ? eventDate <= new Date(`${dateTo}T23:59:59`)
+        : true;
+
+      const parsedMin = priceMin !== "" ? Number.parseFloat(priceMin) : null;
+      const parsedMax = priceMax !== "" ? Number.parseFloat(priceMax) : null;
+      const priceMinOk =
+        parsedMin !== null ? event.ticketPrice >= parsedMin : true;
+      const priceMaxOk =
+        parsedMax !== null ? event.ticketPrice <= parsedMax : true;
+
+      return (
+        locationOk &&
+        keywordOk &&
+        dateFromOk &&
+        dateToOk &&
+        priceMinOk &&
+        priceMaxOk
+      );
     });
-  }, [categoryEvents, dateQuery, keywordQuery, locationQuery]);
+
+    return [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "date-asc":
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "date-desc":
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case "price-asc":
+          return a.ticketPrice - b.ticketPrice;
+        case "price-desc":
+          return b.ticketPrice - a.ticketPrice;
+        case "name-asc":
+          return a.name.localeCompare(b.name);
+        case "name-desc":
+          return b.name.localeCompare(a.name);
+        default:
+          return 0;
+      }
+    });
+  }, [
+    categoryEvents,
+    dateFrom,
+    dateTo,
+    keywordQuery,
+    locationQuery,
+    priceMin,
+    priceMax,
+    sortBy,
+  ]);
+
+  const activeFilters = useMemo(() => {
+    const filters: { key: string; label: string }[] = [];
+    if (locationQuery)
+      filters.push({ key: "location", label: `Venue: ${locationQuery}` });
+    if (keywordQuery)
+      filters.push({ key: "keyword", label: `Name: ${keywordQuery}` });
+    if (dateFrom) filters.push({ key: "dateFrom", label: `From: ${dateFrom}` });
+    if (dateTo) filters.push({ key: "dateTo", label: `To: ${dateTo}` });
+    if (priceMin) filters.push({ key: "priceMin", label: `Min $${priceMin}` });
+    if (priceMax) filters.push({ key: "priceMax", label: `Max $${priceMax}` });
+    if (sortBy !== "date-asc") {
+      const sortLabels: Record<string, string> = {
+        "date-desc": "Date (newest)",
+        "price-asc": "Price (low-high)",
+        "price-desc": "Price (high-low)",
+        "name-asc": "Name (A-Z)",
+        "name-desc": "Name (Z-A)",
+      };
+      filters.push({ key: "sort", label: `Sort: ${sortLabels[sortBy]}` });
+    }
+    return filters;
+  }, [
+    locationQuery,
+    keywordQuery,
+    dateFrom,
+    dateTo,
+    priceMin,
+    priceMax,
+    sortBy,
+  ]);
+
+  const clearFilter = useCallback((key: string) => {
+    switch (key) {
+      case "location":
+        setLocationQuery("");
+        break;
+      case "keyword":
+        setKeywordQuery("");
+        break;
+      case "dateFrom":
+        setDateFrom("");
+        break;
+      case "dateTo":
+        setDateTo("");
+        break;
+      case "priceMin":
+        setPriceMin("");
+        break;
+      case "priceMax":
+        setPriceMax("");
+        break;
+      case "sort":
+        setSortBy("date-asc");
+        break;
+    }
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setLocationQuery("");
+    setKeywordQuery("");
+    setDateFrom("");
+    setDateTo("");
+    setPriceMin("");
+    setPriceMax("");
+    setSortBy("date-asc");
+  }, []);
 
   const tickerTrack = useMemo(
     () => buildTickerItems(searchedEvents, category),
@@ -237,14 +367,13 @@ export function DashboardClient({
         method: "GET",
       });
       setReservations(data);
-      setReservationError(null);
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setReservationError(e.message ?? "Could not load reservations.");
+      addToast(e.message ?? "Could not load reservations.", "error");
     } finally {
       setReservationsLoading(false);
     }
-  }, [sessionAuthenticated]);
+  }, [sessionAuthenticated, addToast]);
 
   useEffect(() => {
     void loadReservations();
@@ -281,25 +410,23 @@ export function DashboardClient({
       return;
     }
     if (!Number.isFinite(quantity) || quantity < 1) {
-      setReservationError("Please select at least 1 ticket.");
+      addToast("Please select at least 1 ticket.", "error");
       return;
     }
-    setReservationMessage(null);
-    setReservationError(null);
     setReservationActionKey(`reserve-${eventId}`);
     try {
       await api<Reservation>("/api/reservations", {
         method: "POST",
         body: JSON.stringify({ eventId, quantity }),
       });
-      setReservationMessage("Reservation confirmed.");
+      addToast("Reservation confirmed! Check your tickets.", "success");
       setReserveQuantities((prev) => ({ ...prev, [eventId]: 1 }));
       await loadReservations();
       router.refresh();
     } catch (err: unknown) {
       const e = err as { message?: string };
       const message = e.message ?? "Could not reserve ticket.";
-      setReservationError(message);
+      addToast(message, "error");
       const lower = message.toLowerCase();
       if (lower.includes("payment method") || lower.includes("payment info")) {
         setPaymentModalOpen(true);
@@ -310,19 +437,17 @@ export function DashboardClient({
   }
 
   async function cancelReservation(reservationId: string) {
-    setReservationMessage(null);
-    setReservationError(null);
     setReservationActionKey(`cancel-${reservationId}`);
     try {
       await api<Reservation>(`/api/reservations/${reservationId}/cancel`, {
         method: "PATCH",
       });
-      setReservationMessage("Reservation cancelled.");
+      addToast("Reservation cancelled.", "success");
       await loadReservations();
       router.refresh();
     } catch (err: unknown) {
       const e = err as { message?: string };
-      setReservationError(e.message ?? "Could not cancel reservation.");
+      addToast(e.message ?? "Could not cancel reservation.", "error");
     } finally {
       setReservationActionKey(null);
     }
@@ -375,62 +500,145 @@ export function DashboardClient({
             <div className="dash-welcome-strip">HI {greetingName}</div>
           ) : null}
           <div className="dash-topbar-main">
-            <nav className="dash-category-tabs" aria-label="Event categories">
-              {EVENT_CATEGORIES.map((c) => (
-                <button
-                  key={c.id}
-                  type="button"
-                  className="dash-category-tab"
-                  data-active={categoryId === c.id}
-                  onClick={() => setCategoryId(c.id)}
-                >
-                  {c.label}
-                </button>
-              ))}
-            </nav>
+            {sidebarView === "upcoming" ? (
+              <nav className="dash-category-tabs" aria-label="Event categories">
+                {EVENT_CATEGORIES.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className="dash-category-tab"
+                    data-active={categoryId === c.id}
+                    onClick={() => setCategoryId(c.id)}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </nav>
+            ) : null}
             <ProfileMenu
               isAuthenticated={sessionAuthenticated}
               onOpenAuthModal={setAuthModal}
             />
           </div>
-          <div className="dash-search-controls">
-            <button
-              type="button"
-              className="dash-search-toggle"
-              onClick={() => setShowSearch((prev) => !prev)}
-            >
-              {showSearch ? "Hide search filters" : "Show search filters"}
-            </button>
-          </div>
-          {showSearch ? (
+          {sidebarView === "upcoming" ? (
+            <div className="dash-search-controls">
+              <button
+                type="button"
+                className="dash-search-toggle"
+                onClick={() => setShowSearch((prev) => !prev)}
+              >
+                {showSearch ? "Hide filters" : "Show filters"}
+                {activeFilters.length > 0 && !showSearch ? (
+                  <span className="dash-filter-badge">
+                    {activeFilters.length}
+                  </span>
+                ) : null}
+              </button>
+            </div>
+          ) : null}
+          {sidebarView === "upcoming" && showSearch ? (
             <section
-              className="dash-searchbar"
+              className="dash-filter-panel"
               aria-label="Event search filters"
             >
-              <label className="dash-search-segment">
-                <span>Location</span>
-                <input
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  placeholder="City or Postal Code"
-                />
-              </label>
-              <label className="dash-search-segment">
-                <span>Dates</span>
-                <input
-                  type="date"
-                  value={dateQuery}
-                  onChange={(e) => setDateQuery(e.target.value)}
-                />
-              </label>
-              <label className="dash-search-segment">
-                <span>Search</span>
-                <input
-                  value={keywordQuery}
-                  onChange={(e) => setKeywordQuery(e.target.value)}
-                  placeholder="Artist, Event or Venue"
-                />
-              </label>
+              <div className="dash-filter-row">
+                <label className="dash-search-segment">
+                  <span>Name</span>
+                  <input
+                    value={keywordQuery}
+                    onChange={(e) => setKeywordQuery(e.target.value)}
+                    placeholder="Name of the event"
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>Venue</span>
+                  <input
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
+                    placeholder="Venue of the event"
+                  />
+                </label>
+                <label className="dash-search-segment dash-sort-segment">
+                  <span>Sort by</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    className="dash-sort-select"
+                  >
+                    <option value="date-asc">Date (soonest)</option>
+                    <option value="date-desc">Date (latest)</option>
+                    <option value="price-asc">Price (low to high)</option>
+                    <option value="price-desc">Price (high to low)</option>
+                    <option value="name-asc">Name (A–Z)</option>
+                    <option value="name-desc">Name (Z–A)</option>
+                  </select>
+                </label>
+              </div>
+              <div className="dash-filter-row">
+                <label className="dash-search-segment">
+                  <span>From date</span>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>To date</span>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>Min price</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={priceMin}
+                    onChange={(e) => setPriceMin(e.target.value)}
+                    placeholder="$0"
+                  />
+                </label>
+                <label className="dash-search-segment">
+                  <span>Max price</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={priceMax}
+                    onChange={(e) => setPriceMax(e.target.value)}
+                    placeholder="No limit"
+                  />
+                </label>
+              </div>
+              {activeFilters.length > 0 ? (
+                <div className="dash-filter-chips">
+                  {activeFilters.map((f) => (
+                    <button
+                      key={f.key}
+                      type="button"
+                      className="dash-filter-chip"
+                      onClick={() => clearFilter(f.key)}
+                      aria-label={`Remove filter: ${f.label}`}
+                    >
+                      {f.label}
+                      <span className="dash-filter-chip-x" aria-hidden="true">
+                        &times;
+                      </span>
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="dash-filter-clear-all"
+                    onClick={clearAllFilters}
+                  >
+                    Clear all
+                  </button>
+                </div>
+              ) : null}
             </section>
           ) : null}
         </header>
@@ -451,16 +659,20 @@ export function DashboardClient({
             Could not load events from the server. ({loadError})
           </p>
         ) : null}
-        {reservationError ? (
-          <p className="dash-error-banner">{reservationError}</p>
-        ) : null}
-        {reservationMessage ? (
-          <p className="dash-success-banner">{reservationMessage}</p>
-        ) : null}
 
         <div className="dash-content">
           {sidebarView === "tickets" && !isOrganizer ? (
             <TicketsPanel
+              isAuthenticated={sessionAuthenticated}
+              reservations={reservations.filter((r) => r.status === "ACTIVE")}
+              loading={reservationsLoading}
+              actionKey={reservationActionKey}
+              onCancelReservation={cancelReservation}
+              onDownloadReceipt={downloadReceipt}
+              onPromptLogin={() => setAuthModal("login")}
+            />
+          ) : sidebarView === "archive" && !isOrganizer ? (
+            <ReservationHistoryPanel
               isAuthenticated={sessionAuthenticated}
               reservations={reservations}
               loading={reservationsLoading}
@@ -511,12 +723,13 @@ export function DashboardClient({
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onSaved={() => {
-          setReservationMessage(
+          addToast(
             "Payment info saved. Please try reserving again.",
+            "success",
           );
-          setReservationError(null);
         }}
       />
+      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
       <EventDetailsModal
         event={detailsEvent}
         onClose={() => setDetailsEvent(null)}
@@ -560,8 +773,28 @@ function ReservePanel({
   onShowDetails: (event: Event) => void;
   onPromptLogin: () => void;
 }) {
-  const featured = events.slice(0, 4);
-  if (featured.length === 0) {
+  const PAGE_SIZE = 6;
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageEvents = events.slice(
+    safePage * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE,
+  );
+
+  const eventCountRef = useRef(events.length);
+  if (eventCountRef.current !== events.length) {
+    eventCountRef.current = events.length;
+    setPage(0);
+  }
+
+  const pageNumbers = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i),
+    [totalPages],
+  );
+
+  if (events.length === 0) {
     return null;
   }
 
@@ -569,6 +802,9 @@ function ReservePanel({
     <section className="dash-reserve-panel">
       <div className="dash-reserve-head">
         <h3 className="dash-reserve-title">Reserve Tickets</h3>
+        <span className="dash-reserve-count">
+          {events.length} event{events.length !== 1 ? "s" : ""}
+        </span>
         {!isAuthenticated ? (
           <button
             type="button"
@@ -580,7 +816,7 @@ function ReservePanel({
         ) : null}
       </div>
       <ul className="dash-reserve-list">
-        {featured.map((event) => {
+        {pageEvents.map((event) => {
           const activeReservation = activeReservationByEventId.get(event.id);
           const isReserving = actionKey === `reserve-${event.id}`;
           const isCancelling =
@@ -606,7 +842,7 @@ function ReservePanel({
                 </p>
                 <p className="dash-reserve-item-meta">
                   Organizer: {event.organizerName ?? "Unknown"}
-                  {event.organizerEmail ? ` Â· ${event.organizerEmail}` : ""}
+                  {event.organizerEmail ? ` · ${event.organizerEmail}` : ""}
                 </p>
                 <p className="dash-reserve-item-meta">
                   {formatMoney(event.ticketPrice)} per ticket
@@ -662,6 +898,47 @@ function ReservePanel({
           );
         })}
       </ul>
+      {totalPages > 1 ? (
+        <nav
+          className="dash-pagination"
+          aria-label="Reserve tickets pagination"
+        >
+          <button
+            type="button"
+            className="dash-pagination-btn dash-pagination-arrow"
+            disabled={safePage === 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            aria-label="Previous page"
+          >
+            Prev
+          </button>
+          {pageNumbers.map((n) => (
+            <button
+              key={`page-${n}`}
+              type="button"
+              className="dash-pagination-btn"
+              data-active={n === safePage}
+              onClick={() => setPage(n)}
+              aria-label={`Page ${n + 1}`}
+              aria-current={n === safePage ? "page" : undefined}
+            >
+              {n + 1}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="dash-pagination-btn dash-pagination-arrow"
+            disabled={safePage === totalPages - 1}
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            aria-label="Next page"
+          >
+            Next
+          </button>
+          <span className="dash-pagination-info">
+            Page {safePage + 1} of {totalPages}
+          </span>
+        </nav>
+      ) : null}
     </section>
   );
 }
@@ -702,9 +979,11 @@ function TicketsPanel({
   return (
     <section className="dash-tickets-panel">
       <h2 className="dash-section-title">Tickets</h2>
-      {loading ? <p className="dash-empty">Loading reservations...</p> : null}
+      {loading ? <p className="dash-empty">Loading tickets...</p> : null}
       {!loading && reservations.length === 0 ? (
-        <p className="dash-empty">No reservations yet.</p>
+        <p className="dash-empty">
+          No active tickets. Reserve an event to see your tickets here.
+        </p>
       ) : null}
       {reservations.length > 0 ? (
         <ul className="dash-tickets-list">
@@ -737,6 +1016,104 @@ function TicketsPanel({
                   >
                     Download receipt
                   </button>
+                  <button
+                    type="button"
+                    className="dash-btn-solid dash-reserve-cancel"
+                    onClick={() => onCancelReservation(reservation.id)}
+                    disabled={Boolean(isCancelling)}
+                  >
+                    {isCancelling ? "Cancelling..." : "Cancel"}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
+function ReservationHistoryPanel({
+  isAuthenticated,
+  reservations,
+  loading,
+  actionKey,
+  onCancelReservation,
+  onDownloadReceipt,
+  onPromptLogin,
+}: {
+  isAuthenticated: boolean;
+  reservations: Reservation[];
+  loading: boolean;
+  actionKey: string | null;
+  onCancelReservation: (reservationId: string) => void;
+  onDownloadReceipt: (reservation: Reservation) => void;
+  onPromptLogin: () => void;
+}) {
+  if (!isAuthenticated) {
+    return (
+      <div className="dash-tickets-placeholder">
+        <h2 className="dash-section-title">Reservation History</h2>
+        <p>Please log in to view your reservation history.</p>
+        <button
+          type="button"
+          className="dash-btn-solid"
+          onClick={onPromptLogin}
+        >
+          Log in
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="dash-tickets-panel">
+      <h2 className="dash-section-title">Reservation History</h2>
+      {loading ? <p className="dash-empty">Loading reservations...</p> : null}
+      {!loading && reservations.length === 0 ? (
+        <p className="dash-empty">No reservations yet.</p>
+      ) : null}
+      {reservations.length > 0 ? (
+        <ul className="dash-tickets-list">
+          {reservations.map((reservation) => {
+            const isCancelling = actionKey === `cancel-${reservation.id}`;
+            const quantity = reservation.quantity ?? 1;
+            const total = reservation.eventTicketPrice * quantity;
+            return (
+              <li key={reservation.id} className="dash-tickets-item">
+                <div>
+                  <p className="dash-tickets-item-name">
+                    {reservation.eventName}
+                  </p>
+                  <p className="dash-tickets-item-meta">
+                    {new Date(reservation.eventDate).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}{" "}
+                    · {reservation.eventLocation}
+                  </p>
+                  <p className="dash-tickets-item-meta">
+                    Tickets: {quantity} · Total: {formatMoney(total)}
+                  </p>
+                </div>
+                <div className="dash-tickets-actions">
+                  <span
+                    className={
+                      reservation.status === "ACTIVE"
+                        ? "dash-ticket-status-active"
+                        : "dash-ticket-status-cancelled"
+                    }
+                  >
+                    {reservation.status === "ACTIVE" ? "Active" : "Cancelled"}
+                  </span>
+                  <button
+                    type="button"
+                    className="dash-btn-outline dash-receipt-btn"
+                    onClick={() => onDownloadReceipt(reservation)}
+                  >
+                    Download receipt
+                  </button>
                   {reservation.status === "ACTIVE" ? (
                     <button
                       type="button"
@@ -746,11 +1123,7 @@ function TicketsPanel({
                     >
                       {isCancelling ? "Cancelling..." : "Cancel"}
                     </button>
-                  ) : (
-                    <span className="dash-ticket-status-cancelled">
-                      Cancelled
-                    </span>
-                  )}
+                  ) : null}
                 </div>
               </li>
             );
@@ -792,14 +1165,11 @@ function CategoryPanels({
   switch (categoryId) {
     case "all":
       return (
-        <>
-          <FeaturedCarousel
-            title="All Events"
-            images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
-            events={featureSlides}
-          />
-          <MoviesPanel featured={featured} rest={rest} hints={cat.imageHints} />
-        </>
+        <FeaturedCarousel
+          title="All Events"
+          images={[cat.imageHints.hero, ...cat.imageHints.thumb]}
+          events={featureSlides}
+        />
       );
     case "movies":
       return (

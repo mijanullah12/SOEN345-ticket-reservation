@@ -142,10 +142,10 @@ describe("DashboardClient", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByPlaceholderText(/city or postal code/i),
+      screen.getByPlaceholderText(/venue of the event/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText(/artist, event or venue/i),
+      screen.getByPlaceholderText(/name of the event/i),
     ).toBeInTheDocument();
 
     expect(
@@ -245,9 +245,9 @@ describe("DashboardClient", () => {
     expect(
       screen.getByRole("heading", { name: /^all events$/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /indie film festival/i }),
-    ).toBeInTheDocument();
+    expect(screen.getAllByText(/indie film festival/i).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("shows empty state when category has no matches for current sidebar slice", async () => {
@@ -301,11 +301,11 @@ describe("DashboardClient", () => {
       />,
     );
 
+    expect(screen.getAllByText(/summer film premiere/i).length).toBeGreaterThan(
+      0,
+    );
     expect(
-      screen.getByRole("heading", { name: /summer film premiere/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: /yesterday film matinee/i }),
+      screen.queryByText(/yesterday film matinee/i),
     ).not.toBeInTheDocument();
   });
 
@@ -366,12 +366,9 @@ describe("DashboardClient", () => {
       />,
     );
 
+    await user.type(screen.getByPlaceholderText(/venue of the event/i), "mont");
     await user.type(
-      screen.getByPlaceholderText(/city or postal code/i),
-      "mont",
-    );
-    await user.type(
-      screen.getByPlaceholderText(/artist, event or venue/i),
+      screen.getByPlaceholderText(/name of the event/i),
       "concert",
     );
 
@@ -379,7 +376,7 @@ describe("DashboardClient", () => {
     expect(screen.queryByText(/cinema evening/i)).not.toBeInTheDocument();
   });
 
-  it("applies filtering by date only", async () => {
+  it("applies filtering by date range", async () => {
     const user = userEvent.setup();
     const dayA = new Date();
     dayA.setDate(dayA.getDate() + 2);
@@ -414,7 +411,10 @@ describe("DashboardClient", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText(/dates/i), dateValue);
+    const fromInput = screen.getByLabelText(/from date/i);
+    const toInput = screen.getByLabelText(/to date/i);
+    await user.type(fromInput, dateValue);
+    await user.type(toInput, dateValue);
     expect(screen.getAllByText(/day a show/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/day b show/i)).not.toBeInTheDocument();
   });
@@ -426,15 +426,11 @@ describe("DashboardClient", () => {
     );
 
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: /hide search filters/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /hide filters/i }));
     expect(
       screen.queryByLabelText(/event search filters/i),
     ).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: /show search filters/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /show filters/i }));
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
   });
 });
