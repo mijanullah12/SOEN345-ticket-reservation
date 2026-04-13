@@ -97,7 +97,6 @@ function buildReceiptMessage(
 }
 
 const SIDEBAR_ITEMS: { id: SidebarView; label: string }[] = [
-  { id: "live", label: "Available Events" },
   { id: "upcoming", label: "Upcoming Events" },
   { id: "archive", label: "Reservation History" },
   { id: "tickets", label: "Tickets" },
@@ -115,7 +114,7 @@ export function DashboardClient({
   const router = useRouter();
   const [sessionAuthenticated, setSessionAuthenticated] =
     useState(isAuthenticated);
-  const [sidebarView, setSidebarView] = useState<SidebarView>("live");
+  const [sidebarView, setSidebarView] = useState<SidebarView>("upcoming");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");
@@ -159,7 +158,7 @@ export function DashboardClient({
 
   useEffect(() => {
     if (isOrganizer && sidebarView === "tickets") {
-      setSidebarView("live");
+      setSidebarView("upcoming");
     }
   }, [isOrganizer, sidebarView]);
 

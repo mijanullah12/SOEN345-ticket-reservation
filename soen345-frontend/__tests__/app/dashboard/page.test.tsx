@@ -26,8 +26,9 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-function atLocalToday(hour: number, minute = 0): string {
+function inFutureDays(days: number, hour = 18, minute = 0): string {
   const d = new Date();
+  d.setDate(d.getDate() + days);
   d.setHours(hour, minute, 0, 0);
   return d.toISOString();
 }
@@ -78,7 +79,7 @@ describe("DashboardPage", () => {
           id: "1",
           name: "Test film night",
           description: "",
-          date: atLocalToday(18, 0),
+          date: inFutureDays(3),
           location: "Hall",
           capacity: 50,
           ticketPrice: 20,
