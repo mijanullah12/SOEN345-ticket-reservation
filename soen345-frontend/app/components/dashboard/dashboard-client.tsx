@@ -541,6 +541,12 @@ export function DashboardClient({
               className="dash-filter-panel"
               aria-label="Event search filters"
             >
+              <header className="dash-filter-panel-head">
+                <h2 className="dash-filter-panel-title">Find events</h2>
+                <p className="dash-filter-panel-sub">
+                  Search by name or venue, pick dates, and set a price range.
+                </p>
+              </header>
               <div className="dash-filter-row">
                 <label className="dash-search-segment">
                   <span>Name</span>
@@ -903,40 +909,48 @@ function ReservePanel({
           className="dash-pagination"
           aria-label="Reserve tickets pagination"
         >
-          <button
-            type="button"
-            className="dash-pagination-btn dash-pagination-arrow"
-            disabled={safePage === 0}
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            aria-label="Previous page"
-          >
-            Prev
-          </button>
-          {pageNumbers.map((n) => (
+          <div className="dash-pagination-row">
             <button
-              key={`page-${n}`}
               type="button"
-              className="dash-pagination-btn"
-              data-active={n === safePage}
-              onClick={() => setPage(n)}
-              aria-label={`Page ${n + 1}`}
-              aria-current={n === safePage ? "page" : undefined}
+              className="dash-pagination-btn dash-pagination-arrow"
+              disabled={safePage === 0}
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              aria-label="Previous page"
             >
-              {n + 1}
+              Prev
             </button>
-          ))}
-          <button
-            type="button"
-            className="dash-pagination-btn dash-pagination-arrow"
-            disabled={safePage === totalPages - 1}
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            aria-label="Next page"
-          >
-            Next
-          </button>
-          <span className="dash-pagination-info">
+            <div
+              className="dash-pagination-pages"
+              role="group"
+              aria-label="Page numbers"
+            >
+              {pageNumbers.map((n) => (
+                <button
+                  key={`page-${n}`}
+                  type="button"
+                  className="dash-pagination-btn"
+                  data-active={n === safePage}
+                  onClick={() => setPage(n)}
+                  aria-label={`Page ${n + 1}`}
+                  aria-current={n === safePage ? "page" : undefined}
+                >
+                  {n + 1}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="dash-pagination-btn dash-pagination-arrow"
+              disabled={safePage === totalPages - 1}
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              aria-label="Next page"
+            >
+              Next
+            </button>
+          </div>
+          <p className="dash-pagination-info">
             Page {safePage + 1} of {totalPages}
-          </span>
+          </p>
         </nav>
       ) : null}
     </section>
