@@ -8,7 +8,9 @@ test.describe("Role-based access control", () => {
     // No auth cookie — visit organizer dashboard directly
     await page.goto("/organizer/dashboard");
 
-    // Server-side middleware redirects to /login with redirect param
+    // The organizer dashboard page component (app/organizer/dashboard/page.tsx)
+    // performs a server-side auth check and redirects unauthenticated requests
+    // to /login with a redirect param.
     await expect(page).toHaveURL(
       /\/login\?redirect=%2Forganizer%2Fdashboard/,
     );
@@ -25,9 +27,11 @@ test.describe("Role-based access control", () => {
     // Attempt to access organizer-only route
     await page.goto("/organizer/dashboard");
 
-    // Server-side role check redirects CUSTOMER to /dashboard
-    await expect(page).toHaveURL(/\/dashboard/);
-    // Must NOT be the organizer dashboard
+    // The organizer dashboard page component fetches /api/v1/users/me, detects the
+    // CUSTOMER role, and redirects to /dashboard. Both assertions are required:
+    // the positive regex alone would match /organizer/dashboard since it contains
+    // the string "/dashboard".
     await expect(page).not.toHaveURL(/\/organizer\/dashboard/);
+    await expect(page).toHaveURL(/\/dashboard/);
   });
 });
