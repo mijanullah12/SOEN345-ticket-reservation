@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { expect, test } from "@playwright/test";
 import {
   getBackendToken,
@@ -21,7 +22,7 @@ test.describe("Reservation flows (customer)", () => {
       organizer.password,
     );
     const event = await seedEvent(request, orgToken, {
-      name: `Reservable Event ${Date.now()}`,
+      name: `Reservable Event ${randomUUID()}`,
       capacity: 50,
     });
 
@@ -55,7 +56,7 @@ test.describe("Reservation flows (customer)", () => {
       organizer.password,
     );
     const event = await seedEvent(request, orgToken, {
-      name: `Tickets Tab Event ${Date.now()}`,
+      name: `Tickets Tab Event ${randomUUID()}`,
       capacity: 50,
     });
 
@@ -101,7 +102,7 @@ test.describe("Reservation flows (customer)", () => {
       organizer.password,
     );
     const event = await seedEvent(request, orgToken, {
-      name: `Cancel Reservation Event ${Date.now()}`,
+      name: `Cancel Reservation Event ${randomUUID()}`,
       capacity: 50,
     });
 
