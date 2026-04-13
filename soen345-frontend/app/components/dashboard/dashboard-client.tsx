@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
@@ -25,7 +26,7 @@ import { AuthModal, type AuthModalMode } from "./auth-modal";
 import { EventDetailsModal } from "./event-details-modal";
 import { PaymentInfoModal } from "./payment-info-modal";
 import { ProfileMenu } from "./profile-menu";
-import { SidebarNavIcon } from "./sidebar-icons";
+import { OrganizerDashboardIcon, SidebarNavIcon } from "./sidebar-icons";
 
 function formatEventStamp(iso: string): string {
   const d = new Date(iso);
@@ -346,6 +347,14 @@ export function DashboardClient({
                 </button>
               </li>
             ))}
+            {isOrganizer ? (
+              <li>
+                <Link href="/organizer/dashboard" className="dash-nav-item dash-nav-link">
+                  <OrganizerDashboardIcon />
+                  <span className="dash-nav-item-label">Organizer Dashboard</span>
+                </Link>
+              </li>
+            ) : null}
           </ul>
         </nav>
         <div className="dash-sidebar-footer">
