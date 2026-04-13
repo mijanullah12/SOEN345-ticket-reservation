@@ -30,7 +30,6 @@ vi.mock("next/link", () => ({
 vi.mock("next/image", () => ({
   default: ({
     alt,
-    src,
     className,
     sizes: _sizes,
     fill: _fill,
@@ -48,7 +47,6 @@ vi.mock("next/image", () => ({
       aria-label={alt ?? ""}
       className={className}
       data-testid="mock-next-image"
-      data-src={src}
     />
   ),
 }));
@@ -313,6 +311,10 @@ describe("DashboardClient", () => {
 
   it("shows ticker text for the selected category", async () => {
     const user = userEvent.setup();
+    const future = new Date();
+    future.setDate(future.getDate() + 2);
+    future.setHours(20, 0, 0, 0);
+
     const events: Event[] = [
       makeEvent({
         id: "t1",

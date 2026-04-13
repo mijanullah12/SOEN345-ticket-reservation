@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { LogoutButton } from "../../dashboard/logout-button";
 import { useUserProfile } from "./use-user-profile";
 
-type MenuMode = "login" | "signup" | "orgLogin" | "orgSignup";
+type MenuMode = "login" | "signup" | "orgSignup";
 
 type ProfileMenuProps = {
   isAuthenticated: boolean;
@@ -97,16 +97,6 @@ export function ProfileMenu({
                 }}
               >
                 Sign up
-              </button>
-              <button
-                type="button"
-                className="dash-profile-item"
-                onClick={() => {
-                  onOpenAuthModal("orgLogin");
-                  setMenuOpen(false);
-                }}
-              >
-                Organizer login
               </button>
               <button
                 type="button"

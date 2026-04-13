@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
 :root {
+  --font-geist-sans: "Geist";
+  --font-geist-mono: "Geist Mono";
   --background: #f8f9fa;
   --foreground: #1a1a2e;
   --card-bg: #ffffff;
@@ -358,6 +360,14 @@ body {
     var(--dash-bg);
 }
 
+[data-app-shell="dashboard"] .dash-auth-container {
+  background: transparent;
+}
+
+[data-app-shell="dashboard"] .dash-auth-modal-card.dash-auth-container {
+  background: rgb(250 250 250);
+}
+
 [data-app-shell="dashboard"] .dash-auth-container .auth-card {
   max-width: 520px;
   border-radius: 0.75rem;
@@ -393,16 +403,6 @@ body {
   color: var(--dash-surface);
   text-transform: uppercase;
   letter-spacing: 0.12em;
-}
-
-[data-app-shell="dashboard"],
-.dash-auth-container,
-.auth-btn:hover:not(:disabled) {
-  opacity: 0.88;
-}
-
-[data-app-shell="dashboard"] .dash-auth-container {
-  background: transparent;
 }
 
 [data-app-shell="dashboard"] .dash-auth-container .auth-footer a,
@@ -1679,7 +1679,8 @@ body {
   width: min(520px, 92vw);
   z-index: 1;
   border: 1px solid var(--dash-border);
-  background: var(--dash-surface);
+  border-radius: 0.75rem;
+  background: rgb(250 250 250 / 0.99);
   box-shadow: 0 22px 60px rgb(0 0 0 / 0.22);
   max-height: 70vh;
   overflow: auto;
@@ -1687,8 +1688,9 @@ body {
 
 .dash-auth-modal-close {
   position: absolute;
-  top: 0.9rem;
-  right: 0.9rem;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
   padding: 0.35rem 0.75rem;
   font-size: 0.7rem;
   letter-spacing: 0.12em;
@@ -1696,7 +1698,66 @@ body {
 
 .dash-auth-modal .auth-card {
   margin: 0;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 0.2);
+  width: 100%;
+  max-width: none;
+  border: none;
+  border-radius: 0.75rem;
+  background: transparent;
+  box-shadow: none;
+  padding: 2.25rem 2.5rem 2.5rem;
+}
+
+.dash-auth-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.2rem;
+  width: max-content;
+  margin: 0 auto 1.35rem;
+  padding: 0.2rem;
+  border: 2px solid rgb(24 24 24);
+  border-radius: 999px;
+  background: rgb(24 24 24);
+}
+
+.dash-auth-tab {
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgb(241 241 241 / 0.92);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.45rem;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    color 140ms ease;
+}
+
+.dash-auth-tab[data-active="true"] {
+  background: rgb(244 244 244);
+  color: rgb(24 24 24);
+}
+
+@media (max-width: 640px) {
+  .dash-auth-modal .auth-card {
+    padding: 2rem 1.25rem 1.5rem;
+  }
+
+  .dash-auth-modal-close {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .dash-auth-tabs {
+    display: grid;
+    width: 100%;
+  }
+
+  .dash-auth-tab {
+    padding-inline: 1rem;
+  }
 }
 
 .event-details-grid {

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { persistSignupFeedback } from "@/lib/auth-feedback";
@@ -34,13 +35,15 @@ type OrganizationRegisterFormProps = {
   onSuccess?: () => void;
   onSwitchToOrgLogin?: () => void;
   useModalLinks?: boolean;
+  headerSlot?: ReactNode;
 };
 
 export function OrganizationRegisterForm({
-  redirectToOrganizerLogin = "/organizer/login",
+  redirectToOrganizerLogin = "/login",
   onSuccess,
   onSwitchToOrgLogin,
   useModalLinks = false,
+  headerSlot,
 }: OrganizationRegisterFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -120,6 +123,7 @@ export function OrganizationRegisterForm({
 
   return (
     <div className="auth-card">
+      {headerSlot}
       <h1 className="auth-title">Organization Registration</h1>
       <p className="auth-subtitle">
         Create an organizer account for organization management.
@@ -225,7 +229,7 @@ export function OrganizationRegisterForm({
             Login as organizer
           </button>
         ) : (
-          <Link href="/organizer/login">Login as organizer</Link>
+          <Link href="/login">Log in</Link>
         )}
       </p>
     </div>

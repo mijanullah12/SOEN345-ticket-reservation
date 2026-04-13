@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { api } from "@/lib/api";
 import { persistSignupFeedback } from "@/lib/auth-feedback";
@@ -34,6 +35,7 @@ type RegisterFormProps = {
   onSuccess?: () => void;
   onSwitchToLogin?: () => void;
   useModalLinks?: boolean;
+  headerSlot?: ReactNode;
 };
 
 export function RegisterForm({
@@ -41,6 +43,7 @@ export function RegisterForm({
   onSuccess,
   onSwitchToLogin,
   useModalLinks = false,
+  headerSlot,
 }: RegisterFormProps) {
   const router = useRouter();
   const [form, setForm] = useState<FormState>(INITIAL_FORM);
@@ -118,6 +121,7 @@ export function RegisterForm({
 
   return (
     <div className="auth-card">
+      {headerSlot}
       <h1 className="auth-title">Create Account</h1>
       <p className="auth-subtitle">Fill in your details to get started.</p>
 

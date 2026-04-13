@@ -10,22 +10,48 @@ import {
   consumeAuthFeedback,
   persistLoginFeedback,
 } from "@/lib/auth-feedback";
-import type { LoginResponse } from "@/lib/types";
+import type { UserInfo } from "@/lib/types";
 
 type LoginFormProps = {
   redirect?: string;
   onSuccess?: () => void;
   onSwitchToRegister?: () => void;
   useModalLinks?: boolean;
-  showOrganizerLinks?: boolean;
 };
+
+function defaultRedirectForRole(role: string | undefined): string {
+  return role === "ORGANIZER" || role === "ADMIN"
+    ? "/organizer/dashboard"
+    : "/dashboard";
+}
+
+function resolvePostLoginRedirect(
+  requestedRedirect: string,
+  user: UserInfo | undefined,
+): string {
+  if (
+    requestedRedirect.includes("available-tickets") ||
+    requestedRedirect.includes("/tickets")
+  ) {
+    return defaultRedirectForRole(user?.role);
+  }
+
+  if (requestedRedirect === "/dashboard" && user?.role === "ORGANIZER") {
+    return "/organizer/dashboard";
+  }
+
+  if (requestedRedirect === "/dashboard" && user?.role === "ADMIN") {
+    return "/organizer/dashboard";
+  }
+
+  return requestedRedirect;
+}
 
 export function LoginForm({
   redirect = "/dashboard",
   onSuccess,
   onSwitchToRegister,
   useModalLinks = false,
-  showOrganizerLinks = true,
 }: LoginFormProps) {
   const router = useRouter();
 
@@ -35,6 +61,7 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
   const [signupPopupName, setSignupPopupName] = useState<string | null>(null);
+  const [pendingRedirect, setPendingRedirect] = useState(redirect);
 
   useEffect(() => {
     const feedback = consumeAuthFeedback();
@@ -49,15 +76,11 @@ export function LoginForm({
 
   function acknowledgeLoginSuccess() {
     setLoginPopupName(null);
-    if (onSuccess) {
-      onSuccess();
-      return;
-    }
     if (typeof window !== "undefined") {
-      window.location.assign(redirect);
+      window.location.assign(pendingRedirect);
       return;
     }
-    router.push(redirect);
+    router.push(pendingRedirect);
     router.refresh();
   }
 
@@ -67,18 +90,26 @@ export function LoginForm({
     setLoading(true);
 
     try {
-      const response = await api<{ user?: LoginResponse["user"] }>(
-        "/api/auth/login",
-        {
-          method: "POST",
-          body: JSON.stringify({ identifier, password, portal: "user" }),
-        },
-      );
-      persistLoginFeedback(response.user);
-      setLoginPopupName(
-        buildDisplayName(response.user?.firstName, response.user?.lastName) ||
-          "User",
-      );
+      const response = await api<{ user?: UserInfo }>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ identifier, password }),
+      });
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        const dest = resolvePostLoginRedirect(redirect, response.user);
+        setPendingRedirect(dest);
+        const name = buildDisplayName(
+          response.user?.firstName,
+          response.user?.lastName,
+        );
+        persistLoginFeedback(response.user);
+        if (name) {
+          setLoginPopupName(name);
+        } else {
+          router.push(dest);
+        }
+      }
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
       setError(apiErr.message ?? "Login failed. Please try again.");
@@ -91,7 +122,7 @@ export function LoginForm({
     <div className="auth-card">
       <h1 className="auth-title">Sign In</h1>
       <p className="auth-subtitle">
-        Welcome back! Enter your credentials to continue.
+        Welcome back. Sign in with any customer or organizer account.
       </p>
 
       {error && <div className="auth-error">{error}</div>}
@@ -140,34 +171,26 @@ export function LoginForm({
           <Link href="/dashboard">Create one</Link>
         )}
       </p>
+      <p className="auth-footer">
+        Need to create organizer accounts?{" "}
+        <Link href="/organization/register">Create organizer account</Link>
+      </p>
 
-      {showOrganizerLinks ? (
-        <>
-          <p className="auth-footer">
-            Organizer access?{" "}
-            <Link href="/organizer/login">Login as organizer</Link>
-          </p>
-          <p className="auth-footer">
-            Need to create organizer accounts?{" "}
-            <Link href="/organization/register">Create organizer account</Link>
-          </p>
-        </>
-      ) : null}
       <StatusPopup
-        open={Boolean(loginPopupName || signupPopupName)}
-        title={loginPopupName ? "Successful log in" : "Successful sign up"}
+        open={Boolean(loginPopupName)}
+        title="Successful log in"
+        detail={loginPopupName ? `Welcome back, ${loginPopupName}.` : undefined}
+        onClose={acknowledgeLoginSuccess}
+      />
+      <StatusPopup
+        open={Boolean(signupPopupName)}
+        title="Successful sign up"
         detail={
-          loginPopupName
-            ? `Welcome back, ${loginPopupName}.`
-            : signupPopupName
-              ? `Account created for ${signupPopupName}. You can sign in now.`
-              : undefined
+          signupPopupName
+            ? `Account created for ${signupPopupName}. You can sign in now.`
+            : undefined
         }
-        onClose={
-          loginPopupName
-            ? acknowledgeLoginSuccess
-            : () => setSignupPopupName(null)
-        }
+        onClose={() => setSignupPopupName(null)}
       />
     </div>
   );

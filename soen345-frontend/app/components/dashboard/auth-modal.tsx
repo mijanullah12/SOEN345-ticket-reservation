@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LoginForm } from "@/app/components/auth/login-form";
 import { OrganizationRegisterForm } from "@/app/components/auth/organization-register-form";
-import { OrganizerLoginForm } from "@/app/components/auth/organizer-login-form";
 import { RegisterForm } from "@/app/components/auth/register-form";
 
-export type AuthModalMode = "login" | "signup" | "orgLogin" | "orgSignup";
+export type AuthModalMode = "login" | "signup" | "orgSignup";
 
 type AuthModalProps = {
   mode: AuthModalMode | null;
@@ -21,6 +20,10 @@ export function AuthModal({
   onSwitch,
   onAuthSuccess,
 }: AuthModalProps) {
+  const [signupTab, setSignupTab] = useState<"customer" | "organizer">(
+    "customer",
+  );
+
   useEffect(() => {
     if (!mode) return;
     function handleKey(event: KeyboardEvent) {
@@ -32,7 +35,47 @@ export function AuthModal({
     return () => document.removeEventListener("keydown", handleKey);
   }, [mode, onClose]);
 
+  useEffect(() => {
+    if (mode === "orgSignup") {
+      setSignupTab("organizer");
+      return;
+    }
+    if (mode === "signup") {
+      setSignupTab("customer");
+    }
+  }, [mode]);
+
   if (!mode) return null;
+
+  const signupTabs =
+    mode === "signup" || mode === "orgSignup" ? (
+      <div
+        className="dash-auth-tabs"
+        role="tablist"
+        aria-label="Sign up options"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={signupTab === "customer"}
+          className="dash-auth-tab"
+          data-active={signupTab === "customer"}
+          onClick={() => setSignupTab("customer")}
+        >
+          Customer
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={signupTab === "organizer"}
+          className="dash-auth-tab"
+          data-active={signupTab === "organizer"}
+          onClick={() => setSignupTab("organizer")}
+        >
+          Organizer
+        </button>
+      </div>
+    ) : null;
 
   return (
     <div className="dash-auth-modal" role="dialog" aria-modal="true">
@@ -55,31 +98,26 @@ export function AuthModal({
           <LoginForm
             redirect="/dashboard"
             useModalLinks
-            showOrganizerLinks={false}
             onSwitchToRegister={() => onSwitch("signup")}
             onSuccess={onAuthSuccess}
           />
         ) : null}
-        {mode === "signup" ? (
-          <RegisterForm
-            useModalLinks
-            onSwitchToLogin={() => onSwitch("login")}
-            onSuccess={() => onSwitch("login")}
-          />
-        ) : null}
-        {mode === "orgLogin" ? (
-          <OrganizerLoginForm
-            useModalLinks
-            onSwitchToOrgRegister={() => onSwitch("orgSignup")}
-            onSuccess={onAuthSuccess}
-          />
-        ) : null}
-        {mode === "orgSignup" ? (
-          <OrganizationRegisterForm
-            useModalLinks
-            onSwitchToOrgLogin={() => onSwitch("orgLogin")}
-            onSuccess={() => onSwitch("orgLogin")}
-          />
+        {mode === "signup" || mode === "orgSignup" ? (
+          signupTab === "customer" ? (
+            <RegisterForm
+              useModalLinks
+              onSwitchToLogin={() => onSwitch("login")}
+              onSuccess={() => onSwitch("login")}
+              headerSlot={signupTabs}
+            />
+          ) : (
+            <OrganizationRegisterForm
+              useModalLinks
+              onSwitchToOrgLogin={() => onSwitch("login")}
+              onSuccess={() => onSwitch("login")}
+              headerSlot={signupTabs}
+            />
+          )
         ) : null}
       </div>
     </div>

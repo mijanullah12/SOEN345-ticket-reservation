@@ -112,9 +112,9 @@ export function DashboardClient({
   isAuthenticated: boolean;
 }) {
   const router = useRouter();
+  const [sidebarView, setSidebarView] = useState<SidebarView>("upcoming");
   const [sessionAuthenticated, setSessionAuthenticated] =
     useState(isAuthenticated);
-  const [sidebarView, setSidebarView] = useState<SidebarView>("upcoming");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");
