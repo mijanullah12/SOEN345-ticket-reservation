@@ -1,9 +1,10 @@
+import { randomUUID } from "crypto";
 import { expect, test } from "@playwright/test";
 import { loginViaBrowser, registerCustomer } from "./fixtures/auth";
 
 test.describe("Auth flows", () => {
-  test("TC1: register a new customer via the UI form", async ({ page, request }) => {
-    const email = `reg-ui-${Date.now()}@example.com`;
+  test("TC1: register a new customer via the UI form", async ({ page }) => {
+    const email = `reg-ui-${randomUUID()}@example.com`;
     const password = "Password123";
 
     // Visit dashboard as unauthenticated user
@@ -28,6 +29,8 @@ test.describe("Auth flows", () => {
     await expect(page).toHaveURL(/\/dashboard/);
     // The auth modal should be gone
     await expect(page.locator("[role='dialog']")).not.toBeVisible();
+    // User is now authenticated — logout button appears
+    await expect(page.getByRole("button", { name: "Log Out" })).toBeVisible();
   });
 
   test("TC2: login with valid credentials shows welcome popup then dashboard", async ({
@@ -61,7 +64,7 @@ test.describe("Auth flows", () => {
     await page.getByRole("button", { name: "Sign In" }).click();
 
     await expect(page.locator(".auth-error")).toBeVisible();
-    await expect(page.locator(".auth-error")).toContainText(/invalid/i);
+    await expect(page.locator(".auth-error")).toContainText(/invalid credentials/i);
   });
 
   test("TC4: logout clears session and dashboard shows unauthenticated state", async ({
@@ -73,9 +76,7 @@ test.describe("Auth flows", () => {
     await page.goto("/dashboard");
 
     // Confirm authenticated (logout button is visible)
-    await expect(
-      page.getByRole("button", { name: "Log Out" }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Log Out" })).toBeVisible();
 
     await page.getByRole("button", { name: "Log Out" }).click();
 
@@ -83,8 +84,10 @@ test.describe("Auth flows", () => {
     await expect(page.locator(".status-popup")).toBeVisible();
     await page.getByRole("button", { name: "OK" }).click();
 
-    // After logout the dashboard reloads and shows unauthenticated state
-    // (no logout button, login CTA visible)
+    // After logout the dashboard reloads in unauthenticated state
     await expect(page.getByRole("button", { name: "Log Out" })).not.toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /log in to reserve/i }),
+    ).toBeVisible();
   });
 });
