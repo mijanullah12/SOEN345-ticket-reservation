@@ -1,47 +1,228 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="19" failures="0" errors="0" time="2.6821175">
-    <testsuite name="__tests__/app/login/page.test.tsx" timestamp="2026-04-11T01:10:27.293Z" hostname="JunSpace" tests="6" failures="0" errors="0" skipped="0" time="1.3910617">
-        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; renders the sign-in heading and form fields" time="0.0662971">
+<testsuites name="vitest tests" tests="91" failures="0" errors="0" time="3.241895581">
+    <testsuite name="__tests__/middleware.test.ts" timestamp="2026-04-13T03:09:13.724Z" hostname="Mijans-MacBook-Pro.local" tests="13" failures="0" errors="0" skipped="0" time="0.006657958">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; protected routes &gt; allows unauthenticated users to access /dashboard" time="0.003329458">
         </testcase>
-        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; has a link to the register page" time="0.0080203">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; protected routes &gt; allows unauthenticated users to access /dashboard/settings" time="0.000396833">
         </testcase>
-        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; redirects to /dashboard on successful login" time="0.5202875">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; protected routes &gt; allows authenticated users to access /dashboard" time="0.000379541">
         </testcase>
-        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; shows a sign-up success popup when signup feedback exists" time="0.0070941">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; auth pages redirect when authenticated &gt; redirects authenticated users from / to /dashboard" time="0.000259916">
         </testcase>
-        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; displays an error message on failed login" time="0.4139301">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; auth pages redirect when authenticated &gt; allows authenticated users to access /login" time="0.000142958">
         </testcase>
-        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; shows a fallback error when the API error has no message" time="0.3736058">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; auth pages redirect when authenticated &gt; allows authenticated users to access /register" time="0.00020175">
         </testcase>
-    </testsuite>
-    <testsuite name="__tests__/app/dashboard/dashboard-client.test.tsx" timestamp="2026-04-11T01:10:27.300Z" hostname="JunSpace" tests="12" failures="0" errors="0" skipped="0" time="1.1790466">
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; renders brand, sidebar controls, category tabs, and logout" time="0.1130871">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; auth pages redirect when authenticated &gt; redirects authenticated users from /organizer/login to /dashboard" time="0.00016925">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a sign-up success popup when signup feedback exists in session storage" time="0.0197873">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; public access &gt; allows unauthenticated users to access /login" time="0.000107625">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; does not render a greeting strip when the profile has no name" time="0.0162152">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; public access &gt; allows unauthenticated users to access /register" time="0.000254959">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows load error banner when loadError is set" time="0.0152907">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; public access &gt; allows unauthenticated users to access /" time="0.000240333">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows tickets placeholder when Tickets sidebar item is selected" time="0.0726341">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; public access &gt; allows unauthenticated users to access /organizer/login" time="0.000176792">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a movie event on Live + Movies when name matches keywords" time="0.1113869">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; public access &gt; allows unauthenticated users to access /organizer/register" time="0.000110459">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows empty state when category has no matches for current sidebar slice" time="0.114937">
-        </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; lists upcoming-only events when Upcoming is selected" time="0.0780042">
-        </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows ticker text for the selected category" time="0.077845">
-        </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; filters events using location and keyword search fields" time="0.2823208">
-        </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; applies filtering by date only" time="0.1709096">
-        </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; allows hiding and unhiding the search bar" time="0.1046484">
+        <testcase classname="__tests__/middleware.test.ts" name="middleware &gt; public access &gt; allows unauthenticated users to access /organization/register" time="0.000145208">
         </testcase>
     </testsuite>
-    <testsuite name="__tests__/app/dashboard/logout-button.test.tsx" timestamp="2026-04-11T01:10:27.306Z" hostname="JunSpace" tests="1" failures="0" errors="0" skipped="0" time="0.1120092">
-        <testcase classname="__tests__/app/dashboard/logout-button.test.tsx" name="LogoutButton &gt; reloads the dashboard after OK when already on /dashboard" time="0.1104144">
+    <testsuite name="__tests__/lib/api.test.ts" timestamp="2026-04-13T03:09:13.726Z" hostname="Mijans-MacBook-Pro.local" tests="6" failures="0" errors="0" skipped="0" time="0.004836708">
+        <testcase classname="__tests__/lib/api.test.ts" name="api utility &gt; makes a GET request with correct defaults" time="0.001623291">
+        </testcase>
+        <testcase classname="__tests__/lib/api.test.ts" name="api utility &gt; merges custom headers with defaults" time="0.000257834">
+        </testcase>
+        <testcase classname="__tests__/lib/api.test.ts" name="api utility &gt; passes method and body through" time="0.000996291">
+        </testcase>
+        <testcase classname="__tests__/lib/api.test.ts" name="api utility &gt; throws with message and fieldErrors on non-ok response" time="0.000527917">
+        </testcase>
+        <testcase classname="__tests__/lib/api.test.ts" name="api utility &gt; falls back to statusText when error body has no message" time="0.00020225">
+        </testcase>
+        <testcase classname="__tests__/lib/api.test.ts" name="api utility &gt; handles unparseable error body gracefully" time="0.000193792">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/lib/dashboard-filters.test.ts" timestamp="2026-04-13T03:09:13.727Z" hostname="Mijans-MacBook-Pro.local" tests="10" failures="0" errors="0" skipped="0" time="0.009477167">
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="filterBySidebar &gt; live keeps only active events scheduled for today (local)" time="0.004018333">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="filterBySidebar &gt; upcoming keeps active events after end of today" time="0.000489458">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="filterBySidebar &gt; archive includes cancelled or events before today" time="0.000328875">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="filterBySidebar &gt; tickets returns no events" time="0.000351084">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="eventsForCategory &gt; matches keywords in name or description (case insensitive)" time="0.000150791">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="eventsForCategory &gt; returns all events for the all category" time="0.001400792">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="categoryById &gt; returns the category definition" time="0.000788334">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="categoryById &gt; throws for unknown id" time="0.000546416">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="tickerItems &gt; builds lines from active events in category" time="0.000362584">
+        </testcase>
+        <testcase classname="__tests__/lib/dashboard-filters.test.ts" name="tickerItems &gt; uses fallback lines when no active category events" time="0.000141083">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/lib/fetch-events.test.ts" timestamp="2026-04-13T03:09:13.728Z" hostname="Mijans-MacBook-Pro.local" tests="4" failures="0" errors="0" skipped="0" time="0.011037916">
+        <testcase classname="__tests__/lib/fetch-events.test.ts" name="fetchEventsWithAuth &gt; returns unauthorized when response status is 401" time="0.008806042">
+        </testcase>
+        <testcase classname="__tests__/lib/fetch-events.test.ts" name="fetchEventsWithAuth &gt; returns events when response is ok" time="0.000818791">
+        </testcase>
+        <testcase classname="__tests__/lib/fetch-events.test.ts" name="fetchEventsWithAuth &gt; returns error when response is not ok and not 401" time="0.000334083">
+        </testcase>
+        <testcase classname="__tests__/lib/fetch-events.test.ts" name="fetchOrganizerEventsWithAuth &gt; requests the organizer-only events endpoint" time="0.00034475">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/login/page.test.tsx" timestamp="2026-04-13T03:09:13.728Z" hostname="Mijans-MacBook-Pro.local" tests="6" failures="0" errors="0" skipped="0" time="0.402461583">
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; renders the sign-in heading and form fields" time="0.023747291">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; has a link to the register page" time="0.007164166">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; redirects to /dashboard on successful login" time="0.134071792">
+            <system-out>
+Button clicked inside StatusPopup
+
+            </system-out>
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; shows a sign-up success popup when signup feedback exists" time="0.007125584">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; displays an error message on failed login" time="0.118413458">
+        </testcase>
+        <testcase classname="__tests__/app/login/page.test.tsx" name="LoginForm &gt; shows a fallback error when the API error has no message" time="0.110453583">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/dashboard/dashboard-client.test.tsx" timestamp="2026-04-13T03:09:13.729Z" hostname="Mijans-MacBook-Pro.local" tests="12" failures="0" errors="0" skipped="0" time="0.736788125">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; renders brand, sidebar controls, category tabs, and logout" time="0.077977458">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a sign-up success popup when signup feedback exists in session storage" time="0.009711959">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; does not render a greeting strip when the profile has no name" time="0.015867625">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows load error banner when loadError is set" time="0.008814542">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows tickets placeholder when Tickets sidebar item is selected" time="0.110690041">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a movie event on Live + Movies when name matches keywords" time="0.052944083">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows empty state when category has no matches for current sidebar slice" time="0.08715125">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; lists upcoming-only events when Upcoming is selected" time="0.058379">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows ticker text for the selected category" time="0.04816625">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; filters events using location and keyword search fields" time="0.146174333">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; applies filtering by date only" time="0.064032625">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; allows hiding and unhiding the search bar" time="0.05541325">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/dashboard/logout-button.test.tsx" timestamp="2026-04-13T03:09:13.730Z" hostname="Mijans-MacBook-Pro.local" tests="1" failures="0" errors="0" skipped="0" time="0.058657708">
+        <testcase classname="__tests__/app/dashboard/logout-button.test.tsx" name="LogoutButton &gt; reloads the dashboard after OK when already on /dashboard" time="0.056753792">
+            <system-out>
+Button clicked inside StatusPopup
+Acknowledging logout
+
+            </system-out>
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/dashboard/page.test.tsx" timestamp="2026-04-13T03:09:13.730Z" hostname="Mijans-MacBook-Pro.local" tests="4" failures="0" errors="0" skipped="0" time="0.148030125">
+        <testcase classname="__tests__/app/dashboard/page.test.tsx" name="DashboardPage &gt; uses public events when auth_token cookie is missing" time="0.034184542">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/page.test.tsx" name="DashboardPage &gt; falls back to public events when auth fetch returns unauthorized" time="0.012665875">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/page.test.tsx" name="DashboardPage &gt; renders dashboard with events when fetch succeeds" time="0.078965084">
+        </testcase>
+        <testcase classname="__tests__/app/dashboard/page.test.tsx" name="DashboardPage &gt; renders dashboard with empty events and error message when fetch errors" time="0.021473375">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/register/page.test.tsx" timestamp="2026-04-13T03:09:13.731Z" hostname="Mijans-MacBook-Pro.local" tests="10" failures="0" errors="0" skipped="0" time="1.194769125">
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; renders the form with all required fields" time="0.026214167">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; has a link to the login page" time="0.005373209">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; shows validation error when neither email nor phone is provided" time="0.162613208">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; shows validation error when password is too short" time="0.175167625">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; shows validation error when password has no number" time="0.195589167">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; shows validation error when passwords do not match" time="0.165267792">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; calls the API and redirects to /login on success" time="0.146351875">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; sends only phone (not email) when email is empty" time="0.102412375">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; displays API error message on failure" time="0.10307425">
+        </testcase>
+        <testcase classname="__tests__/app/register/page.test.tsx" name="RegisterForm &gt; displays field-level errors from the API" time="0.111379833">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/components/dashboard/profile-menu.test.tsx" timestamp="2026-04-13T03:09:13.732Z" hostname="Mijans-MacBook-Pro.local" tests="2" failures="0" errors="0" skipped="0" time="0.046955417">
+        <testcase classname="__tests__/app/components/dashboard/profile-menu.test.tsx" name="ProfileMenu organizer access &gt; hides organizer dashboard for non-organizer users" time="0.031576">
+        </testcase>
+        <testcase classname="__tests__/app/components/dashboard/profile-menu.test.tsx" name="ProfileMenu organizer access &gt; shows organizer dashboard for organizer users" time="0.014498583">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" timestamp="2026-04-13T03:09:13.732Z" hostname="Mijans-MacBook-Pro.local" tests="6" failures="0" errors="0" skipped="0" time="0.400035916">
+        <testcase classname="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" name="OrganizerDashboardClient &gt; renders heading and current events list" time="0.056360583">
+        </testcase>
+        <testcase classname="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" name="OrganizerDashboardClient &gt; requests events when refresh is clicked" time="0.032285375">
+        </testcase>
+        <testcase classname="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" name="OrganizerDashboardClient &gt; starts editing and prefills form values" time="0.224005792">
+        </testcase>
+        <testcase classname="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" name="OrganizerDashboardClient &gt; cancels an active event" time="0.054861333">
+        </testcase>
+        <testcase classname="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" name="OrganizerDashboardClient &gt; shows a sign-up success popup when signup feedback exists in session storage" time="0.010032583">
+        </testcase>
+        <testcase classname="__tests__/app/components/organizer/organizer-dashboard-client.test.tsx" name="OrganizerDashboardClient &gt; does not render a greeting strip when the organizer profile has no name" time="0.0166765">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/components/profile/profile-preferences-card.test.tsx" timestamp="2026-04-13T03:09:13.732Z" hostname="Mijans-MacBook-Pro.local" tests="2" failures="0" errors="0" skipped="0" time="0.19181225">
+        <testcase classname="__tests__/app/components/profile/profile-preferences-card.test.tsx" name="ProfilePreferencesCard &gt; renders profile in display mode first" time="0.021848792">
+        </testcase>
+        <testcase classname="__tests__/app/components/profile/profile-preferences-card.test.tsx" name="ProfilePreferencesCard &gt; allows editing and saves updated email" time="0.1693215">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/organizer/dashboard/page.test.tsx" timestamp="2026-04-13T03:09:13.732Z" hostname="Mijans-MacBook-Pro.local" tests="3" failures="0" errors="0" skipped="0" time="0.003009083">
+        <testcase classname="__tests__/app/organizer/dashboard/page.test.tsx" name="OrganizerDashboardPage &gt; redirects to organizer login when token is missing" time="0.001280125">
+        </testcase>
+        <testcase classname="__tests__/app/organizer/dashboard/page.test.tsx" name="OrganizerDashboardPage &gt; redirects to organizer login when token is unauthorized" time="0.00021075">
+        </testcase>
+        <testcase classname="__tests__/app/organizer/dashboard/page.test.tsx" name="OrganizerDashboardPage &gt; renders organizer dashboard client for authenticated users" time="0.000919792">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/api/auth/login/route.test.ts" timestamp="2026-04-13T03:09:13.733Z" hostname="Mijans-MacBook-Pro.local" tests="5" failures="0" errors="0" skipped="0" time="0.008363125">
+        <testcase classname="__tests__/app/api/auth/login/route.test.ts" name="POST /api/auth/login &gt; proxies credentials to the backend and sets an HTTP-only cookie" time="0.005410041">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/login/route.test.ts" name="POST /api/auth/login &gt; forwards backend error responses without setting a cookie" time="0.000678459">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/login/route.test.ts" name="POST /api/auth/login &gt; returns 500 when the backend is unreachable" time="0.000483917">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/login/route.test.ts" name="POST /api/auth/login &gt; returns 403 when user portal login role does not match" time="0.000559625">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/login/route.test.ts" name="POST /api/auth/login &gt; returns 403 when organizer portal login role does not match" time="0.000512125">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/api/auth/logout/route.test.ts" timestamp="2026-04-13T03:09:13.733Z" hostname="Mijans-MacBook-Pro.local" tests="1" failures="0" errors="0" skipped="0" time="0.002794084">
+        <testcase classname="__tests__/app/api/auth/logout/route.test.ts" name="POST /api/auth/logout &gt; deletes the auth_token cookie and returns success" time="0.002192542">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/api/auth/register/route.test.ts" timestamp="2026-04-13T03:09:13.733Z" hostname="Mijans-MacBook-Pro.local" tests="4" failures="0" errors="0" skipped="0" time="0.0110215">
+        <testcase classname="__tests__/app/api/auth/register/route.test.ts" name="POST /api/auth/register &gt; proxies registration to the backend and returns the response" time="0.007399417">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/register/route.test.ts" name="POST /api/auth/register &gt; forwards validation errors from the backend" time="0.00111625">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/register/route.test.ts" name="POST /api/auth/register &gt; forwards duplicate resource errors from the backend" time="0.000368375">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/register/route.test.ts" name="POST /api/auth/register &gt; returns 500 when the backend is unreachable" time="0.000555125">
+        </testcase>
+    </testsuite>
+    <testsuite name="__tests__/app/api/auth/register-organizer/route.test.ts" timestamp="2026-04-13T03:09:13.733Z" hostname="Mijans-MacBook-Pro.local" tests="2" failures="0" errors="0" skipped="0" time="0.005187791">
+        <testcase classname="__tests__/app/api/auth/register-organizer/route.test.ts" name="POST /api/auth/register-organizer &gt; proxies organizer registration to the backend" time="0.003816042">
+        </testcase>
+        <testcase classname="__tests__/app/api/auth/register-organizer/route.test.ts" name="POST /api/auth/register-organizer &gt; forwards non-JSON backend errors as message text" time="0.000581542">
         </testcase>
     </testsuite>
 </testsuites>

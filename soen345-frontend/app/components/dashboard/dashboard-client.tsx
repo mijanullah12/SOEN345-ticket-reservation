@@ -137,7 +137,7 @@ export function DashboardClient({
   const [reserveQuantities, setReserveQuantities] = useState<
     Record<string, number>
   >({});
-  const { user: currentUser } = useUserProfile(sessionAuthenticated);
+  const { user: currentUser, loading: profileLoading } = useUserProfile(sessionAuthenticated);
   const isOrganizer = currentUser?.role === "ORGANIZER";
   const greetingName = buildDisplayName(
     currentUser?.firstName,
@@ -146,12 +146,14 @@ export function DashboardClient({
 
   const category = useMemo(() => categoryById(categoryId), [categoryId]);
 
+  const roleKnown = !profileLoading || !sessionAuthenticated;
   const sidebarItems = useMemo(
     () =>
-      SIDEBAR_ITEMS.filter((item) =>
-        isOrganizer ? item.id !== "tickets" : true,
-      ),
-    [isOrganizer],
+      SIDEBAR_ITEMS.filter((item) => {
+        if (item.id === "tickets" && (!roleKnown || isOrganizer)) return false;
+        return true;
+      }),
+    [isOrganizer, roleKnown],
   );
 
   useEffect(() => {
