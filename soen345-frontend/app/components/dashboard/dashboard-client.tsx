@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 import { StatusPopup } from "@/app/components/shared/status-popup";
 import { ToastContainer, useToast } from "@/app/components/shared/toast";
@@ -124,7 +124,14 @@ export function DashboardClient({
   const [dateTo, setDateTo] = useState("");
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
-  const [sortBy, setSortBy] = useState<"date-asc" | "date-desc" | "price-asc" | "price-desc" | "name-asc" | "name-desc">("date-asc");
+  const [sortBy, setSortBy] = useState<
+    | "date-asc"
+    | "date-desc"
+    | "price-asc"
+    | "price-desc"
+    | "name-asc"
+    | "name-desc"
+  >("date-asc");
   const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
   const [authModal, setAuthModal] = useState<AuthModalMode | null>(null);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -152,14 +159,21 @@ export function DashboardClient({
   const sidebarItems = useMemo(
     () =>
       SIDEBAR_ITEMS.filter((item) => {
-        if ((item.id === "tickets" || item.id === "archive") && (!roleKnown || isOrganizer)) return false;
+        if (
+          (item.id === "tickets" || item.id === "archive") &&
+          (!roleKnown || isOrganizer)
+        )
+          return false;
         return true;
       }),
     [isOrganizer, roleKnown],
   );
 
   useEffect(() => {
-    if (isOrganizer && (sidebarView === "tickets" || sidebarView === "archive")) {
+    if (
+      isOrganizer &&
+      (sidebarView === "tickets" || sidebarView === "archive")
+    ) {
       setSidebarView("upcoming");
     }
   }, [isOrganizer, sidebarView]);
@@ -213,10 +227,19 @@ export function DashboardClient({
 
       const parsedMin = priceMin !== "" ? Number.parseFloat(priceMin) : null;
       const parsedMax = priceMax !== "" ? Number.parseFloat(priceMax) : null;
-      const priceMinOk = parsedMin !== null ? event.ticketPrice >= parsedMin : true;
-      const priceMaxOk = parsedMax !== null ? event.ticketPrice <= parsedMax : true;
+      const priceMinOk =
+        parsedMin !== null ? event.ticketPrice >= parsedMin : true;
+      const priceMaxOk =
+        parsedMax !== null ? event.ticketPrice <= parsedMax : true;
 
-      return locationOk && keywordOk && dateFromOk && dateToOk && priceMinOk && priceMaxOk;
+      return (
+        locationOk &&
+        keywordOk &&
+        dateFromOk &&
+        dateToOk &&
+        priceMinOk &&
+        priceMaxOk
+      );
     });
 
     return [...filtered].sort((a, b) => {
@@ -237,12 +260,23 @@ export function DashboardClient({
           return 0;
       }
     });
-  }, [categoryEvents, dateFrom, dateTo, keywordQuery, locationQuery, priceMin, priceMax, sortBy]);
+  }, [
+    categoryEvents,
+    dateFrom,
+    dateTo,
+    keywordQuery,
+    locationQuery,
+    priceMin,
+    priceMax,
+    sortBy,
+  ]);
 
   const activeFilters = useMemo(() => {
     const filters: { key: string; label: string }[] = [];
-    if (locationQuery) filters.push({ key: "location", label: `Venue: ${locationQuery}` });
-    if (keywordQuery) filters.push({ key: "keyword", label: `Name: ${keywordQuery}` });
+    if (locationQuery)
+      filters.push({ key: "location", label: `Venue: ${locationQuery}` });
+    if (keywordQuery)
+      filters.push({ key: "keyword", label: `Name: ${keywordQuery}` });
     if (dateFrom) filters.push({ key: "dateFrom", label: `From: ${dateFrom}` });
     if (dateTo) filters.push({ key: "dateTo", label: `To: ${dateTo}` });
     if (priceMin) filters.push({ key: "priceMin", label: `Min $${priceMin}` });
@@ -258,17 +292,39 @@ export function DashboardClient({
       filters.push({ key: "sort", label: `Sort: ${sortLabels[sortBy]}` });
     }
     return filters;
-  }, [locationQuery, keywordQuery, dateFrom, dateTo, priceMin, priceMax, sortBy]);
+  }, [
+    locationQuery,
+    keywordQuery,
+    dateFrom,
+    dateTo,
+    priceMin,
+    priceMax,
+    sortBy,
+  ]);
 
   const clearFilter = useCallback((key: string) => {
     switch (key) {
-      case "location": setLocationQuery(""); break;
-      case "keyword": setKeywordQuery(""); break;
-      case "dateFrom": setDateFrom(""); break;
-      case "dateTo": setDateTo(""); break;
-      case "priceMin": setPriceMin(""); break;
-      case "priceMax": setPriceMax(""); break;
-      case "sort": setSortBy("date-asc"); break;
+      case "location":
+        setLocationQuery("");
+        break;
+      case "keyword":
+        setKeywordQuery("");
+        break;
+      case "dateFrom":
+        setDateFrom("");
+        break;
+      case "dateTo":
+        setDateTo("");
+        break;
+      case "priceMin":
+        setPriceMin("");
+        break;
+      case "priceMax":
+        setPriceMax("");
+        break;
+      case "sort":
+        setSortBy("date-asc");
+        break;
     }
   }, []);
 
@@ -317,7 +373,7 @@ export function DashboardClient({
     } finally {
       setReservationsLoading(false);
     }
-  }, [sessionAuthenticated]);
+  }, [sessionAuthenticated, addToast]);
 
   useEffect(() => {
     void loadReservations();
@@ -473,7 +529,9 @@ export function DashboardClient({
               >
                 {showSearch ? "Hide filters" : "Show filters"}
                 {activeFilters.length > 0 && !showSearch ? (
-                  <span className="dash-filter-badge">{activeFilters.length}</span>
+                  <span className="dash-filter-badge">
+                    {activeFilters.length}
+                  </span>
                 ) : null}
               </button>
             </div>
@@ -567,7 +625,9 @@ export function DashboardClient({
                       aria-label={`Remove filter: ${f.label}`}
                     >
                       {f.label}
-                      <span className="dash-filter-chip-x" aria-hidden="true">&times;</span>
+                      <span className="dash-filter-chip-x" aria-hidden="true">
+                        &times;
+                      </span>
                     </button>
                   ))}
                   <button
@@ -663,7 +723,10 @@ export function DashboardClient({
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onSaved={() => {
-          addToast("Payment info saved. Please try reserving again.", "success");
+          addToast(
+            "Payment info saved. Please try reserving again.",
+            "success",
+          );
         }}
       />
       <ToastContainer toasts={toasts} onDismiss={dismissToast} />
@@ -715,11 +778,21 @@ function ReservePanel({
 
   const totalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages - 1);
-  const pageEvents = events.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+  const pageEvents = events.slice(
+    safePage * PAGE_SIZE,
+    (safePage + 1) * PAGE_SIZE,
+  );
 
-  useEffect(() => {
+  const eventCountRef = useRef(events.length);
+  if (eventCountRef.current !== events.length) {
+    eventCountRef.current = events.length;
     setPage(0);
-  }, [events]);
+  }
+
+  const pageNumbers = useMemo(
+    () => Array.from({ length: totalPages }, (_, i) => i),
+    [totalPages],
+  );
 
   if (events.length === 0) {
     return null;
@@ -826,7 +899,10 @@ function ReservePanel({
         })}
       </ul>
       {totalPages > 1 ? (
-        <nav className="dash-pagination" aria-label="Reserve tickets pagination">
+        <nav
+          className="dash-pagination"
+          aria-label="Reserve tickets pagination"
+        >
           <button
             type="button"
             className="dash-pagination-btn dash-pagination-arrow"
@@ -836,17 +912,17 @@ function ReservePanel({
           >
             Prev
           </button>
-          {Array.from({ length: totalPages }, (_, i) => (
+          {pageNumbers.map((n) => (
             <button
-              key={i}
+              key={`page-${n}`}
               type="button"
               className="dash-pagination-btn"
-              data-active={i === safePage}
-              onClick={() => setPage(i)}
-              aria-label={`Page ${i + 1}`}
-              aria-current={i === safePage ? "page" : undefined}
+              data-active={n === safePage}
+              onClick={() => setPage(n)}
+              aria-label={`Page ${n + 1}`}
+              aria-current={n === safePage ? "page" : undefined}
             >
-              {i + 1}
+              {n + 1}
             </button>
           ))}
           <button
@@ -905,7 +981,9 @@ function TicketsPanel({
       <h2 className="dash-section-title">Tickets</h2>
       {loading ? <p className="dash-empty">Loading tickets...</p> : null}
       {!loading && reservations.length === 0 ? (
-        <p className="dash-empty">No active tickets. Reserve an event to see your tickets here.</p>
+        <p className="dash-empty">
+          No active tickets. Reserve an event to see your tickets here.
+        </p>
       ) : null}
       {reservations.length > 0 ? (
         <ul className="dash-tickets-list">

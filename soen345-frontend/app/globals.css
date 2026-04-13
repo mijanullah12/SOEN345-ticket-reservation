@@ -1160,7 +1160,9 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .dash-filter-chip:hover {
@@ -1566,7 +1568,10 @@ body {
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
   user-select: none;
 }
 
@@ -1949,7 +1954,9 @@ body {
   gap: 0.65rem;
   padding: 0.85rem 1rem;
   border-radius: 10px;
-  box-shadow: 0 8px 24px rgb(0 0 0 / 0.15), 0 2px 6px rgb(0 0 0 / 0.08);
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 0.15),
+    0 2px 6px rgb(0 0 0 / 0.08);
   animation: toast-enter 0.3s ease-out;
   font-size: 0.88rem;
   line-height: 1.45;

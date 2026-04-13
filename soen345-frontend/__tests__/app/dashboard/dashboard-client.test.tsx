@@ -245,9 +245,9 @@ describe("DashboardClient", () => {
     expect(
       screen.getByRole("heading", { name: /^all events$/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getAllByText(/indie film festival/i).length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/indie film festival/i).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it("shows empty state when category has no matches for current sidebar slice", async () => {
@@ -301,9 +301,9 @@ describe("DashboardClient", () => {
       />,
     );
 
-    expect(
-      screen.getAllByText(/summer film premiere/i).length,
-    ).toBeGreaterThan(0);
+    expect(screen.getAllByText(/summer film premiere/i).length).toBeGreaterThan(
+      0,
+    );
     expect(
       screen.queryByText(/yesterday film matinee/i),
     ).not.toBeInTheDocument();
@@ -366,10 +366,7 @@ describe("DashboardClient", () => {
       />,
     );
 
-    await user.type(
-      screen.getByPlaceholderText(/venue of the event/i),
-      "mont",
-    );
+    await user.type(screen.getByPlaceholderText(/venue of the event/i), "mont");
     await user.type(
       screen.getByPlaceholderText(/name of the event/i),
       "concert",
@@ -429,15 +426,11 @@ describe("DashboardClient", () => {
     );
 
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: /hide filters/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /hide filters/i }));
     expect(
       screen.queryByLabelText(/event search filters/i),
     ).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: /show filters/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /show filters/i }));
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
   });
 });

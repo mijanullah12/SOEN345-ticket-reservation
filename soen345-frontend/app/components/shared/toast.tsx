@@ -38,16 +38,34 @@ function ToastCard({
   return (
     <output
       className={`toast-card toast-${item.variant}${exiting ? " toast-exit" : ""}`}
-      role="status"
-      aria-live="polite"
     >
       <span className="toast-icon" aria-hidden="true">
         {item.variant === "success" ? (
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M20 6 9 17l-5-5" />
           </svg>
         ) : (
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            width="20"
+            height="20"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <path d="M12 8v4M12 16h.01" />
           </svg>
@@ -66,15 +84,21 @@ function ToastCard({
   );
 }
 
-export function ToastContainer({ toasts, onDismiss }: { toasts: ToastItem[]; onDismiss: (id: string) => void }) {
+export function ToastContainer({
+  toasts,
+  onDismiss,
+}: {
+  toasts: ToastItem[];
+  onDismiss: (id: string) => void;
+}) {
   if (typeof document === "undefined" || toasts.length === 0) return null;
 
   return createPortal(
-    <div className="toast-container" aria-label="Notifications">
+    <section className="toast-container" aria-label="Notifications">
       {toasts.map((t) => (
         <ToastCard key={t.id} item={t} onDismiss={onDismiss} />
       ))}
-    </div>,
+    </section>,
     document.body,
   );
 }
