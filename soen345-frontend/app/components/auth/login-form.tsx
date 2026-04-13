@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { StatusPopup } from "@/app/components/shared/status-popup";
 import { api } from "@/lib/api";
-import type { UserInfo } from "@/lib/types";
 import {
   buildDisplayName,
   consumeAuthFeedback,
   persistLoginFeedback,
 } from "@/lib/auth-feedback";
+import type { UserInfo } from "@/lib/types";
 
 type LoginFormProps = {
   redirect?: string;
@@ -179,11 +179,7 @@ export function LoginForm({
       <StatusPopup
         open={Boolean(loginPopupName)}
         title="Successful log in"
-        detail={
-          loginPopupName
-            ? `Welcome back, ${loginPopupName}.`
-            : undefined
-        }
+        detail={loginPopupName ? `Welcome back, ${loginPopupName}.` : undefined}
         onClose={acknowledgeLoginSuccess}
       />
       <StatusPopup
