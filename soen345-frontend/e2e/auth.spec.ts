@@ -1,9 +1,5 @@
 import { expect, test } from "@playwright/test";
-import {
-  getBackendToken,
-  loginViaBrowser,
-  registerCustomer,
-} from "./fixtures/auth";
+import { loginViaBrowser, registerCustomer } from "./fixtures/auth";
 
 test.describe("Auth flows", () => {
   test("TC1: register a new customer via the UI form", async ({ page, request }) => {
