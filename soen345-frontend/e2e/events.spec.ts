@@ -1,12 +1,19 @@
+import { randomUUID } from "crypto";
 import { expect, test } from "@playwright/test";
 import {
-  type TestEvent,
   type TestUser,
   getBackendToken,
   loginViaBrowser,
   registerOrganizer,
   seedEvent,
 } from "./fixtures/auth";
+
+/** Returns a datetime-local string (YYYY-MM-DDTHH:mm) 6 months from now. */
+function futureDateValue(): string {
+  const d = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000);
+  const offset = d.getTimezoneOffset() * 60_000;
+  return new Date(d.getTime() - offset).toISOString().slice(0, 16);
+}
 
 async function setupOrganizer(
   request: Parameters<typeof registerOrganizer>[0],
@@ -18,7 +25,7 @@ async function setupOrganizer(
   return { organizer, token };
 }
 
-/** Fill and submit the create/update event form. */
+/** Fill the create/update event form fields. Does not submit. */
 async function fillEventForm(
   page: Parameters<typeof loginViaBrowser>[0],
   values: {
@@ -51,15 +58,15 @@ test.describe("Event CRUD (organizer)", () => {
     page,
     request,
   }) => {
-    const { organizer } = await setupOrganizer(request, page);
+    await setupOrganizer(request, page);
     await page.goto("/organizer/dashboard");
 
-    const eventName = `Concert ${Date.now()}`;
+    const eventName = `Concert ${randomUUID()}`;
     await fillEventForm(page, {
       name: eventName,
       description: "An E2E test concert",
       category: "concerts",
-      date: "2026-12-01T19:00",
+      date: futureDateValue(),
       location: "Bell Centre, Montreal",
       capacity: "200",
       price: "45",
@@ -80,7 +87,7 @@ test.describe("Event CRUD (organizer)", () => {
   }) => {
     const { token } = await setupOrganizer(request, page);
     const event = await seedEvent(request, token, {
-      name: `Original Event ${Date.now()}`,
+      name: `Original Event ${randomUUID()}`,
     });
 
     await page.goto("/organizer/dashboard");
@@ -90,7 +97,7 @@ test.describe("Event CRUD (organizer)", () => {
     await eventItem.getByRole("button", { name: "Edit" }).click();
 
     // The form fills with the event's data; update the name
-    const updatedName = `Updated Event ${Date.now()}`;
+    const updatedName = `Updated Event ${randomUUID()}`;
     await page.locator("#org-name").fill(updatedName);
     await page.getByRole("button", { name: "Update Event" }).click();
 
@@ -104,12 +111,14 @@ test.describe("Event CRUD (organizer)", () => {
   test("TC7: organizer cancels an event", async ({ page, request }) => {
     const { token } = await setupOrganizer(request, page);
     const event = await seedEvent(request, token, {
-      name: `Event To Cancel ${Date.now()}`,
+      name: `Event To Cancel ${randomUUID()}`,
     });
 
     await page.goto("/organizer/dashboard");
 
     const eventItem = page.locator(".org-event-item", { hasText: event.name });
+    // The cancel button triggers the cancellation directly — no confirmation dialog
+    // exists in the current UI. If one is added, this step will need to be updated.
     await eventItem.getByRole("button", { name: "Cancel" }).click();
 
     // Status badge changes to CANCELLED
@@ -124,7 +133,7 @@ test.describe("Event CRUD (organizer)", () => {
     page,
     request,
   }) => {
-    // Register organizer and seed event directly via API (no browser login)
+    // Register organizer and seed event directly via API — no browser login
     const organizer = await registerOrganizer(request);
     const token = await getBackendToken(
       request,
@@ -132,7 +141,7 @@ test.describe("Event CRUD (organizer)", () => {
       organizer.password,
     );
     const event = await seedEvent(request, token, {
-      name: `Public Event ${Date.now()}`,
+      name: `Public Event ${randomUUID()}`,
     });
 
     // Visit dashboard as an unauthenticated user (no cookie set)
