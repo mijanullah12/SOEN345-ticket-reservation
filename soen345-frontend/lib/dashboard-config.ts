@@ -1,6 +1,7 @@
 /**
  * Dashboard copy and taxonomy — adjust here instead of hunting through components.
- * Category tabs filter events by keywords in name/description (backend has no category field yet).
+ * Events carry an explicit `category` field chosen by the organizer at creation time.
+ * Keyword-based matching is retained as a fallback for legacy events without a category.
  */
 export const DASHBOARD_BRAND = "Tiqthat";
 
@@ -23,6 +24,13 @@ export interface EventCategoryDefinition {
     hero: string;
   };
 }
+
+export const SELECTABLE_CATEGORIES: { id: EventCategoryId; label: string }[] = [
+  { id: "movies", label: "Movies" },
+  { id: "sports", label: "Sports" },
+  { id: "concerts", label: "Concerts" },
+  { id: "travel", label: "Travel" },
+];
 
 export const EVENT_CATEGORIES: EventCategoryDefinition[] = [
   {

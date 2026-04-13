@@ -128,6 +128,7 @@ class EventControllerTest {
                     .location("Montreal")
                     .capacity(100)
                     .ticketPrice(BigDecimal.valueOf(20.00))
+                    .category("concerts")
                     .build();
 
             mockMvc.perform(post(BASE_URL)
@@ -440,6 +441,7 @@ class EventControllerTest {
                 .location("Montreal")
                 .capacity(200)
                 .ticketPrice(BigDecimal.valueOf(49.99))
+                .category("concerts")
                 .build();
     }
 

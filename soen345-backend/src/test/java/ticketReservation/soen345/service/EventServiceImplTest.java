@@ -114,6 +114,7 @@ class EventServiceImplTest {
                     .location("  Old Port  ")
                     .capacity(50)
                     .ticketPrice(BigDecimal.valueOf(15.00))
+                    .category("concerts")
                     .build();
 
             when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
@@ -411,6 +412,7 @@ class EventServiceImplTest {
                 .location(location)
                 .capacity(capacity)
                 .ticketPrice(price)
+                .category("concerts")
                 .build();
     }
 }

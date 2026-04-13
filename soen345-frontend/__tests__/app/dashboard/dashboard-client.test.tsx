@@ -69,8 +69,9 @@ import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
 
 const useUserProfileMock = vi.mocked(useUserProfile);
 
-function atLocalToday(hour: number, minute = 0): string {
+function inFutureDays(days: number, hour = 18, minute = 0): string {
   const d = new Date();
+  d.setDate(d.getDate() + days);
   d.setHours(hour, minute, 0, 0);
   return d.toISOString();
 }
@@ -80,7 +81,7 @@ function makeEvent(
 ): Event {
   return {
     description: "",
-    date: atLocalToday(18, 0),
+    date: inFutureDays(3),
     location: "Main Hall",
     capacity: 200,
     ticketPrice: 45,
@@ -112,9 +113,6 @@ describe("DashboardClient", () => {
     expect(screen.getByText("Tiqthat")).toBeInTheDocument();
     expect(
       screen.getByRole("navigation", { name: /event views/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /^Available Events$/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /^Upcoming Events$/i }),
@@ -229,12 +227,12 @@ describe("DashboardClient", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows a movie event on Live + Movies when name matches keywords", () => {
+  it("shows a movie event on Upcoming + Movies when name matches keywords", () => {
     const events: Event[] = [
       makeEvent({
         id: "e1",
         name: "Indie Film Festival",
-        date: atLocalToday(20, 0),
+        date: inFutureDays(5),
       }),
     ];
 
@@ -260,7 +258,7 @@ describe("DashboardClient", () => {
       makeEvent({
         id: "e1",
         name: "Indie Film Festival",
-        date: atLocalToday(20, 0),
+        date: inFutureDays(5),
       }),
     ];
 
@@ -279,22 +277,21 @@ describe("DashboardClient", () => {
     ).toBeInTheDocument();
   });
 
-  it("lists upcoming-only events when Upcoming is selected", async () => {
-    const user = userEvent.setup();
-    const future = new Date();
-    future.setDate(future.getDate() + 7);
-    future.setHours(19, 0, 0, 0);
+  it("excludes past events from the upcoming view", () => {
+    const past = new Date();
+    past.setDate(past.getDate() - 3);
+    past.setHours(19, 0, 0, 0);
 
     const events: Event[] = [
       makeEvent({
         id: "later",
         name: "Summer film premiere",
-        date: future.toISOString(),
+        date: inFutureDays(7),
       }),
       makeEvent({
-        id: "today",
-        name: "Today film matinee",
-        date: atLocalToday(10, 0),
+        id: "past",
+        name: "Yesterday film matinee",
+        date: past.toISOString(),
       }),
     ];
 
@@ -306,15 +303,11 @@ describe("DashboardClient", () => {
       />,
     );
 
-    await user.click(
-      screen.getByRole("button", { name: /^Upcoming Events$/i }),
-    );
-
     expect(
       screen.getByRole("heading", { name: /summer film premiere/i }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: /today film matinee/i }),
+      screen.queryByRole("heading", { name: /yesterday film matinee/i }),
     ).not.toBeInTheDocument();
   });
 
@@ -325,6 +318,7 @@ describe("DashboardClient", () => {
         id: "t1",
         name: "Jazz Night",
         description: "live concert experience",
+        date: inFutureDays(4),
         status: "ACTIVE",
       }),
     ];
@@ -351,12 +345,14 @@ describe("DashboardClient", () => {
         name: "Downtown Concert",
         description: "live concert",
         location: "Montreal",
+        date: inFutureDays(2),
       }),
       makeEvent({
         id: "l2",
         name: "Cinema Evening",
         description: "movie special",
         location: "Toronto",
+        date: inFutureDays(3),
       }),
     ];
 
@@ -383,25 +379,27 @@ describe("DashboardClient", () => {
 
   it("applies filtering by date only", async () => {
     const user = userEvent.setup();
-    const today = new Date();
-    today.setHours(18, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const dateValue = `${today.getFullYear()}-${String(
-      today.getMonth() + 1,
-    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const dayA = new Date();
+    dayA.setDate(dayA.getDate() + 2);
+    dayA.setHours(18, 0, 0, 0);
+    const dayB = new Date();
+    dayB.setDate(dayB.getDate() + 3);
+    dayB.setHours(18, 0, 0, 0);
+    const dateValue = `${dayA.getFullYear()}-${String(
+      dayA.getMonth() + 1,
+    ).padStart(2, "0")}-${String(dayA.getDate()).padStart(2, "0")}`;
 
     const events: Event[] = [
       makeEvent({
         id: "d1",
-        name: "Today Show",
-        date: today.toISOString(),
+        name: "Day A Show",
+        date: dayA.toISOString(),
         location: "Montreal",
       }),
       makeEvent({
         id: "d2",
-        name: "Tomorrow Show",
-        date: tomorrow.toISOString(),
+        name: "Day B Show",
+        date: dayB.toISOString(),
         location: "Montreal",
       }),
     ];
@@ -415,8 +413,8 @@ describe("DashboardClient", () => {
     );
 
     await user.type(screen.getByLabelText(/dates/i), dateValue);
-    expect(screen.getAllByText(/today show/i).length).toBeGreaterThan(0);
-    expect(screen.queryByText(/tomorrow show/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/day a show/i).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/day b show/i)).not.toBeInTheDocument();
   });
 
   it("allows hiding and unhiding the search bar", async () => {

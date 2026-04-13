@@ -5,7 +5,7 @@ import type {
 import { EVENT_CATEGORIES } from "@/lib/dashboard-config";
 import type { Event } from "@/lib/types";
 
-export type SidebarView = "live" | "upcoming" | "archive" | "tickets";
+export type SidebarView = "upcoming" | "archive" | "tickets";
 
 function eventText(e: Event): string {
   return `${e.name} ${e.description ?? ""}`.toLowerCase();
@@ -19,6 +19,9 @@ export function eventsForCategory(
     return events;
   }
   return events.filter((e) => {
+    if (e.category) {
+      return e.category === category.id;
+    }
     const text = eventText(e);
     return category.keywords.some((kw) => text.includes(kw.toLowerCase()));
   });
@@ -47,12 +50,6 @@ export function filterBySidebar(events: Event[], view: SidebarView): Event[] {
   const end = endOfToday();
 
   switch (view) {
-    case "live":
-      return events.filter((e) => {
-        if (e.status === "CANCELLED") return false;
-        const t = new Date(e.date).getTime();
-        return t >= start && t <= end;
-      });
     case "upcoming":
       return events.filter((e) => {
         if (e.status === "CANCELLED") return false;

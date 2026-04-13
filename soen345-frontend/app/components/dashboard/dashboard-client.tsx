@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useUserProfile } from "@/app/components/dashboard/use-user-profile";
@@ -25,7 +26,7 @@ import { AuthModal, type AuthModalMode } from "./auth-modal";
 import { EventDetailsModal } from "./event-details-modal";
 import { PaymentInfoModal } from "./payment-info-modal";
 import { ProfileMenu } from "./profile-menu";
-import { SidebarNavIcon } from "./sidebar-icons";
+import { OrganizerDashboardIcon, SidebarNavIcon } from "./sidebar-icons";
 
 function formatEventStamp(iso: string): string {
   const d = new Date(iso);
@@ -96,7 +97,6 @@ function buildReceiptMessage(
 }
 
 const SIDEBAR_ITEMS: { id: SidebarView; label: string }[] = [
-  { id: "live", label: "Available Events" },
   { id: "upcoming", label: "Upcoming Events" },
   { id: "archive", label: "Reservation History" },
   { id: "tickets", label: "Tickets" },
@@ -114,7 +114,7 @@ export function DashboardClient({
   const router = useRouter();
   const [sessionAuthenticated, setSessionAuthenticated] =
     useState(isAuthenticated);
-  const [sidebarView, setSidebarView] = useState<SidebarView>("live");
+  const [sidebarView, setSidebarView] = useState<SidebarView>("upcoming");
   const [categoryId, setCategoryId] = useState<EventCategoryId>("all");
   const [showSearch, setShowSearch] = useState(true);
   const [locationQuery, setLocationQuery] = useState("");
@@ -136,7 +136,8 @@ export function DashboardClient({
   const [reserveQuantities, setReserveQuantities] = useState<
     Record<string, number>
   >({});
-  const { user: currentUser } = useUserProfile(sessionAuthenticated);
+  const { user: currentUser, loading: profileLoading } =
+    useUserProfile(sessionAuthenticated);
   const isOrganizer = currentUser?.role === "ORGANIZER";
   const greetingName = buildDisplayName(
     currentUser?.firstName,
@@ -145,17 +146,19 @@ export function DashboardClient({
 
   const category = useMemo(() => categoryById(categoryId), [categoryId]);
 
+  const roleKnown = !profileLoading || !sessionAuthenticated;
   const sidebarItems = useMemo(
     () =>
-      SIDEBAR_ITEMS.filter((item) =>
-        isOrganizer ? item.id !== "tickets" : true,
-      ),
-    [isOrganizer],
+      SIDEBAR_ITEMS.filter((item) => {
+        if (item.id === "tickets" && (!roleKnown || isOrganizer)) return false;
+        return true;
+      }),
+    [isOrganizer, roleKnown],
   );
 
   useEffect(() => {
     if (isOrganizer && sidebarView === "tickets") {
-      setSidebarView("live");
+      setSidebarView("upcoming");
     }
   }, [isOrganizer, sidebarView]);
 
@@ -346,6 +349,19 @@ export function DashboardClient({
                 </button>
               </li>
             ))}
+            {isOrganizer ? (
+              <li>
+                <Link
+                  href="/organizer/dashboard"
+                  className="dash-nav-item dash-nav-link"
+                >
+                  <OrganizerDashboardIcon />
+                  <span className="dash-nav-item-label">
+                    Organizer Dashboard
+                  </span>
+                </Link>
+              </li>
+            ) : null}
           </ul>
         </nav>
         <div className="dash-sidebar-footer">
