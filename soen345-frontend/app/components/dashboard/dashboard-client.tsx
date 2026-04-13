@@ -152,14 +152,14 @@ export function DashboardClient({
   const sidebarItems = useMemo(
     () =>
       SIDEBAR_ITEMS.filter((item) => {
-        if (item.id === "tickets" && (!roleKnown || isOrganizer)) return false;
+        if ((item.id === "tickets" || item.id === "archive") && (!roleKnown || isOrganizer)) return false;
         return true;
       }),
     [isOrganizer, roleKnown],
   );
 
   useEffect(() => {
-    if (isOrganizer && sidebarView === "tickets") {
+    if (isOrganizer && (sidebarView === "tickets" || sidebarView === "archive")) {
       setSidebarView("upcoming");
     }
   }, [isOrganizer, sidebarView]);
@@ -600,6 +600,16 @@ export function DashboardClient({
           {sidebarView === "tickets" && !isOrganizer ? (
             <TicketsPanel
               isAuthenticated={sessionAuthenticated}
+              reservations={reservations.filter((r) => r.status === "ACTIVE")}
+              loading={reservationsLoading}
+              actionKey={reservationActionKey}
+              onCancelReservation={cancelReservation}
+              onDownloadReceipt={downloadReceipt}
+              onPromptLogin={() => setAuthModal("login")}
+            />
+          ) : sidebarView === "archive" && !isOrganizer ? (
+            <ReservationHistoryPanel
+              isAuthenticated={sessionAuthenticated}
               reservations={reservations}
               loading={reservationsLoading}
               actionKey={reservationActionKey}
@@ -889,9 +899,9 @@ function TicketsPanel({
   return (
     <section className="dash-tickets-panel">
       <h2 className="dash-section-title">Tickets</h2>
-      {loading ? <p className="dash-empty">Loading reservations...</p> : null}
+      {loading ? <p className="dash-empty">Loading tickets...</p> : null}
       {!loading && reservations.length === 0 ? (
-        <p className="dash-empty">No reservations yet.</p>
+        <p className="dash-empty">No active tickets. Reserve an event to see your tickets here.</p>
       ) : null}
       {reservations.length > 0 ? (
         <ul className="dash-tickets-list">
@@ -924,6 +934,104 @@ function TicketsPanel({
                   >
                     Download receipt
                   </button>
+                  <button
+                    type="button"
+                    className="dash-btn-solid dash-reserve-cancel"
+                    onClick={() => onCancelReservation(reservation.id)}
+                    disabled={Boolean(isCancelling)}
+                  >
+                    {isCancelling ? "Cancelling..." : "Cancel"}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+    </section>
+  );
+}
+
+function ReservationHistoryPanel({
+  isAuthenticated,
+  reservations,
+  loading,
+  actionKey,
+  onCancelReservation,
+  onDownloadReceipt,
+  onPromptLogin,
+}: {
+  isAuthenticated: boolean;
+  reservations: Reservation[];
+  loading: boolean;
+  actionKey: string | null;
+  onCancelReservation: (reservationId: string) => void;
+  onDownloadReceipt: (reservation: Reservation) => void;
+  onPromptLogin: () => void;
+}) {
+  if (!isAuthenticated) {
+    return (
+      <div className="dash-tickets-placeholder">
+        <h2 className="dash-section-title">Reservation History</h2>
+        <p>Please log in to view your reservation history.</p>
+        <button
+          type="button"
+          className="dash-btn-solid"
+          onClick={onPromptLogin}
+        >
+          Log in
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <section className="dash-tickets-panel">
+      <h2 className="dash-section-title">Reservation History</h2>
+      {loading ? <p className="dash-empty">Loading reservations...</p> : null}
+      {!loading && reservations.length === 0 ? (
+        <p className="dash-empty">No reservations yet.</p>
+      ) : null}
+      {reservations.length > 0 ? (
+        <ul className="dash-tickets-list">
+          {reservations.map((reservation) => {
+            const isCancelling = actionKey === `cancel-${reservation.id}`;
+            const quantity = reservation.quantity ?? 1;
+            const total = reservation.eventTicketPrice * quantity;
+            return (
+              <li key={reservation.id} className="dash-tickets-item">
+                <div>
+                  <p className="dash-tickets-item-name">
+                    {reservation.eventName}
+                  </p>
+                  <p className="dash-tickets-item-meta">
+                    {new Date(reservation.eventDate).toLocaleString("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}{" "}
+                    · {reservation.eventLocation}
+                  </p>
+                  <p className="dash-tickets-item-meta">
+                    Tickets: {quantity} · Total: {formatMoney(total)}
+                  </p>
+                </div>
+                <div className="dash-tickets-actions">
+                  <span
+                    className={
+                      reservation.status === "ACTIVE"
+                        ? "dash-ticket-status-active"
+                        : "dash-ticket-status-cancelled"
+                    }
+                  >
+                    {reservation.status === "ACTIVE" ? "Active" : "Cancelled"}
+                  </span>
+                  <button
+                    type="button"
+                    className="dash-btn-outline dash-receipt-btn"
+                    onClick={() => onDownloadReceipt(reservation)}
+                  >
+                    Download receipt
+                  </button>
                   {reservation.status === "ACTIVE" ? (
                     <button
                       type="button"
@@ -933,11 +1041,7 @@ function TicketsPanel({
                     >
                       {isCancelling ? "Cancelling..." : "Cancel"}
                     </button>
-                  ) : (
-                    <span className="dash-ticket-status-cancelled">
-                      Cancelled
-                    </span>
-                  )}
+                  ) : null}
                 </div>
               </li>
             );

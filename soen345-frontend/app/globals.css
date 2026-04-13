@@ -1613,6 +1613,16 @@ body {
   padding: 0.3rem 0.45rem;
 }
 
+.dash-ticket-status-active {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  background: #ecfdf5;
+  padding: 0.3rem 0.45rem;
+}
+
 .dash-tickets-actions {
   display: flex;
   align-items: center;

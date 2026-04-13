@@ -1,29 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="12" failures="0" errors="0" time="0.428763625">
-    <testsuite name="__tests__/app/dashboard/dashboard-client.test.tsx" timestamp="2026-04-13T04:58:31.549Z" hostname="Mijans-MacBook-Pro.local" tests="12" failures="0" errors="0" skipped="0" time="0.428763625">
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; renders brand, sidebar controls, category tabs, and logout" time="0.056231">
+<testsuites name="vitest tests" tests="12" failures="0" errors="0" time="0.423669792">
+    <testsuite name="__tests__/app/dashboard/dashboard-client.test.tsx" timestamp="2026-04-13T05:02:57.740Z" hostname="Mijans-MacBook-Pro.local" tests="12" failures="0" errors="0" skipped="0" time="0.423669792">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; renders brand, sidebar controls, category tabs, and logout" time="0.054252959">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a sign-up success popup when signup feedback exists in session storage" time="0.009454042">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a sign-up success popup when signup feedback exists in session storage" time="0.009740709">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; does not render a greeting strip when the profile has no name" time="0.008644708">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; does not render a greeting strip when the profile has no name" time="0.007747458">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows load error banner when loadError is set" time="0.009869791">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows load error banner when loadError is set" time="0.008548458">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows tickets placeholder when Tickets sidebar item is selected" time="0.032860625">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows tickets placeholder when Tickets sidebar item is selected" time="0.033335083">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a movie event on Upcoming + Movies when name matches keywords" time="0.029267958">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows a movie event on Upcoming + Movies when name matches keywords" time="0.028257125">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows empty state when category has no matches for current sidebar slice" time="0.0365855">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows empty state when category has no matches for current sidebar slice" time="0.035134125">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; excludes past events from the upcoming view" time="0.01104175">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; excludes past events from the upcoming view" time="0.011012584">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows ticker text for the selected category" time="0.0356415">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; shows ticker text for the selected category" time="0.038541333">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; filters events using location and keyword search fields" time="0.08674325">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; filters events using location and keyword search fields" time="0.085258791">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; applies filtering by date range" time="0.066557958">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; applies filtering by date range" time="0.067154208">
         </testcase>
-        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; allows hiding and unhiding the search bar" time="0.045075083">
+        <testcase classname="__tests__/app/dashboard/dashboard-client.test.tsx" name="DashboardClient &gt; allows hiding and unhiding the search bar" time="0.043807917">
         </testcase>
     </testsuite>
 </testsuites>
