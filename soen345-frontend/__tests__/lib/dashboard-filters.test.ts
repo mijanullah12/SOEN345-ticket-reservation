@@ -32,32 +32,6 @@ describe("filterBySidebar", () => {
     vi.useRealTimers();
   });
 
-  it("live keeps only active events scheduled for today (local)", () => {
-    const events: Event[] = [
-      makeEvent({
-        id: "1",
-        name: "Today show",
-        date: new Date(2025, 5, 15, 20, 0, 0).toISOString(),
-        status: "ACTIVE",
-      }),
-      makeEvent({
-        id: "2",
-        name: "Tomorrow",
-        date: new Date(2025, 5, 16, 12, 0, 0).toISOString(),
-        status: "ACTIVE",
-      }),
-      makeEvent({
-        id: "3",
-        name: "Cancelled today",
-        date: new Date(2025, 5, 15, 10, 0, 0).toISOString(),
-        status: "CANCELLED",
-      }),
-    ];
-
-    const out = filterBySidebar(events, "live");
-    expect(out.map((e) => e.id)).toEqual(["1"]);
-  });
-
   it("upcoming keeps active events after end of today", () => {
     const events: Event[] = [
       makeEvent({

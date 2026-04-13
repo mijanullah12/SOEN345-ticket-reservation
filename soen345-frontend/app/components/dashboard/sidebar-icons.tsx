@@ -24,16 +24,6 @@ export function SidebarNavIcon({
   label: string;
 }) {
   switch (id) {
-    case "live":
-      return (
-        <svg {...svgBase}>
-          <title>{label}</title>
-          <path d="M12 20v-3" />
-          <path d="M8.5 14.5a3.5 3.5 0 0 1 7 0" />
-          <path d="M5 11a8 8 0 0 1 14 0" />
-          <path d="M2 7a12 12 0 0 1 20 0" />
-        </svg>
-      );
     case "upcoming":
       return (
         <svg {...svgBase}>
@@ -62,4 +52,16 @@ export function SidebarNavIcon({
     default:
       return null;
   }
+}
+
+export function OrganizerDashboardIcon() {
+  return (
+    <svg {...svgBase}>
+      <title>Organizer Dashboard</title>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  );
 }

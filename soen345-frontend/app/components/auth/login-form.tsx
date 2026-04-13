@@ -61,6 +61,7 @@ export function LoginForm({
   const [loading, setLoading] = useState(false);
   const [loginPopupName, setLoginPopupName] = useState<string | null>(null);
   const [signupPopupName, setSignupPopupName] = useState<string | null>(null);
+  const [pendingRedirect, setPendingRedirect] = useState(redirect);
 
   useEffect(() => {
     const feedback = consumeAuthFeedback();
@@ -75,15 +76,11 @@ export function LoginForm({
 
   function acknowledgeLoginSuccess() {
     setLoginPopupName(null);
-    if (onSuccess) {
-      onSuccess();
-      return;
-    }
     if (typeof window !== "undefined") {
-      window.location.assign(redirect);
+      window.location.assign(pendingRedirect);
       return;
     }
-    router.push(redirect);
+    router.push(pendingRedirect);
     router.refresh();
   }
 
@@ -100,7 +97,18 @@ export function LoginForm({
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push(resolvePostLoginRedirect(redirect, response.user));
+        const dest = resolvePostLoginRedirect(redirect, response.user);
+        setPendingRedirect(dest);
+        const name = buildDisplayName(
+          response.user?.firstName,
+          response.user?.lastName,
+        );
+        persistLoginFeedback(response.user);
+        if (name) {
+          setLoginPopupName(name);
+        } else {
+          router.push(dest);
+        }
       }
     } catch (err: unknown) {
       const apiErr = err as { message?: string };
@@ -167,6 +175,27 @@ export function LoginForm({
         Need to create organizer accounts?{" "}
         <Link href="/organization/register">Create organizer account</Link>
       </p>
+
+      <StatusPopup
+        open={Boolean(loginPopupName)}
+        title="Successful log in"
+        detail={
+          loginPopupName
+            ? `Welcome back, ${loginPopupName}.`
+            : undefined
+        }
+        onClose={acknowledgeLoginSuccess}
+      />
+      <StatusPopup
+        open={Boolean(signupPopupName)}
+        title="Successful sign up"
+        detail={
+          signupPopupName
+            ? `Account created for ${signupPopupName}. You can sign in now.`
+            : undefined
+        }
+        onClose={() => setSignupPopupName(null)}
+      />
     </div>
   );
 }

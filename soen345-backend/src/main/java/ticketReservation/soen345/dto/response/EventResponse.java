@@ -22,6 +22,7 @@ public class EventResponse {
     private String location;
     private Integer capacity;
     private BigDecimal ticketPrice;
+    private String category;
     private String organizerId;
     private Boolean organizerPayoutReady;
     private String organizerName;
