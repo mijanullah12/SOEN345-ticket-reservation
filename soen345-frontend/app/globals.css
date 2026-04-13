@@ -1532,6 +1532,77 @@ body {
   background: #fee2e2;
 }
 
+.dash-reserve-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--dash-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dash-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--dash-border);
+}
+
+.dash-pagination-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.6rem;
+  border: 1px solid var(--dash-border);
+  border-radius: 6px;
+  background: var(--dash-surface);
+  color: var(--dash-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.dash-pagination-btn:hover:not(:disabled) {
+  background: var(--dash-surface-muted);
+  border-color: var(--dash-text-muted);
+}
+
+.dash-pagination-btn[data-active="true"] {
+  background: var(--dash-accent);
+  color: var(--dash-accent-ink);
+  border-color: var(--dash-accent);
+  font-weight: 800;
+}
+
+.dash-pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.dash-pagination-arrow {
+  padding: 0 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dash-pagination-info {
+  margin-left: 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--dash-text-muted);
+  letter-spacing: 0.04em;
+}
+
 .dash-ticket-status-cancelled {
   font-size: 0.78rem;
   text-transform: uppercase;

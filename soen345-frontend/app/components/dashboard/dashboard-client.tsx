@@ -711,6 +711,17 @@ function ReservePanel({
   onShowDetails: (event: Event) => void;
   onPromptLogin: () => void;
 }) {
+  const PAGE_SIZE = 6;
+  const [page, setPage] = useState(0);
+
+  const totalPages = Math.max(1, Math.ceil(events.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const pageEvents = events.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+  useEffect(() => {
+    setPage(0);
+  }, [events]);
+
   if (events.length === 0) {
     return null;
   }
@@ -719,6 +730,9 @@ function ReservePanel({
     <section className="dash-reserve-panel">
       <div className="dash-reserve-head">
         <h3 className="dash-reserve-title">Reserve Tickets</h3>
+        <span className="dash-reserve-count">
+          {events.length} event{events.length !== 1 ? "s" : ""}
+        </span>
         {!isAuthenticated ? (
           <button
             type="button"
@@ -730,7 +744,7 @@ function ReservePanel({
         ) : null}
       </div>
       <ul className="dash-reserve-list">
-        {events.map((event) => {
+        {pageEvents.map((event) => {
           const activeReservation = activeReservationByEventId.get(event.id);
           const isReserving = actionKey === `reserve-${event.id}`;
           const isCancelling =
@@ -812,6 +826,44 @@ function ReservePanel({
           );
         })}
       </ul>
+      {totalPages > 1 ? (
+        <nav className="dash-pagination" aria-label="Reserve tickets pagination">
+          <button
+            type="button"
+            className="dash-pagination-btn dash-pagination-arrow"
+            disabled={safePage === 0}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            aria-label="Previous page"
+          >
+            Prev
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              type="button"
+              className="dash-pagination-btn"
+              data-active={i === safePage}
+              onClick={() => setPage(i)}
+              aria-label={`Page ${i + 1}`}
+              aria-current={i === safePage ? "page" : undefined}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="dash-pagination-btn dash-pagination-arrow"
+            disabled={safePage === totalPages - 1}
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            aria-label="Next page"
+          >
+            Next
+          </button>
+          <span className="dash-pagination-info">
+            Page {safePage + 1} of {totalPages}
+          </span>
+        </nav>
+      ) : null}
     </section>
   );
 }
