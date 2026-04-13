@@ -1,6 +1,13 @@
+import { randomUUID } from "crypto";
 import type { APIRequestContext, Page } from "@playwright/test";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE =
+  process.env.PLAYWRIGHT_BACKEND_URL ?? "http://localhost:8080";
+const FRONTEND_BASE =
+  process.env.PLAYWRIGHT_FRONTEND_URL ?? "http://localhost:3000";
+
+/** 30 days in milliseconds — used to seed events with a future date. */
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export interface TestUser {
   email: string;
@@ -12,6 +19,7 @@ export interface TestUser {
 export interface TestEvent {
   id: string;
   name: string;
+  status?: string;
 }
 
 export interface TestReservation {
@@ -19,9 +27,12 @@ export interface TestReservation {
   eventId: string;
 }
 
-/** Generate a unique email to avoid MongoDB duplicate conflicts across runs. */
+/**
+ * Generate a collision-proof unique email using crypto.randomUUID().
+ * Prevents MongoDB duplicate key errors across parallel or repeated runs.
+ */
 function uniqueEmail(prefix: string): string {
-  return `${prefix}-${Date.now()}-${Math.floor(Math.random() * 10000)}@example.com`;
+  return `${prefix}-${randomUUID()}@example.com`;
 }
 
 /** Register a CUSTOMER user directly against the Spring Boot backend. */
@@ -76,7 +87,9 @@ export async function getBackendToken(
     data: { identifier: email, password },
   });
   if (!res.ok()) {
-    throw new Error(`getBackendToken failed: ${res.status()} ${await res.text()}`);
+    throw new Error(
+      `getBackendToken failed: ${res.status()} ${await res.text()}`,
+    );
   }
   const body = await res.json();
   return body.accessToken as string;
@@ -91,16 +104,18 @@ export async function loginViaBrowser(
   email: string,
   password: string,
 ): Promise<void> {
-  const res = await page.request.post("http://localhost:3000/api/auth/login", {
+  const res = await page.request.post(`${FRONTEND_BASE}/api/auth/login`, {
     data: { identifier: email, password },
   });
   if (!res.ok()) {
-    throw new Error(`loginViaBrowser failed: ${res.status()} ${await res.text()}`);
+    throw new Error(
+      `loginViaBrowser failed: ${res.status()} ${await res.text()}`,
+    );
   }
 }
 
 /**
- * Create an event via the Spring Boot backend and return its id and name.
+ * Create an event via the Spring Boot backend and return its id, name, and status.
  * Requires an organizer JWT token.
  */
 export async function seedEvent(
@@ -115,11 +130,11 @@ export async function seedEvent(
     category: string;
   }> = {},
 ): Promise<TestEvent> {
-  const name = overrides.name ?? `E2E Event ${Date.now()}`;
+  const name = overrides.name ?? `E2E Event ${randomUUID()}`;
   const payload = {
     name,
     description: overrides.description ?? "E2E test event",
-    date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    date: new Date(Date.now() + THIRTY_DAYS_MS).toISOString(),
     location: overrides.location ?? "Montreal",
     capacity: overrides.capacity ?? 50,
     ticketPrice: overrides.ticketPrice ?? 10,
@@ -133,7 +148,7 @@ export async function seedEvent(
     throw new Error(`seedEvent failed: ${res.status()} ${await res.text()}`);
   }
   const body = await res.json();
-  return { id: body.id as string, name };
+  return { id: body.id as string, name, status: body.status as string };
 }
 
 /**
