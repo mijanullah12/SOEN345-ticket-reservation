@@ -7,24 +7,32 @@ import {
   registerOrganizer,
   seedEvent,
   seedReservation,
+  type TestEvent,
 } from "./fixtures/auth";
+
+/** Seed an organizer and a single event, returning the event. */
+async function seedOrganizerEvent(
+  request: Parameters<typeof registerOrganizer>[0],
+  eventName: string,
+): Promise<TestEvent> {
+  const organizer = await registerOrganizer(request);
+  const orgToken = await getBackendToken(
+    request,
+    organizer.email,
+    organizer.password,
+  );
+  return seedEvent(request, orgToken, { name: eventName, capacity: 50 });
+}
 
 test.describe("Reservation flows (customer)", () => {
   test("TC9: customer reserves a ticket via the dashboard UI", async ({
     page,
     request,
   }) => {
-    // Seed: organizer + event
-    const organizer = await registerOrganizer(request);
-    const orgToken = await getBackendToken(
+    const event = await seedOrganizerEvent(
       request,
-      organizer.email,
-      organizer.password,
+      `Reservable Event ${randomUUID()}`,
     );
-    const event = await seedEvent(request, orgToken, {
-      name: `Reservable Event ${randomUUID()}`,
-      capacity: 50,
-    });
 
     // Login as customer via browser
     const customer = await registerCustomer(request);
@@ -38,27 +46,23 @@ test.describe("Reservation flows (customer)", () => {
     await expect(eventItem).toBeVisible();
     await eventItem.getByRole("button", { name: "Reserve" }).click();
 
-    // After reserving, the button changes to "Cancel reservation"
+    // After reserving: "Cancel reservation" appears and "Reserve" is gone
     await expect(
       eventItem.getByRole("button", { name: "Cancel reservation" }),
     ).toBeVisible();
+    await expect(
+      eventItem.getByRole("button", { name: "Reserve" }),
+    ).not.toBeVisible();
   });
 
   test("TC10: customer can view their active reservations in the Tickets tab", async ({
     page,
     request,
   }) => {
-    // Seed: organizer + event + customer + reservation
-    const organizer = await registerOrganizer(request);
-    const orgToken = await getBackendToken(
+    const event = await seedOrganizerEvent(
       request,
-      organizer.email,
-      organizer.password,
+      `Tickets Tab Event ${randomUUID()}`,
     );
-    const event = await seedEvent(request, orgToken, {
-      name: `Tickets Tab Event ${randomUUID()}`,
-      capacity: 50,
-    });
 
     const customer = await registerCustomer(request);
     const custToken = await getBackendToken(
@@ -73,9 +77,7 @@ test.describe("Reservation flows (customer)", () => {
     await page.goto("/dashboard");
 
     // Click the "Tickets" sidebar nav item
-    await page
-      .locator(".dash-nav-item", { hasText: "Tickets" })
-      .click();
+    await page.locator(".dash-nav-item", { hasText: "Tickets" }).click();
 
     // The event with the active reservation should appear
     await expect(
@@ -94,17 +96,10 @@ test.describe("Reservation flows (customer)", () => {
     page,
     request,
   }) => {
-    // Seed: organizer + event + customer + reservation
-    const organizer = await registerOrganizer(request);
-    const orgToken = await getBackendToken(
+    const event = await seedOrganizerEvent(
       request,
-      organizer.email,
-      organizer.password,
+      `Cancel Reservation Event ${randomUUID()}`,
     );
-    const event = await seedEvent(request, orgToken, {
-      name: `Cancel Reservation Event ${randomUUID()}`,
-      capacity: 50,
-    });
 
     const customer = await registerCustomer(request);
     const custToken = await getBackendToken(
@@ -127,9 +122,12 @@ test.describe("Reservation flows (customer)", () => {
 
     await eventItem.getByRole("button", { name: "Cancel reservation" }).click();
 
-    // After cancellation the button reverts to "Reserve"
+    // After cancellation: "Reserve" appears and "Cancel reservation" is gone
     await expect(
       eventItem.getByRole("button", { name: "Reserve" }),
     ).toBeVisible();
+    await expect(
+      eventItem.getByRole("button", { name: "Cancel reservation" }),
+    ).not.toBeVisible();
   });
 });
