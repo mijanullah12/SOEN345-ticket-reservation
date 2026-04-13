@@ -63,7 +63,7 @@ export interface EventWritePayload {
   location: string;
   capacity: number;
   ticketPrice: number;
-  category?: string;
+  category: string;
 }
 
 export type NotificationChannel = "EMAIL" | "SMS";

@@ -62,6 +62,7 @@ function eventToForm(event: Event): FormState {
 
 function validateForm(form: FormState): string | null {
   if (!form.name.trim()) return "Event name is required.";
+  if (!form.category) return "Event type is required.";
   if (!form.date) return "Event date is required.";
   if (!form.location.trim()) return "Location is required.";
 
@@ -86,7 +87,7 @@ function toPayload(form: FormState): EventWritePayload {
     location: form.location.trim(),
     capacity: Number(form.capacity),
     ticketPrice: Number(form.ticketPrice),
-    category: form.category || undefined,
+    category: form.category,
   };
 }
 
@@ -303,6 +304,7 @@ export function OrganizerDashboardClient({
                 onChange={(e) =>
                   setForm((f) => ({ ...f, category: e.target.value }))
                 }
+                required
               >
                 <option value="">— Select a category —</option>
                 {SELECTABLE_CATEGORIES.map((cat) => (

@@ -37,5 +37,6 @@ public class CreateEventRequest {
     @DecimalMin(value = "0.00", message = "Ticket price must be non-negative")
     private BigDecimal ticketPrice;
 
+    @NotBlank(message = "Event category is required")
     private String category;
 }
