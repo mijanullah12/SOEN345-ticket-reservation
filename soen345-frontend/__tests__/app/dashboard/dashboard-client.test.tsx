@@ -379,7 +379,7 @@ describe("DashboardClient", () => {
     expect(screen.queryByText(/cinema evening/i)).not.toBeInTheDocument();
   });
 
-  it("applies filtering by date only", async () => {
+  it("applies filtering by date range", async () => {
     const user = userEvent.setup();
     const dayA = new Date();
     dayA.setDate(dayA.getDate() + 2);
@@ -414,7 +414,10 @@ describe("DashboardClient", () => {
       />,
     );
 
-    await user.type(screen.getByLabelText(/dates/i), dateValue);
+    const fromInput = screen.getByLabelText(/from date/i);
+    const toInput = screen.getByLabelText(/to date/i);
+    await user.type(fromInput, dateValue);
+    await user.type(toInput, dateValue);
     expect(screen.getAllByText(/day a show/i).length).toBeGreaterThan(0);
     expect(screen.queryByText(/day b show/i)).not.toBeInTheDocument();
   });
@@ -427,13 +430,13 @@ describe("DashboardClient", () => {
 
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", { name: /hide search filters/i }),
+      screen.getByRole("button", { name: /hide filters/i }),
     );
     expect(
       screen.queryByLabelText(/event search filters/i),
     ).not.toBeInTheDocument();
     await user.click(
-      screen.getByRole("button", { name: /show search filters/i }),
+      screen.getByRole("button", { name: /show filters/i }),
     );
     expect(screen.getByLabelText(/event search filters/i)).toBeInTheDocument();
   });
