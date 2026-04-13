@@ -770,7 +770,7 @@ function ReservePanel({
                 </p>
                 <p className="dash-reserve-item-meta">
                   Organizer: {event.organizerName ?? "Unknown"}
-                  {event.organizerEmail ? ` Â· ${event.organizerEmail}` : ""}
+                  {event.organizerEmail ? ` · ${event.organizerEmail}` : ""}
                 </p>
                 <p className="dash-reserve-item-meta">
                   {formatMoney(event.ticketPrice)} per ticket
