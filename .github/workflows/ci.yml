@@ -32,9 +32,16 @@ jobs:
         working-directory: soen345-frontend
         run: npm run lint
 
-      - name: Run Tests
+      - name: Run tests with coverage
         working-directory: soen345-frontend
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload frontend coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: soen345-frontend/coverage/
 
       - name: Unit Test Results
         uses: dorny/test-reporter@v1

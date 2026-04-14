@@ -23,19 +23,23 @@ beforeEach(() => {
       Promise.resolve(new Response(null, { status: 200 })),
     ) as typeof fetch,
   );
+});
+
+function stubPathname(pathname: string) {
   Object.defineProperty(window, "location", {
     configurable: true,
     value: {
       ...window.location,
-      pathname: "/dashboard",
+      pathname,
       assign: assignMock,
       reload: reloadMock,
     },
   });
-});
+}
 
 describe("LogoutButton", () => {
   it("reloads the dashboard after OK when already on /dashboard", async () => {
+    stubPathname("/dashboard");
     const user = userEvent.setup();
 
     render(<LogoutButton />);
@@ -52,5 +56,19 @@ describe("LogoutButton", () => {
     expect(assignMock).not.toHaveBeenCalled();
     expect(pushMock).not.toHaveBeenCalled();
     expect(refreshMock).not.toHaveBeenCalled();
+  });
+
+  it("navigates to dashboard after OK when not on /dashboard", async () => {
+    stubPathname("/profile");
+    const user = userEvent.setup();
+
+    render(<LogoutButton />);
+
+    await user.click(screen.getByRole("button", { name: /log out/i }));
+    await user.click(screen.getByRole("button", { name: /^ok$/i }));
+
+    expect(reloadMock).not.toHaveBeenCalled();
+    expect(pushMock).toHaveBeenCalledWith("/dashboard");
+    expect(refreshMock).toHaveBeenCalled();
   });
 });
