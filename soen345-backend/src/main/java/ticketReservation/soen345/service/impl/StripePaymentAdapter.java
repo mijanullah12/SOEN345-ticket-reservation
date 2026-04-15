@@ -14,11 +14,23 @@ import ticketReservation.soen345.service.PaymentGateway;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 public class StripePaymentAdapter implements PaymentGateway {
 
     private static final String DEFAULT_PAYMENT_METHOD = "card";
+
+    /**
+     * Matches {@code soen345-frontend/e2e/fixtures/auth.ts} — when a real Stripe key is set locally,
+     * the API still accepts reservations created by Playwright without calling Stripe.
+     */
+    private static final String E2E_PLACEHOLDER_CUSTOMER = "cus_e2e_test";
+    private static final String E2E_PLACEHOLDER_PAYMENT_METHOD = "pm_e2e_test";
+    private static final String E2E_PLACEHOLDER_INTENT_PREFIX = "pi_e2e_";
+
+    private final AtomicInteger e2eIntentSequence = new AtomicInteger();
+    private final AtomicInteger e2eRefundSequence = new AtomicInteger();
 
     private final StripeProperties stripeProperties;
 
@@ -29,6 +41,13 @@ public class StripePaymentAdapter implements PaymentGateway {
             String customerId,
             String paymentMethodId,
             Map<String, String> metadata) {
+        if (isE2ePlaceholderWallet(customerId, paymentMethodId)) {
+            if (amount == null) {
+                throw new PaymentProcessingException("Amount is required.");
+            }
+            return E2E_PLACEHOLDER_INTENT_PREFIX + e2eIntentSequence.incrementAndGet();
+        }
+
         configureStripe();
         long minorUnits = toMinorUnits(amount);
 
@@ -59,6 +78,10 @@ public class StripePaymentAdapter implements PaymentGateway {
 
     @Override
     public String confirmPayment(String providerPaymentId) {
+        if (providerPaymentId != null && providerPaymentId.startsWith(E2E_PLACEHOLDER_INTENT_PREFIX)) {
+            return providerPaymentId;
+        }
+
         configureStripe();
         try {
             PaymentIntent paymentIntent = PaymentIntent.retrieve(providerPaymentId).confirm();
@@ -70,6 +93,10 @@ public class StripePaymentAdapter implements PaymentGateway {
 
     @Override
     public String refundPayment(String providerPaymentId) {
+        if (providerPaymentId != null && providerPaymentId.startsWith(E2E_PLACEHOLDER_INTENT_PREFIX)) {
+            return "re_e2e_" + e2eRefundSequence.incrementAndGet();
+        }
+
         configureStripe();
         RefundCreateParams params = RefundCreateParams.builder()
                 .setPaymentIntent(providerPaymentId)
@@ -99,5 +126,10 @@ public class StripePaymentAdapter implements PaymentGateway {
             throw new PaymentProcessingException("Stripe API key is not configured.");
         }
         Stripe.apiKey = apiKey;
+    }
+
+    private static boolean isE2ePlaceholderWallet(String customerId, String paymentMethodId) {
+        return E2E_PLACEHOLDER_CUSTOMER.equals(customerId)
+                && E2E_PLACEHOLDER_PAYMENT_METHOD.equals(paymentMethodId);
     }
 }

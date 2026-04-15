@@ -205,6 +205,10 @@ export async function seedEvent(
 /**
  * Create a reservation via the Spring Boot backend.
  * Requires a customer JWT token.
+ *
+ * Uses placeholder payment ids (`cus_e2e_test` / `pm_e2e_test` on the user profile).
+ * The backend must treat those as non-Stripe (see `StripePaymentAdapter` E2E bypass)
+ * when `STRIPE_API_KEY` is set; otherwise use an empty key so `MockPaymentGateway` is active.
  */
 export async function seedReservation(
   request: APIRequestContext,

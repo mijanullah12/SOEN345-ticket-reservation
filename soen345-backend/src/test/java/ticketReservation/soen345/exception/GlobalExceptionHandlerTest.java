@@ -66,6 +66,11 @@ class GlobalExceptionHandlerTest {
             throw new RuntimeException("hidden");
         }
 
+        @GetMapping("/test/payment")
+        void payment() {
+            throw new PaymentProcessingException("card declined");
+        }
+
         @PostMapping("/test/validate")
         void validate(@RequestBody @Valid LoginRequest request) {
         }
@@ -137,6 +142,15 @@ class GlobalExceptionHandlerTest {
         mvc().perform(get("/test/boom"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500));
+    }
+
+    @Test
+    @DisplayName("PaymentProcessingException -> 422")
+    void paymentProcessing() throws Exception {
+        mvc().perform(get("/test/payment"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.status").value(422))
+                .andExpect(jsonPath("$.message").value("card declined"));
     }
 
     @Test

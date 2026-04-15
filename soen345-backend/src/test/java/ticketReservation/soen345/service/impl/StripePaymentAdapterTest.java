@@ -22,10 +22,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class StripePaymentAdapterTest {
+
+    @Test
+    @DisplayName("createPaymentIntent skips Stripe for Playwright E2E placeholder wallet")
+    void createIntent_E2ePlaceholder() {
+        StripeProperties props = mock(StripeProperties.class);
+        StripePaymentAdapter adapter = new StripePaymentAdapter(props);
+
+        try (MockedStatic<PaymentIntent> pis = mockStatic(PaymentIntent.class)) {
+            String id = adapter.createPaymentIntent(
+                    BigDecimal.TEN, "usd", "cus_e2e_test", "pm_e2e_test", Map.of("a", "b"));
+            assertThat(id).startsWith("pi_e2e_");
+            pis.verify(() -> PaymentIntent.create(any(PaymentIntentCreateParams.class)), never());
+        }
+    }
 
     @Test
     @DisplayName("createPaymentIntent calls Stripe and returns id")
@@ -99,6 +114,18 @@ class StripePaymentAdapterTest {
             assertThatThrownBy(() -> adapter.createPaymentIntent(null, "usd", null, null, Map.of()))
                     .isInstanceOf(PaymentProcessingException.class)
                     .hasMessageContaining("Amount");
+        }
+    }
+
+    @Test
+    @DisplayName("confirmPayment skips Stripe for E2E placeholder intent ids")
+    void confirm_E2ePlaceholder() {
+        StripeProperties props = mock(StripeProperties.class);
+        StripePaymentAdapter adapter = new StripePaymentAdapter(props);
+
+        try (MockedStatic<PaymentIntent> pis = mockStatic(PaymentIntent.class)) {
+            assertThat(adapter.confirmPayment("pi_e2e_1")).isEqualTo("pi_e2e_1");
+            pis.verify(() -> PaymentIntent.retrieve(any()), never());
         }
     }
 
